@@ -1,0 +1,19 @@
+@discord_struct User begin
+    id::Snowflake
+    username::String
+    discriminator::Optional{String}
+    global_name::Optional{String}
+    avatar::Nullable{String}
+    bot::Optional{Bool}
+    system::Optional{Bool}
+    mfa_enabled::Optional{Bool}
+    banner::Optional{String}
+    accent_color::Optional{Int}
+    locale::Optional{String}
+    verified::Optional{Bool}
+    email::Optional{String}
+    flags::Optional{Int}
+    premium_type::Optional{Int}
+    public_flags::Optional{Int}
+    avatar_decoration_data::Optional{Any}
+end

@@ -1,0 +1,44 @@
+"""
+    Snowflake
+
+Discord Snowflake ID type — a UInt64 wrapper with timestamp extraction.
+Discord sends snowflakes as JSON strings; we parse them to UInt64.
+"""
+struct Snowflake
+    value::UInt64
+end
+
+Snowflake(s::AbstractString) = Snowflake(parse(UInt64, s))
+Snowflake(n::Integer) = Snowflake(UInt64(n))
+Snowflake(s::Snowflake) = s
+
+const DISCORD_EPOCH = 1420070400000  # ms since Unix epoch (2015-01-01T00:00:00Z)
+
+"""Extract the creation timestamp from a Snowflake."""
+timestamp(s::Snowflake) = Dates.unix2datetime(((s.value >> 22) + DISCORD_EPOCH) / 1000)
+
+"""Extract the internal worker ID."""
+worker_id(s::Snowflake) = (s.value >> 17) & 0x1F
+
+"""Extract the internal process ID."""
+process_id(s::Snowflake) = (s.value >> 12) & 0x1F
+
+"""Extract the increment."""
+increment(s::Snowflake) = s.value & 0xFFF
+
+Base.:(==)(a::Snowflake, b::Snowflake) = a.value == b.value
+Base.hash(s::Snowflake, h::UInt) = hash(s.value, h)
+Base.show(io::IO, s::Snowflake) = print(io, "Snowflake(", s.value, ")")
+Base.string(s::Snowflake) = string(s.value)
+Base.convert(::Type{Snowflake}, s::AbstractString) = Snowflake(s)
+Base.convert(::Type{Snowflake}, n::Integer) = Snowflake(n)
+Base.isless(a::Snowflake, b::Snowflake) = isless(a.value, b.value)
+Base.UInt64(s::Snowflake) = s.value
+
+# JSON3/StructTypes integration — Snowflakes are strings in JSON
+StructTypes.StructType(::Type{Snowflake}) = StructTypes.CustomStruct()
+StructTypes.lower(s::Snowflake) = string(s.value)
+StructTypes.lowertype(::Type{Snowflake}) = String
+function StructTypes.construct(::Type{Snowflake}, s::String)
+    Snowflake(parse(UInt64, s))
+end

@@ -1,0 +1,222 @@
+# VoiceClient — high-level voice connection management
+
+"""
+    VoiceClient
+
+Manages a voice connection to a Discord voice channel.
+Handles the full connection flow: gateway → voice WS → UDP → audio.
+"""
+mutable struct VoiceClient
+    client::Client
+    guild_id::Snowflake
+    channel_id::Snowflake
+    session::Nullable{VoiceGatewaySession}
+    udp_socket::Nullable{UDPSocket}
+    player::AudioPlayer
+    sequence::UInt16
+    timestamp::UInt32
+    encryption_mode::String
+    connected::Bool
+    _voice_state_event::Base.Event
+    _voice_server_event::Base.Event
+    _voice_session_id::Nullable{String}
+    _voice_token::Nullable{String}
+    _voice_endpoint::Nullable{String}
+end
+
+function VoiceClient(client::Client, guild_id::Snowflake, channel_id::Snowflake)
+    VoiceClient(
+        client, guild_id, channel_id,
+        nothing, nothing, AudioPlayer(),
+        UInt16(0), UInt32(0), "",
+        false,
+        Base.Event(), Base.Event(),
+        nothing, nothing, nothing,
+    )
+end
+
+"""
+    connect!(vc::VoiceClient) -> VoiceClient
+
+Connect to the voice channel. This performs the full handshake:
+1. Send VOICE_STATE_UPDATE to gateway
+2. Wait for VOICE_STATE_UPDATE and VOICE_SERVER_UPDATE events
+3. Connect to voice WebSocket
+4. Perform IP discovery
+5. Select protocol and establish session
+"""
+function connect!(vc::VoiceClient)
+    # Register temporary event handlers to capture voice events
+    voice_state_handler = (client, event) -> begin
+        if event isa VoiceStateUpdateEvent
+            vs = event.state
+            if !ismissing(vs.guild_id) && vs.guild_id == vc.guild_id && vs.user_id == vc.client.state.me.id
+                vc._voice_session_id = vs.session_id
+                notify(vc._voice_state_event)
+            end
+        end
+    end
+
+    voice_server_handler = (client, event) -> begin
+        if event isa VoiceServerUpdate && event.guild_id == vc.guild_id
+            vc._voice_token = event.token
+            vc._voice_endpoint = event.endpoint
+            notify(vc._voice_server_event)
+        end
+    end
+
+    on(voice_state_handler, vc.client, VoiceStateUpdateEvent)
+    on(voice_server_handler, vc.client, VoiceServerUpdate)
+
+    # Step 1: Send voice state update to join channel
+    update_voice_state(vc.client, vc.guild_id; channel_id=vc.channel_id)
+
+    # Step 2: Wait for both events
+    @info "Waiting for voice events..."
+    wait(vc._voice_state_event)
+    wait(vc._voice_server_event)
+
+    isnothing(vc._voice_endpoint) && error("Voice endpoint is null — cannot connect")
+
+    # Step 3: Connect to voice WebSocket
+    @info "Connecting to voice gateway" endpoint=vc._voice_endpoint
+    me = vc.client.state.me
+    isnothing(me) && error("Client user not available")
+
+    vc.session = VoiceGatewaySession(
+        vc.guild_id, vc.channel_id, me.id,
+        vc._voice_session_id, vc._voice_endpoint, vc._voice_token
+    )
+
+    voice_gateway_connect(vc.session)
+    wait(vc.session.ready)
+
+    # Step 4: IP Discovery
+    @info "Performing IP discovery"
+    vc.udp_socket = create_voice_udp(vc.session.ip, vc.session.port)
+    our_ip, our_port = ip_discovery(vc.udp_socket, vc.session.ip, vc.session.port, vc.session.ssrc)
+
+    # Step 5: Select protocol
+    vc.encryption_mode = select_encryption_mode(vc.session.modes)
+    @info "Selected encryption mode" mode=vc.encryption_mode
+    send_select_protocol(vc.session, our_ip, our_port, vc.encryption_mode)
+
+    # Wait briefly for session description
+    sleep(1.0)
+
+    vc.connected = true
+    @info "Voice connection established" guild_id=vc.guild_id channel_id=vc.channel_id
+    return vc
+end
+
+"""
+    disconnect!(vc::VoiceClient)
+
+Disconnect from the voice channel.
+"""
+function disconnect!(vc::VoiceClient)
+    vc.connected = false
+
+    # Stop player
+    stop!(vc.player)
+
+    # Close UDP socket
+    if !isnothing(vc.udp_socket)
+        close(vc.udp_socket)
+        vc.udp_socket = nothing
+    end
+
+    # Close voice gateway
+    if !isnothing(vc.session)
+        vc.session.connected = false
+        vc.session = nothing
+    end
+
+    # Leave voice channel
+    update_voice_state(vc.client, vc.guild_id; channel_id=nothing)
+
+    @info "Voice disconnected" guild_id=vc.guild_id
+end
+
+"""
+    play!(vc::VoiceClient, source::AbstractAudioSource)
+
+Play audio from the given source.
+"""
+function play!(vc::VoiceClient, source::AbstractAudioSource)
+    !vc.connected && error("Not connected to voice")
+    isnothing(vc.session) && error("No voice session")
+    isempty(vc.session.secret_key) && error("No encryption key — session not fully established")
+
+    # Signal that we're speaking
+    send_speaking(vc.session, true)
+
+    play!(vc.player, source, opus_data -> _send_audio(vc, opus_data))
+
+    return vc.player
+end
+
+"""
+    stop!(vc::VoiceClient)
+
+Stop audio playback.
+"""
+function stop!(vc::VoiceClient)
+    stop!(vc.player)
+    if vc.connected && !isnothing(vc.session)
+        try
+            send_speaking(vc.session, false)
+        catch
+        end
+    end
+end
+
+function _send_audio(vc::VoiceClient, opus_data::Vector{UInt8})
+    vc.sequence = vc.sequence == typemax(UInt16) ? UInt16(0) : vc.sequence + UInt16(1)
+    vc.timestamp += UInt32(OPUS_FRAME_SIZE)
+
+    header = rtp_header(vc.sequence, vc.timestamp, vc.session.ssrc)
+
+    # Encrypt based on mode
+    encrypted = _encrypt_audio(vc, header, opus_data)
+
+    # Send via UDP
+    send_voice_packet(vc.udp_socket, vc.session.ip, vc.session.port, header, encrypted)
+end
+
+function _encrypt_audio(vc::VoiceClient, header::Vector{UInt8}, opus_data::Vector{UInt8})
+    key = vc.session.secret_key
+
+    if vc.encryption_mode == "xsalsa20_poly1305"
+        # Nonce is the RTP header padded to 24 bytes
+        nonce = zeros(UInt8, 24)
+        copyto!(nonce, 1, header, 1, min(length(header), 24))
+        return xsalsa20_poly1305_encrypt(key, nonce, opus_data)
+
+    elseif vc.encryption_mode == "xsalsa20_poly1305_suffix"
+        # Generate random 24-byte nonce, append to packet
+        nonce = random_nonce(24)
+        encrypted = xsalsa20_poly1305_encrypt(key, nonce, opus_data)
+        return vcat(encrypted, nonce)
+
+    elseif vc.encryption_mode == "xsalsa20_poly1305_lite"
+        # 4-byte incrementing nonce, padded to 24
+        nonce_val = vc.sequence
+        nonce = zeros(UInt8, 24)
+        nonce[1] = UInt8((nonce_val >> 24) & 0xFF)
+        nonce[2] = UInt8((nonce_val >> 16) & 0xFF)
+        nonce[3] = UInt8((nonce_val >> 8) & 0xFF)
+        nonce[4] = UInt8(nonce_val & 0xFF)
+        encrypted = xsalsa20_poly1305_encrypt(key, nonce, opus_data)
+        return vcat(encrypted, nonce[1:4])
+
+    elseif vc.encryption_mode == "aead_xchacha20_poly1305_rtpsize"
+        # AEAD with RTP header as AAD
+        nonce = random_nonce(24)
+        encrypted = aead_xchacha20_poly1305_encrypt(key, nonce, opus_data, header)
+        return vcat(encrypted, nonce)
+
+    else
+        error("Unsupported encryption mode: $(vc.encryption_mode)")
+    end
+end
