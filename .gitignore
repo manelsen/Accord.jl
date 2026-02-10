@@ -17,3 +17,5 @@ docs/site/
 # OS
 .DS_Store
 Thumbs.db
+bot.log
+KANBAN.md
