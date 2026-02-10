@@ -29,6 +29,7 @@ increment(s::Snowflake) = s.value & 0xFFF
 Base.:(==)(a::Snowflake, b::Snowflake) = a.value == b.value
 Base.hash(s::Snowflake, h::UInt) = hash(s.value, h)
 Base.show(io::IO, s::Snowflake) = print(io, "Snowflake(", s.value, ")")
+Base.print(io::IO, s::Snowflake) = print(io, s.value)
 Base.string(s::Snowflake) = string(s.value)
 Base.convert(::Type{Snowflake}, s::AbstractString) = Snowflake(s)
 Base.convert(::Type{Snowflake}, n::Integer) = Snowflake(n)

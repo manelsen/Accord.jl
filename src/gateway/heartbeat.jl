@@ -29,7 +29,7 @@ function start_heartbeat(ws, interval_ms::Int, seq_ref::Ref, stop_event::Base.Ev
         first_wait = interval_ms * rand() / 1000.0
         sleep(first_wait)
 
-        while state.running && !Base.Event.isready(stop_event)
+        while state.running && !stop_event.set
             # Check if we got an ACK for the last heartbeat
             if !state.ack_received && state.last_send > 0
                 @warn "Heartbeat ACK not received — zombie connection detected"

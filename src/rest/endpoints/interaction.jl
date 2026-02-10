@@ -69,8 +69,15 @@ function bulk_overwrite_guild_application_commands(rl::RateLimiter, application_
 end
 
 # --- Interaction Responses ---
+# Interaction callbacks bypass the rate limiter for speed (3s Discord timeout).
 function create_interaction_response(rl::RateLimiter, interaction_id::Snowflake, interaction_token::String; token::String, body::Dict, files=nothing)
-    discord_post(rl, "/interactions/$(interaction_id)/$(interaction_token)/callback"; token, body, files)
+    url = "$(API_BASE)/interactions/$(interaction_id)/$(interaction_token)/callback"
+    headers = [
+        "Authorization" => token,
+        "Content-Type" => "application/json",
+        "User-Agent" => USER_AGENT,
+    ]
+    HTTP.post(url, headers, JSON3.write(body); status_exception=false, retry=false)
 end
 
 function get_original_interaction_response(rl::RateLimiter, application_id::Snowflake, interaction_token::String; token::String)

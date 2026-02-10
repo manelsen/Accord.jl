@@ -116,10 +116,16 @@ end
 
 """Parse a JSON response body into type T."""
 function parse_response(::Type{T}, resp::HTTP.Response) where T
+    if resp.status >= 400
+        error("Discord API error ($(resp.status)): $(String(resp.body))")
+    end
     JSON3.read(resp.body, T)
 end
 
 """Parse a JSON response body into a Vector of type T."""
 function parse_response_array(::Type{T}, resp::HTTP.Response) where T
+    if resp.status >= 400
+        error("Discord API error ($(resp.status)): $(String(resp.body))")
+    end
     JSON3.read(resp.body, Vector{T})
 end

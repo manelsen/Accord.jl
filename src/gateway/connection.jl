@@ -1,7 +1,6 @@
 # Gateway WebSocket connection lifecycle
 
-const GATEWAY_URL = "wss://gateway.discord.gg/?v=$(API_VERSION)&encoding=json&compress=zlib-stream"
-const ZLIB_SUFFIX = UInt8[0x00, 0x00, 0xff, 0xff]
+const GATEWAY_URL = "wss://gateway.discord.gg/?v=$(API_VERSION)&encoding=json"
 
 """Gateway command sent to the connection actor."""
 struct GatewayCommand
@@ -19,6 +18,7 @@ mutable struct GatewaySession
     session_id::Nullable{String}
     resume_gateway_url::Nullable{String}
     seq::Nullable{Int}
+    seq_ref::Ref{Union{Int,Nothing}}  # shared with heartbeat
     heartbeat_task::Nullable{Task}
     heartbeat_state::Nullable{HeartbeatState}
     zlib_buffer::IOBuffer
@@ -28,8 +28,8 @@ mutable struct GatewaySession
 end
 
 function GatewaySession()
-    GatewaySession(nothing, nothing, nothing, nothing, nothing, nothing,
-                   IOBuffer(), nothing, Base.Event(), false)
+    GatewaySession(nothing, nothing, nothing, nothing, Ref{Union{Int,Nothing}}(nothing),
+                   nothing, nothing, IOBuffer(), nothing, Base.Event(), false)
 end
 
 """
@@ -57,7 +57,7 @@ function gateway_connect(
 
     while reconnect
         url = if resume && !isnothing(session.resume_gateway_url)
-            session.resume_gateway_url * "/?v=$(API_VERSION)&encoding=json&compress=zlib-stream"
+            session.resume_gateway_url * "/?v=$(API_VERSION)&encoding=json"
         else
             GATEWAY_URL
         end
@@ -65,7 +65,7 @@ function gateway_connect(
         @info "Connecting to gateway" url resume
 
         try
-            HTTP.WebSockets.open(url) do ws
+            HTTP.WebSockets.open(url; readtimeout=0) do ws
                 session.ws = ws
                 session.connected = true
                 session.zlib_buffer = IOBuffer()
@@ -92,10 +92,15 @@ function gateway_connect(
             end
         end
 
-        session.connected = false
         if !isnothing(session.heartbeat_state)
             stop_heartbeat!(session.heartbeat_state)
         end
+
+        # If session was explicitly stopped (connected set to false externally), don't reconnect
+        if !session.connected
+            reconnect = false
+        end
+        session.connected = false
 
         if reconnect
             resume = !isnothing(session.session_id) && !isnothing(session.seq)
@@ -112,15 +117,18 @@ function _gateway_loop(
     ws, token, intents, shard, events_channel, commands_channel,
     ready_event, session, resume
 )
-    while !Base.Event.isready(session.stop_event)
+    while !session.stop_event.set
         data = try
             HTTP.WebSockets.receive(ws)
         catch e
-            @debug "WebSocket receive error" exception=e
+            @warn "WebSocket receive error, breaking loop" exception=e
             break
         end
 
-        data isa Nothing && break
+        if data isa Nothing
+            @warn "WebSocket received Nothing, breaking loop"
+            break
+        end
 
         # Decompress zlib-stream
         payload = _decompress(session, data)
@@ -142,6 +150,7 @@ function _gateway_loop(
         # Update sequence
         if !isnothing(s)
             session.seq = s
+            session.seq_ref[] = s
         end
 
         if op == GatewayOpcodes.DISPATCH
@@ -149,10 +158,8 @@ function _gateway_loop(
 
         elseif op == GatewayOpcodes.HELLO
             interval = d["heartbeat_interval"]
-            seq_ref = Ref{Union{Int,Nothing}}(session.seq)
-
-            # Start heartbeat
-            hb_task, hb_state = start_heartbeat(ws, interval, seq_ref, session.stop_event)
+            # Start heartbeat (use session's persistent seq_ref)
+            hb_task, hb_state = start_heartbeat(ws, interval, session.seq_ref, session.stop_event)
             session.heartbeat_task = hb_task
             session.heartbeat_state = hb_state
 
@@ -221,23 +228,7 @@ end
 
 function _decompress(session::GatewaySession, data)
     if data isa Vector{UInt8}
-        write(session.zlib_buffer, data)
-
-        # Check for zlib flush marker
-        bufdata = take!(session.zlib_buffer)
-        if length(bufdata) >= 4 && bufdata[end-3:end] == ZLIB_SUFFIX
-            try
-                decompressed = transcode(CodecZlib.ZlibDecompressor, bufdata)
-                return String(decompressed)
-            catch e
-                @warn "Zlib decompression failed" exception=e
-                return nothing
-            end
-        else
-            # Incomplete frame, put data back
-            write(session.zlib_buffer, bufdata)
-            return nothing
-        end
+        return String(data)
     elseif data isa String
         return data
     else
@@ -257,7 +248,6 @@ function _send_identify(ws, token, intents, shard)
                 "device" => "Accord.jl",
             ),
             "shard" => [shard[1], shard[2]],
-            "compress" => true,
         )
     )
     HTTP.WebSockets.send(ws, JSON3.write(payload))
