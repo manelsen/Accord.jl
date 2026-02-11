@@ -44,6 +44,11 @@ end
     n = get_option(ctx, "number", 0)
     respond(ctx; content="Result: \$(n * 2)")
 end
+
+# Guild-specific command:
+@slash_command client :guild_id "info" "Server info" function(ctx)
+    respond(ctx; content="Guild command!")
+end
 ```
 """
 macro slash_command(client, args...)
@@ -202,7 +207,7 @@ end
 """
 macro option(type_sym, name, description, kwargs...)
     if !haskey(_OPTION_TYPE_MAP, type_sym)
-        error("Unknown option type :$type_sym. Expected one of: $(join(keys(_OPTION_TYPE_MAP), ", "))")
+        error("Unknown option type :$type_sym. Expected one of: $(join(sort(collect(keys(_OPTION_TYPE_MAP))), ", "))")
     end
     type_val = _OPTION_TYPE_MAP[type_sym]
 
