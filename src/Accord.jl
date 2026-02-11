@@ -218,7 +218,7 @@ export discord_request, discord_get, discord_post, discord_put, discord_patch, d
 
 # Client
 export Client, start, stop, wait_until_ready, on, on_error
-export create_message, edit_message, delete_message, create_reaction
+export create_message, edit_message, delete_message, create_reaction, reply
 export get_channel, get_guild, get_user
 export update_voice_state, update_presence, request_guild_members
 
@@ -267,11 +267,13 @@ export CommandTree, CommandDefinition
 export register_command!, register_component!, register_modal!, register_autocomplete!
 export sync_commands!, dispatch_interaction!
 export @slash_command, @button_handler, @select_handler, @modal_handler, @autocomplete
+export @on_message
 
 # Component builders
 export action_row, button, string_select, select_option
 export user_select, role_select, mentionable_select, channel_select
 export text_input, embed, command_option
+export embed_field, embed_footer, embed_author, activity
 
 # Voice
 export VoiceClient, connect!, disconnect!

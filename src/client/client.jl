@@ -261,6 +261,25 @@ function create_message(client::Client, channel_id::Snowflake; content::String="
     create_message(client.ratelimiter, channel_id; token=client.token, body, files)
 end
 
+"""
+    reply(client, message; kwargs...)
+
+Reply to a message. Automatically sets channel and message reference.
+
+# Example
+```julia
+on(client, MessageCreate) do c, event
+    reply(c, event.message; content="Got it!")
+end
+```
+"""
+function reply(client::Client, message::Message; content::String="", embeds::Vector{Dict}=Dict[], components::Vector{Dict}=Dict[], files=nothing, tts::Bool=false)
+    ref = Dict{String, Any}("message_id" => string(message.id))
+    create_message(client, message.channel_id;
+        content, embeds, components, files, tts,
+        message_reference=ref)
+end
+
 """Edit a message."""
 function edit_message(client::Client, channel_id::Snowflake, message_id::Snowflake; kwargs...)
     body = Dict{String, Any}()
