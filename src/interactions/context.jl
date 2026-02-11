@@ -22,7 +22,7 @@ _is_present(x) = !ismissing(x) && !isnothing(x)
 
 """Get the user who triggered the interaction."""
 function Base.getproperty(ctx::InteractionContext, name::Symbol)
-    if name === :user
+    if name === :user || name === :author
         i = getfield(ctx, :interaction)
         # Prefer member.user in guild contexts, fall back to user
         if _is_present(i.member) && _is_present(i.member.user)
@@ -33,6 +33,8 @@ function Base.getproperty(ctx::InteractionContext, name::Symbol)
         return getfield(ctx, :interaction).guild_id
     elseif name === :channel_id
         return getfield(ctx, :interaction).channel_id
+    elseif name === :state
+        return getfield(ctx, :client).state_data
     else
         return getfield(ctx, name)
     end

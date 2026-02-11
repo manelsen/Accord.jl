@@ -104,6 +104,7 @@ include("client/client.jl")
 
 # === Interactions (rest) ===
 include("interactions/context.jl")
+include("interactions/checks.jl")
 include("interactions/decorators.jl")
 include("interactions/components.jl")
 
@@ -218,6 +219,7 @@ export discord_request, discord_get, discord_post, discord_put, discord_patch, d
 
 # Client
 export Client, start, stop, wait_until_ready, on, on_error
+export wait_for, EventWaiter
 export create_message, edit_message, delete_message, create_reaction, reply
 export get_channel, get_guild, get_user
 export update_voice_state, update_presence, request_guild_members
@@ -267,7 +269,10 @@ export CommandTree, CommandDefinition
 export register_command!, register_component!, register_modal!, register_autocomplete!
 export sync_commands!, dispatch_interaction!
 export @slash_command, @button_handler, @select_handler, @modal_handler, @autocomplete
-export @on_message, @option
+export @on_message, @option, @check
+
+# Check guards
+export has_permissions, is_owner, is_in_guild, run_checks
 
 # Component builders
 export action_row, button, string_select, select_option
@@ -288,6 +293,7 @@ export compute_base_permissions, compute_channel_permissions
 # Initialize libsodium on module load
 function __init__()
     init_sodium()
+    _init_perm_map!()
 end
 
 end # module Accord

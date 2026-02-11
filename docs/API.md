@@ -104,6 +104,7 @@ Snowflakes support `==`, `<`, `hash`, and are serialised as strings in JSON.
 Client(token::String;
     intents::Union{Intents, UInt32, Integer} = IntentAllNonPrivileged,
     num_shards::Int = 1,
+    state::Any = nothing,
     guild_strategy::CacheStrategy   = CacheForever(),
     channel_strategy::CacheStrategy = CacheForever(),
     user_strategy::CacheStrategy    = CacheLRU(10_000),
@@ -114,12 +115,45 @@ Client(token::String;
 
 The `"Bot "` prefix is added automatically if missing.
 
+The `state` parameter accepts any user-defined value (struct, NamedTuple, Dict, etc.) that is
+automatically available in command handlers via `ctx.state`.
+
 ### Lifecycle
 
 ```julia
 start(client; blocking::Bool=true)    # Connect & run event loop
 stop(client)                           # Disconnect gracefully
 wait_until_ready(client)               # Block until READY received
+```
+
+### `wait_for` — Conversational State Machine
+
+```julia
+wait_for(check::Function, client, EventType; timeout::Real=30.0) -> Union{AbstractEvent, Nothing}
+```
+
+Wait for a specific gateway event that matches a predicate. Uses Julia's `Channel` and
+`Timer` internally — only the current `Task` suspends, never the bot. Returns the matching
+event, or `nothing` on timeout.
+
+```julia
+# Example: quiz flow
+@slash_command client "quiz" "Start a quiz" function(ctx)
+    respond(ctx; content="What color is the sky?")
+
+    event = wait_for(client, MessageCreate; timeout=30) do evt
+        evt.message.author.id == ctx.user.id &&
+        evt.message.channel_id == ctx.channel_id
+    end
+
+    if isnothing(event)
+        followup(ctx; content="⏰ Time's up!")
+    elseif event.message.content == "blue"
+        followup(ctx; content="✅ Correct!")
+    else
+        followup(ctx; content="❌ Wrong!")
+    end
+end
 ```
 
 ### Event Registration
@@ -159,6 +193,7 @@ request_guild_members(client, guild_id; query="", limit=0, presences=false, user
 | `client.application_id` | `Nullable{Snowflake}` | Set after READY             |
 | `client.intents`   | `UInt32`              | Gateway intents bitmask         |
 | `client.state`     | `State`               | Cached Discord state            |
+| `client.state_data` | `Any`               | User-injected state (`ctx.state`) |
 | `client.command_tree` | `CommandTree`      | Registered slash commands        |
 | `client.ratelimiter` | `RateLimiter`       | REST rate limiter               |
 | `client.shards`    | `Vector{ShardInfo}`   | Gateway shards                  |
@@ -723,6 +758,16 @@ selected_values(ctx) -> Vector{String}       # For select menus
 modal_values(ctx) -> Dict{String, String}    # For modals
 ```
 
+### Property Accessors
+
+```julia
+ctx.user      # User who triggered the interaction
+ctx.author    # Alias for ctx.user
+ctx.guild_id  # Guild ID (or missing in DMs)
+ctx.channel_id # Channel ID
+ctx.state     # User-injected state from Client(; state=...)
+```
+
 ### Responding
 
 ```julia
@@ -847,6 +892,10 @@ end)
 Convenience macros that register handlers on `client.command_tree`:
 
 ```julia
+# Pre-execution checks (guards) — stack before @slash_command
+@check has_permissions(PermManageGuild)
+@check is_owner()
+
 # Slash command (global)
 @slash_command client "name" "description" handler
 
@@ -864,6 +913,27 @@ Convenience macros that register handlers on `client.command_tree`:
 ```
 
 Each `handler` is a `function(ctx::InteractionContext)`.
+
+### Built-in Check Factories
+
+| Check | Description |
+|-------|-------------|
+| `has_permissions(perms...)` | Require specific Discord permissions. Accepts `Permissions` values or symbols (`:MANAGE_GUILD`, `:BAN_MEMBERS`). |
+| `is_owner()` | Require guild owner. |
+| `is_in_guild()` | Require guild context (deny DMs). |
+
+Checks run in order before the command handler. If any check returns `false`,
+an ephemeral "permission denied" message is sent automatically (unless the check
+responded directly).
+
+```julia
+# Example: Admin + guild-only command
+@check is_in_guild()
+@check has_permissions(:ADMINISTRATOR)
+@slash_command client "config" "Server configuration" function(ctx)
+    respond(ctx; content="Config panel", ephemeral=true)
+end
+```
 
 ---
 

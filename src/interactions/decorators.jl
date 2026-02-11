@@ -1,6 +1,39 @@
 # Macro-based decorators for registering commands and component handlers
 
 """
+    @check check_function
+
+Add a pre-execution check (guard) to the next `@slash_command`.
+Checks are stacked — multiple `@check` macros accumulate and are
+all drained when `@slash_command` is invoked.
+
+Check functions receive an `InteractionContext` and return `true` (pass)
+or `false` (deny). If a check fails, the command handler is never called
+and a default "permission denied" ephemeral message is sent.
+
+# Built-in checks
+- `has_permissions(perms...)` — require specific permissions
+- `is_owner()` — require guild owner
+- `is_in_guild()` — require guild context (not DMs)
+
+# Example
+```julia
+@check has_permissions(:MANAGE_GUILD)
+@check is_owner()
+@slash_command client "nuke" "Owner-only danger command" function(ctx)
+    respond(ctx; content="💥 Boom!")
+end
+```
+"""
+macro check(expr)
+    quote
+        lock($(@__MODULE__)._CHECKS_LOCK) do
+            push!($(@__MODULE__)._PENDING_CHECKS, $(esc(expr)))
+        end
+    end
+end
+
+"""
     @on_message client handler
 
 Register a `MessageCreate` handler that automatically skips bot messages and
@@ -56,7 +89,9 @@ macro slash_command(client, args...)
         # @slash_command client name description handler
         name, desc, handler = args
         return quote
-            $(@__MODULE__).register_command!($(esc(client)).command_tree, $(esc(name)), $(esc(desc)), $(esc(handler)))
+            _checks_ = $(@__MODULE__).drain_pending_checks!()
+            $(@__MODULE__).register_command!($(esc(client)).command_tree, $(esc(name)), $(esc(desc)), $(esc(handler));
+                checks=_checks_)
         end
     elseif length(args) == 4
         # Could be @slash_command client guild_id name description handler 
@@ -67,23 +102,26 @@ macro slash_command(client, args...)
             # @slash_command client name description options handler
             name, desc, options, handler = arg1, arg2, arg3, arg4
             return quote
+                _checks_ = $(@__MODULE__).drain_pending_checks!()
                 $(@__MODULE__).register_command!($(esc(client)).command_tree, $(esc(name)), $(esc(desc)), $(esc(handler));
-                    options=$(esc(options)))
+                    options=$(esc(options)), checks=_checks_)
             end
         else
             # @slash_command client guild_id name description handler
             guild_id, name, desc, handler = arg1, arg2, arg3, arg4
             return quote
+                _checks_ = $(@__MODULE__).drain_pending_checks!()
                 $(@__MODULE__).register_command!($(esc(client)).command_tree, $(esc(name)), $(esc(desc)), $(esc(handler));
-                    guild_id=$(@__MODULE__).Snowflake($(esc(guild_id))))
+                    guild_id=$(@__MODULE__).Snowflake($(esc(guild_id))), checks=_checks_)
             end
         end
     elseif length(args) == 5
         # @slash_command client guild_id name description options handler
         guild_id, name, desc, options, handler = args
         return quote
+            _checks_ = $(@__MODULE__).drain_pending_checks!()
             $(@__MODULE__).register_command!($(esc(client)).command_tree, $(esc(name)), $(esc(desc)), $(esc(handler));
-                options=$(esc(options)), guild_id=$(@__MODULE__).Snowflake($(esc(guild_id))))
+                options=$(esc(options)), guild_id=$(@__MODULE__).Snowflake($(esc(guild_id))), checks=_checks_)
         end
     else
         error("Invalid @slash_command syntax. Expected: @slash_command client [guild_id] name description [options] handler")
