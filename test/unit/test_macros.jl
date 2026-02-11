@@ -499,4 +499,103 @@ end
         @test occursin("MessageCreate", expr_str)
     end
 
+    # ─── @user_command ─────────────────────────────────────────────────
+    @testset "@user_command" begin
+
+        @testset "2-arg form (name, handler)" begin
+            tree = CommandTree()
+            mock_client = (; command_tree=tree)
+
+            @user_command mock_client "User Info" function(ctx) end
+
+            @test haskey(tree.commands, "User Info")
+            cmd = tree.commands["User Info"]
+            @test cmd.name == "User Info"
+            @test cmd.type == ApplicationCommandTypes.USER
+            @test cmd.description == ""
+            @test isempty(cmd.options)
+        end
+
+        @testset "3-arg form with guild_id" begin
+            tree = CommandTree()
+            mock_client = (; command_tree=tree)
+
+            @user_command mock_client 123456789 "Warn User" function(ctx) end
+
+            @test haskey(tree.commands, "Warn User")
+            cmd = tree.commands["Warn User"]
+            @test cmd.type == ApplicationCommandTypes.USER
+            @test cmd.guild_id == Snowflake(123456789)
+        end
+
+        @testset "drains pending checks" begin
+            Accord.drain_pending_checks!()
+            tree = CommandTree()
+            mock_client = (; command_tree=tree)
+
+            lock(Accord._CHECKS_LOCK) do
+                push!(Accord._PENDING_CHECKS, ctx -> true)
+            end
+
+            @user_command mock_client "Check User" function(ctx) end
+
+            cmd = tree.commands["Check User"]
+            @test length(cmd.checks) == 1
+            @test isempty(Accord._PENDING_CHECKS)
+        end
+
+        @testset "invalid args throws error" begin
+            tree = CommandTree()
+            mock_client = (; command_tree=tree)
+            @test_throws Exception @eval @user_command $mock_client
+        end
+    end
+
+    # ─── @message_command ──────────────────────────────────────────────
+    @testset "@message_command" begin
+
+        @testset "2-arg form (name, handler)" begin
+            tree = CommandTree()
+            mock_client = (; command_tree=tree)
+
+            @message_command mock_client "Bookmark" function(ctx) end
+
+            @test haskey(tree.commands, "Bookmark")
+            cmd = tree.commands["Bookmark"]
+            @test cmd.name == "Bookmark"
+            @test cmd.type == ApplicationCommandTypes.MESSAGE
+            @test cmd.description == ""
+            @test isempty(cmd.options)
+        end
+
+        @testset "3-arg form with guild_id" begin
+            tree = CommandTree()
+            mock_client = (; command_tree=tree)
+
+            @message_command mock_client 987654321 "Report" function(ctx) end
+
+            @test haskey(tree.commands, "Report")
+            cmd = tree.commands["Report"]
+            @test cmd.type == ApplicationCommandTypes.MESSAGE
+            @test cmd.guild_id == Snowflake(987654321)
+        end
+
+        @testset "drains pending checks" begin
+            Accord.drain_pending_checks!()
+            tree = CommandTree()
+            mock_client = (; command_tree=tree)
+
+            lock(Accord._CHECKS_LOCK) do
+                push!(Accord._PENDING_CHECKS, ctx -> true)
+                push!(Accord._PENDING_CHECKS, ctx -> false)
+            end
+
+            @message_command mock_client "Pin Message" function(ctx) end
+
+            cmd = tree.commands["Pin Message"]
+            @test length(cmd.checks) == 2
+            @test isempty(Accord._PENDING_CHECKS)
+        end
+    end
+
 end

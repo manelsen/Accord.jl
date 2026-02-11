@@ -31,6 +31,26 @@
 
         check_fn4 = is_in_guild()
         @test check_fn4 isa Function
+
+        check_fn5 = cooldown(5)
+        @test check_fn5 isa Function
+
+        check_fn6 = cooldown(30; per=:guild)
+        @test check_fn6 isa Function
+
+        check_fn7 = cooldown(10; per=:channel)
+        @test check_fn7 isa Function
+
+        check_fn8 = cooldown(60; per=:global)
+        @test check_fn8 isa Function
+    end
+
+    @testset "cooldown bucket key" begin
+        # :global always returns 0
+        @test Accord._cooldown_key(nothing, :global) == UInt64(0)
+
+        # Invalid bucket type should error
+        @test_throws ErrorException Accord._cooldown_key(nothing, :invalid)
     end
 
     @testset "Pending checks accumulation and drain" begin

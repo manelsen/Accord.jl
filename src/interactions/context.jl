@@ -97,6 +97,45 @@ function modal_values(ctx::InteractionContext)
 end
 
 """
+    target(ctx::InteractionContext)
+
+Get the target of a context menu interaction (User or Message command).
+Returns the resolved User or Message object, or `nothing` if unavailable.
+
+For User commands (`ApplicationCommandTypes.USER`), returns a `User`.
+For Message commands (`ApplicationCommandTypes.MESSAGE`), returns a `Message`.
+"""
+function target(ctx::InteractionContext)
+    data = ctx.interaction.data
+    ismissing(data) && return nothing
+    ismissing(data.target_id) && return nothing
+
+    target_id = data.target_id
+    resolved = data.resolved
+    ismissing(resolved) && return nothing
+
+    # User command — look in resolved.users then resolved.members
+    if !ismissing(data.type) && data.type == ApplicationCommandTypes.USER
+        if _is_present(resolved.users)
+            user = get(resolved.users, string(target_id), nothing)
+            !isnothing(user) && return user
+        end
+        return nothing
+    end
+
+    # Message command — look in resolved.messages
+    if !ismissing(data.type) && data.type == ApplicationCommandTypes.MESSAGE
+        if _is_present(resolved.messages)
+            msg = get(resolved.messages, string(target_id), nothing)
+            !isnothing(msg) && return msg
+        end
+        return nothing
+    end
+
+    return nothing
+end
+
+"""
     respond(ctx; kwargs...)
 
 Send an interaction response. Automatically chooses the right response type.

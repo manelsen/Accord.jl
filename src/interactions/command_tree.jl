@@ -94,9 +94,12 @@ function sync_commands!(client, tree::CommandTree; guild_id=nothing)
     for (name, cmd) in tree.commands
         payload = Dict{String, Any}(
             "name" => cmd.name,
-            "description" => cmd.description,
             "type" => cmd.type,
         )
+        # Context menu commands (USER, MESSAGE) must not include description
+        if cmd.type == ApplicationCommandTypes.CHAT_INPUT
+            payload["description"] = cmd.description
+        end
         !isempty(cmd.options) && (payload["options"] = cmd.options)
 
         if !ismissing(cmd.guild_id)

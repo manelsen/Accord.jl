@@ -239,3 +239,65 @@ function command_option(;
     autocomplete && (opt["autocomplete"] = true)
     opt
 end
+
+# === Components V2 Builders ===
+
+"""Create a Container component (top-level v2 wrapper)."""
+function container(components::Vector; color::Integer=0, spoiler::Bool=false)
+    c = Dict{String, Any}("type" => ComponentTypes.CONTAINER, "components" => components)
+    color > 0 && (c["accent_color"] = color)
+    spoiler && (c["spoiler"] = true)
+    c
+end
+
+"""Create a Section component with text and optional accessory."""
+function section(components::Vector; accessory=nothing)
+    s = Dict{String, Any}("type" => ComponentTypes.SECTION, "components" => components)
+    !isnothing(accessory) && (s["accessory"] = accessory)
+    s
+end
+
+"""Create a Text Display component."""
+function text_display(content::String)
+    Dict{String, Any}("type" => ComponentTypes.TEXT_DISPLAY, "content" => content)
+end
+
+"""Create a Thumbnail component."""
+function thumbnail(; media::Dict, description::String="", spoiler::Bool=false)
+    t = Dict{String, Any}("type" => ComponentTypes.THUMBNAIL, "media" => media)
+    !isempty(description) && (t["description"] = description)
+    spoiler && (t["spoiler"] = true)
+    t
+end
+
+"""Create a Media Gallery component."""
+function media_gallery(items::Vector)
+    Dict{String, Any}("type" => ComponentTypes.MEDIA_GALLERY, "items" => items)
+end
+
+"""Create a media gallery item."""
+function media_gallery_item(; media::Dict, description::String="", spoiler::Bool=false)
+    item = Dict{String, Any}("media" => media)
+    !isempty(description) && (item["description"] = description)
+    spoiler && (item["spoiler"] = true)
+    item
+end
+
+"""Create a File component."""
+function file_component(; media::Dict, spoiler::Bool=false)
+    f = Dict{String, Any}("type" => ComponentTypes.FILE, "file" => media)
+    spoiler && (f["spoiler"] = true)
+    f
+end
+
+"""Create a Separator component."""
+function separator(; divider::Bool=true, spacing::Int=1)
+    s = Dict{String, Any}("type" => ComponentTypes.SEPARATOR, "divider" => divider)
+    spacing != 1 && (s["spacing"] = spacing)
+    s
+end
+
+"""Create an unfurled media object (used by thumbnail, media_gallery, file)."""
+function unfurled_media(url::String)
+    Dict{String, Any}("url" => url)
+end

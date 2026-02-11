@@ -189,6 +189,63 @@ function is_in_guild()
 end
 
 """
+    cooldown(seconds::Real; per::Symbol=:user) -> Function
+
+Create a cooldown check. If the cooldown has not expired, sends an ephemeral
+message with the remaining time and blocks execution.
+
+`per` can be `:user`, `:guild`, `:channel`, or `:global`.
+
+# Example
+```julia
+@check cooldown(5)                    # 5s per user
+@check cooldown(30; per=:guild)       # 30s per guild
+@slash_command client "roll" "Roll dice" handler
+```
+"""
+function cooldown(seconds::Real; per::Symbol=:user)
+    timestamps = Dict{UInt64, Float64}()
+    lk = ReentrantLock()
+
+    return function(ctx)
+        key = _cooldown_key(ctx, per)
+        now_t = time()
+
+        lock(lk) do
+            last = get(timestamps, key, 0.0)
+            remaining = seconds - (now_t - last)
+            if remaining > 0
+                if !ctx.responded[]
+                    respond(ctx;
+                        content="Cooldown: wait $(round(remaining; digits=1))s.",
+                        ephemeral=true)
+                end
+                return false
+            end
+            timestamps[key] = now_t
+            return true
+        end
+    end
+end
+
+function _cooldown_key(ctx, per::Symbol)::UInt64
+    if per == :user
+        user = ctx.user
+        isnothing(user) ? UInt64(0) : user.id.value
+    elseif per == :guild
+        gid = ctx.interaction.guild_id
+        (ismissing(gid) || isnothing(gid)) ? UInt64(0) : gid.value
+    elseif per == :channel
+        cid = ctx.interaction.channel_id
+        (ismissing(cid) || isnothing(cid)) ? UInt64(0) : cid.value
+    elseif per == :global
+        UInt64(0)
+    else
+        error("Unknown cooldown bucket type :$per. Use :user, :guild, :channel, or :global.")
+    end
+end
+
+"""
     CheckFailedError
 
 Error thrown internally when a pre-execution check fails.
