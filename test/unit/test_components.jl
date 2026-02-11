@@ -75,6 +75,33 @@
         @test opt["required"] == true
     end
 
+    @testset "@option macro" begin
+        opt = @option String "query" "Search query" required=true
+        @test opt["type"] == ApplicationCommandOptionTypes.STRING
+        @test opt["name"] == "query"
+        @test opt["description"] == "Search query"
+        @test opt["required"] == true
+
+        opt2 = @option Integer "count" "How many" min_value=1 max_value=25
+        @test opt2["type"] == ApplicationCommandOptionTypes.INTEGER
+        @test opt2["min_value"] == 1
+        @test opt2["max_value"] == 25
+        @test !haskey(opt2, "required")
+
+        opt3 = @option Boolean "verbose" "Verbose output"
+        @test opt3["type"] == ApplicationCommandOptionTypes.BOOLEAN
+        @test opt3["name"] == "verbose"
+
+        # Works inside a vector (as used with @slash_command)
+        opts = [
+            @option String "name" "Your name" required=true
+            @option Integer "age" "Your age"
+        ]
+        @test length(opts) == 2
+        @test opts[1]["type"] == ApplicationCommandOptionTypes.STRING
+        @test opts[2]["type"] == ApplicationCommandOptionTypes.INTEGER
+    end
+
     @testset "embed_field" begin
         f = embed_field("Name", "Value")
         @test f["name"] == "Name"
