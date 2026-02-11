@@ -38,7 +38,7 @@ macro discord_flags(name, block)
         Base.iszero(a::$(esc(name))) = iszero(a.value)
         Base.zero(::Type{$(esc(name))}) = $(esc(name))(UInt64(0))
 
-        $(esc(:has_flag))(a::$(esc(name)), b::$(esc(name))) = (a & b) == b
+        $(@__MODULE__).has_flag(a::$(esc(name)), b::$(esc(name))) = (a & b) == b
 
         Base.show(io::IO, f::$(esc(name))) = print(io, $(string(name)), "(", f.value, ")")
 
@@ -48,12 +48,12 @@ end
 
 """Register integer-based StructTypes for a flags type."""
 macro _flags_structtypes_int(name)
-    esc(quote
-        StructTypes.StructType(::Type{$name}) = StructTypes.CustomStruct()
-        StructTypes.lower(f::$name) = f.value
-        StructTypes.lowertype(::Type{$name}) = UInt64
-        StructTypes.construct(::Type{$name}, v::Integer) = $name(UInt64(v))
-    end)
+    quote
+        $StructTypes.StructType(::Type{$(esc(name))}) = $StructTypes.CustomStruct()
+        $StructTypes.lower(f::$(esc(name))) = f.value
+        $StructTypes.lowertype(::Type{$(esc(name))}) = UInt64
+        $StructTypes.construct(::Type{$(esc(name))}, v::Integer) = $(esc(name))(UInt64(v))
+    end
 end
 
 # --- Intents ---

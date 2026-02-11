@@ -23,30 +23,36 @@ macro slash_command(client, args...)
     if length(args) == 3
         # @slash_command client name description handler
         name, desc, handler = args
-        return esc(quote
-            register_command!($client.command_tree, $name, $desc, $handler)
-        end)
+        return quote
+            $(@__MODULE__).register_command!($(esc(client)).command_tree, $(esc(name)), $(esc(desc)), $(esc(handler)))
+        end
     elseif length(args) == 4
-        # Could be guild_id or options
-        arg1, name, desc, handler = args
-        if arg1 isa Expr && arg1.head == :vect
-            # @slash_command client [options] name description handler — unlikely
-            error("Invalid @slash_command syntax")
+        # Could be @slash_command client guild_id name description handler 
+        # OR @slash_command client name description options handler
+        arg1, arg2, arg3, arg4 = args
+        
+        if arg3 isa Expr && arg3.head == :vect
+            # @slash_command client name description options handler
+            name, desc, options, handler = arg1, arg2, arg3, arg4
+            return quote
+                $(@__MODULE__).register_command!($(esc(client)).command_tree, $(esc(name)), $(esc(desc)), $(esc(handler));
+                    options=$(esc(options)))
+            end
         else
             # @slash_command client guild_id name description handler
-            guild_id = arg1
-            return esc(quote
-                register_command!($client.command_tree, $name, $desc, $handler;
-                    guild_id=Snowflake($guild_id))
-            end)
+            guild_id, name, desc, handler = arg1, arg2, arg3, arg4
+            return quote
+                $(@__MODULE__).register_command!($(esc(client)).command_tree, $(esc(name)), $(esc(desc)), $(esc(handler));
+                    guild_id=$(@__MODULE__).Snowflake($(esc(guild_id))))
+            end
         end
     elseif length(args) == 5
         # @slash_command client guild_id name description options handler
         guild_id, name, desc, options, handler = args
-        return esc(quote
-            register_command!($client.command_tree, $name, $desc, $handler;
-                options=$options, guild_id=Snowflake($guild_id))
-        end)
+        return quote
+            $(@__MODULE__).register_command!($(esc(client)).command_tree, $(esc(name)), $(esc(desc)), $(esc(handler));
+                options=$(esc(options)), guild_id=$(@__MODULE__).Snowflake($(esc(guild_id))))
+        end
     else
         error("Invalid @slash_command syntax. Expected: @slash_command client [guild_id] name description [options] handler")
     end
@@ -65,9 +71,9 @@ end
 ```
 """
 macro button_handler(client, custom_id, handler)
-    esc(quote
-        register_component!($client.command_tree, $custom_id, $handler)
-    end)
+    quote
+        $(@__MODULE__).register_component!($(esc(client)).command_tree, $(esc(custom_id)), $(esc(handler)))
+    end
 end
 
 """
@@ -84,9 +90,9 @@ end
 ```
 """
 macro select_handler(client, custom_id, handler)
-    esc(quote
-        register_component!($client.command_tree, $custom_id, $handler)
-    end)
+    quote
+        $(@__MODULE__).register_component!($(esc(client)).command_tree, $(esc(custom_id)), $(esc(handler)))
+    end
 end
 
 """
@@ -103,9 +109,9 @@ end
 ```
 """
 macro modal_handler(client, custom_id, handler)
-    esc(quote
-        register_modal!($client.command_tree, $custom_id, $handler)
-    end)
+    quote
+        $(@__MODULE__).register_modal!($(esc(client)).command_tree, $(esc(custom_id)), $(esc(handler)))
+    end
 end
 
 """
@@ -126,7 +132,7 @@ end
 ```
 """
 macro autocomplete(client, command_name, handler)
-    esc(quote
-        register_autocomplete!($client.command_tree, $command_name, $handler)
-    end)
+    quote
+        $(@__MODULE__).register_autocomplete!($(esc(client)).command_tree, $(esc(command_name)), $(esc(handler)))
+    end
 end

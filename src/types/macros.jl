@@ -13,41 +13,72 @@ Generate a Discord API struct with:
 - JSON3/StructTypes Mutable() integration
 """
 macro discord_struct(name, block)
-    fields = []
+    field_exprs = []
+    
     for expr in block.args
-        expr isa LineNumberNode && continue
+        if expr isa LineNumberNode
+            push!(field_exprs, expr)
+            continue
+        end
+        
+        # Handle docstrings or other macro calls on fields
+        if expr isa Expr && expr.head == :macrocall
+            push!(field_exprs, expr)
+            continue
+        end
+
+        fname = nothing
+        ftype = nothing
+        default_val = nothing
+
         if expr isa Expr && expr.head == :(::)
             fname = expr.args[1]
             ftype = expr.args[2]
-            push!(fields, (fname, ftype))
+        elseif expr isa Expr && expr.head == :(=) && expr.args[1] isa Expr && expr.args[1].head == :(::)
+            fname = expr.args[1].args[1]
+            ftype = expr.args[1].args[2]
+            default_val = expr.args[2]
         end
-    end
 
-    # Build struct fields with defaults
-    field_exprs = []
-    for (fname, ftype) in fields
-        ftype_expr = esc(ftype)
-        fname_expr = esc(fname)
-        # Check if the type is Optional{...} or Nullable{...}
-        if ftype isa Expr && ftype.head == :curly
-            wrapper = ftype.args[1]
-            if wrapper == :Optional
-                push!(field_exprs, Expr(:(=), :($(fname_expr)::$(ftype_expr)), :missing))
-                continue
-            elseif wrapper == :Nullable
-                push!(field_exprs, Expr(:(=), :($(fname_expr)::$(ftype_expr)), :nothing))
-                continue
-            elseif wrapper == :Vector
-                push!(field_exprs, Expr(:(=), :($(fname_expr)::$(ftype_expr)), :($(ftype_expr)())))
-                continue
+        if !isnothing(fname)
+            ftype_expr = esc(ftype)
+            fname_expr = esc(fname)
+            
+            if !isnothing(default_val)
+                push!(field_exprs, Expr(:(=), :($(fname_expr)::$(ftype_expr)), esc(default_val)))
+            else
+                # Check if the type is Optional{...} or Nullable{...}
+                found_wrapper = false
+                if ftype isa Expr && ftype.head == :curly
+                    wrapper = ftype.args[1]
+                    if wrapper == :Optional || (wrapper isa Expr && wrapper.head == :. && wrapper.args[2] isa QuoteNode && wrapper.args[2].value == :Optional)
+                        push!(field_exprs, Expr(:(=), :($(fname_expr)::$(ftype_expr)), :missing))
+                        found_wrapper = true
+                    elseif wrapper == :Nullable || (wrapper isa Expr && wrapper.head == :. && wrapper.args[2] isa QuoteNode && wrapper.args[2].value == :Nullable)
+                        push!(field_exprs, Expr(:(=), :($(fname_expr)::$(ftype_expr)), :nothing))
+                        found_wrapper = true
+                    elseif wrapper == :Vector || (wrapper isa Expr && wrapper.head == :. && wrapper.args[2] isa QuoteNode && wrapper.args[2].value == :Vector)
+                        push!(field_exprs, Expr(:(=), :($(fname_expr)::$(ftype_expr)), :($(ftype_expr)())))
+                        found_wrapper = true
+                    end
+                end
+                
+                if !found_wrapper
+                    # Provide defaults for concrete types so Mutable() can construct empty instances
+                    default = _default_for_type(ftype)
+                    if !isnothing(default)
+                        push!(field_exprs, Expr(:(=), :($(fname_expr)::$(ftype_expr)), default))
+                    else
+                        push!(field_exprs, :($(fname_expr)::$(ftype_expr)))
+                    end
+                end
             end
-        end
-        # Provide defaults for concrete types so Mutable() can construct empty instances
-        default = _default_for_type(ftype)
-        if !isnothing(default)
-            push!(field_exprs, Expr(:(=), :($(fname_expr)::$(ftype_expr)), esc(default)))
+        elseif expr isa String
+            # Skip docstrings for now as Base.@kwdef doesn't handle them well inside the block
+            continue
         else
-            push!(field_exprs, :($(fname_expr)::$(ftype_expr)))
+            # Keep other expressions as is (e.g. comments are already filtered, but maybe other stuff)
+            push!(field_exprs, expr)
         end
     end
 
@@ -58,27 +89,34 @@ macro discord_struct(name, block)
             $(field_exprs...)
         end
 
-        StructTypes.StructType(::Type{$esc_name}) = StructTypes.Mutable()
-        StructTypes.omitempties(::Type{$esc_name}) = true
+        $StructTypes.StructType(::Type{$esc_name}) = $StructTypes.Mutable()
+        $StructTypes.omitempties(::Type{$esc_name}) = true
     end
 end
 
 function _default_for_type(ftype)
-    if ftype == :Snowflake
-        return :(Snowflake(0))
-    elseif ftype == :String
+    # Extract the base type name if it's qualified
+    sym = if ftype isa Symbol
+        ftype
+    elseif ftype isa Expr && ftype.head == :. && ftype.args[2] isa QuoteNode
+        ftype.args[2].value
+    else
+        nothing
+    end
+
+    if sym == :Snowflake
+        return :($Accord.Snowflake(0))
+    elseif sym == :String
         return ""
-    elseif ftype == :Int
+    elseif sym == :Int || sym == :Int64 || sym == :Int32
         return 0
-    elseif ftype == :Bool
+    elseif sym == :Bool
         return false
-    elseif ftype == :Float64
+    elseif sym == :Float64 || sym == :Float32
         return 0.0
-    elseif ftype == :Any
+    elseif sym == :Any
         return nothing
     else
-        # For other struct types, try providing a default via missing
-        # These are types like User, Emoji, etc. — they should be Optional or Nullable
         return nothing
     end
 end

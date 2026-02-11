@@ -94,14 +94,16 @@ include("rest/endpoints/sku.jl")
 include("rest/endpoints/voice.jl")
 include("rest/endpoints/onboarding.jl")
 
+# === Interactions (needed by Client) ===
+include("interactions/command_tree.jl")
+
 # === Client ===
 include("client/state.jl")
 include("client/event_handler.jl")
 include("client/client.jl")
 
-# === Interactions ===
+# === Interactions (rest) ===
 include("interactions/context.jl")
-include("interactions/command_tree.jl")
 include("interactions/decorators.jl")
 include("interactions/components.jl")
 

@@ -23,6 +23,7 @@ mutable struct Client
     intents::UInt32
     state::State
     event_handler::EventHandler
+    command_tree::CommandTree
     ratelimiter::RateLimiter
     shards::Vector{ShardInfo}
     num_shards::Int
@@ -54,12 +55,15 @@ function Client(token::String;
 
     shards = [ShardInfo(i, num_shards, events_channel) for i in 0:(num_shards-1)]
 
-    Client(
+    tree = CommandTree()
+
+    client = Client(
         actual_token,
         nothing,
         intents_val,
         state,
         EventHandler(),
+        tree,
         RateLimiter(),
         shards,
         num_shards,
@@ -67,6 +71,13 @@ function Client(token::String;
         false,
         nothing,
     )
+
+    # Register interaction dispatcher
+    on(client, InteractionCreate) do c, event
+        dispatch_interaction!(c.command_tree, c, event.interaction)
+    end
+
+    return client
 end
 
 """

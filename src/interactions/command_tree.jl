@@ -77,10 +77,11 @@ end
     sync_commands!(client, tree; guild_id=nothing)
 
 Sync registered commands with Discord.
+`client` should be an `Accord.Client` instance.
 If guild_id is provided, syncs as guild commands (instant).
 Otherwise syncs as global commands (up to 1h propagation).
 """
-function sync_commands!(client::Client, tree::CommandTree; guild_id=nothing)
+function sync_commands!(client, tree::CommandTree; guild_id=nothing)
     app_id = client.application_id
     isnothing(app_id) && error("Client application_id not set. Wait for READY event first.")
 
@@ -130,8 +131,9 @@ end
     dispatch_interaction!(tree, client, interaction)
 
 Route an interaction to the appropriate handler.
+`client` should be an `Accord.Client` instance.
 """
-function dispatch_interaction!(tree::CommandTree, client::Client, interaction::Interaction)
+function dispatch_interaction!(tree::CommandTree, client, interaction::Interaction)
     ctx = InteractionContext(client, interaction)
 
     if interaction.type == InteractionTypes.APPLICATION_COMMAND
