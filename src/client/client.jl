@@ -30,6 +30,7 @@ mutable struct Client
     ready::Base.Event
     running::Bool
     _event_loop_task::Nullable{Task}
+    _supervisor_task::Nullable{Task}
 end
 
 function Client(token::String;
@@ -69,6 +70,7 @@ function Client(token::String;
         num_shards,
         Base.Event(),
         false,
+        nothing,
         nothing,
     )
 
@@ -127,6 +129,9 @@ function start(client::Client; blocking::Bool=true)
 
     # Start event processing loop
     client._event_loop_task = @async _event_loop(client)
+
+    # Start supervisor task to monitor and restart shards
+    client._supervisor_task = @async _supervisor_loop(client)
 
     if blocking
         # Wait for first shard to be ready
@@ -203,14 +208,44 @@ function _event_loop(client::Client)
 
         # Capture application_id from READY
         if event isa ReadyEvent && !isnothing(event.application)
-            if event.application isa Dict && haskey(event.application, "id")
-                client.application_id = Snowflake(event.application["id"])
+            try
+                if event.application isa Dict && haskey(event.application, "id")
+                    client.application_id = Snowflake(event.application["id"])
+                elseif hasproperty(event.application, :id)
+                    client.application_id = Snowflake(event.application.id)
+                end
+                @debug "Captured application_id" application_id=client.application_id
+            catch e
+                @error "Failed to extract application_id from READY" application=event.application exception=e
             end
         end
 
         # Dispatch to handlers
         dispatch_event!(client.event_handler, client, event)
     end
+end
+
+function _supervisor_loop(client::Client)
+    @debug "Supervisor task started"
+    
+    while client.running
+        # Check every 5 seconds
+        sleep(5.0)
+        
+        for shard in client.shards
+            # If the task is finished but we didn't stop the bot, restart it
+            if !isnothing(shard.task) && istaskdone(shard.task) && client.running
+                # Check if it was an intentional stop (connected would be false)
+                # shard.session.connected is managed by gateway_connect and stop_shard
+                if shard.session.connected
+                    @error "Shard $(shard.id) died unexpectedly! Restarting..."
+                    start_shard(shard, client.token, client.intents)
+                end
+            end
+        end
+    end
+    
+    @debug "Supervisor task stopped"
 end
 
 # --- Convenience REST methods on Client ---

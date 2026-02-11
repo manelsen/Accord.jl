@@ -94,6 +94,9 @@ function respond(ctx::InteractionContext;
 
     if ctx.deferred[]
         # Edit the deferred response
+        if isnothing(ctx.client.application_id)
+            error("Cannot respond to deferred interaction: application_id not set (READY event may not have been processed)")
+        end
         edit_original_interaction_response(
             ctx.client.ratelimiter, ctx.client.application_id, ctx.interaction.token;
             token=ctx.client.token, body=data, files
@@ -126,11 +129,16 @@ function defer(ctx::InteractionContext; ephemeral::Bool=false)
     ephemeral && (data["flags"] = 64)
 
     body = Dict("type" => response_type, "data" => data)
-    create_interaction_response(
+    resp = create_interaction_response(
         ctx.client.ratelimiter, ctx.interaction.id, ctx.interaction.token;
         token=ctx.client.token, body
     )
-    ctx.deferred[] = true
+    if resp.status < 300
+        ctx.deferred[] = true
+    else
+        @warn "Failed to defer interaction response" status=resp.status body=String(resp.body)
+    end
+    return resp
 end
 
 """

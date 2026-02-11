@@ -1,49 +1,101 @@
-# Accord.jl
+# Accord.jl 🎹
 
-A modern Discord API v10 library for Julia.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Julia Version](https://img.shields.io/badge/julia-1.10+-blue.svg)](https://julialang.org)
+[![Discord API](https://img.shields.io/badge/Discord%20API-v10-5865F2.svg)](https://discord.com/developers/docs/intro)
 
-## Features
+**Accord.jl** is a high-performance, ergonomic Discord API library for Julia. Built for speed and developer happiness, it leverages Julia's multiple dispatch and concurrency model to make bot development intuitive and powerful.
 
-- Full Discord API v10 support
-- Dispatch-Driven Actor architecture (Tasks + Channels)
-- Gateway with zlib-stream compression, sharding, and auto-reconnect
-- REST client with per-bucket rate limiting
-- Slash commands, buttons, select menus, modals, Components V2
-- Voice support with Opus encoding and libsodium encryption
-- Efficient caching with LRU/TTL strategies
-- Event dispatch via Julia's multiple dispatch
+---
 
-## Installation
+## ✨ Features
+
+- **Full v10 Support:** Compatible with the latest Discord API features.
+- **Ergonomic UI Macros:** Decorators for Slash Commands, Buttons, Modals, and Select Menus.
+- **High-Performance Voice:** Built-in support for Opus encoding and encryption for music/voice bots.
+- **Efficient Caching:** Automatic state management with customizable LRU/TTL strategies.
+- **Type Safety:** Leveraging Julia's type system to catch bugs before they happen.
+- **Async First:** Built on top of Julia's Tasks and Channels for non-blocking I/O.
+
+---
+
+## 📦 Installation
 
 ```julia
 using Pkg
 Pkg.add("Accord")
 ```
 
-## Quick Start
+---
+
+## 🚀 Quick Start
+
+Creating a bot is simple and expressive:
 
 ```julia
 using Accord
 
-client = Client("Bot YOUR_TOKEN_HERE";
+# 1. Initialize the client
+client = Client(ENV["DISCORD_TOKEN"];
     intents = IntentGuilds | IntentGuildMessages | IntentMessageContent
 )
 
-on_event(client, ::Ready) = @info "Bot is ready!"
+# 2. Register basic events
+on(client, ReadyEvent) do c, event
+    @info "Bot is online as $(event.user.username)!"
+end
 
-function on_event(client, event::MessageCreate)
-    event.message.content == "ping" && create_message(client, event.message.channel_id; content="pong")
+# 3. Use ergonomic UI macros for interactions
+@slash_command client "ping" "Check latency" function(ctx)
+    respond(ctx; content="Pong! 🏓")
+end
+
+# 4. Sync commands and start
+on(client, ReadyEvent) do c, event
+    sync_commands!(c, c.command_tree)
 end
 
 start(client)
 ```
 
-## Credits
+---
 
-Inspired by [Ekztazy.jl](https://github.com/Humans-of-Julia/Ekztazy.jl),
-[Discord.jl](https://github.com/Xh4H/Discord.jl), and
-[Discord.py](https://github.com/Rapptz/discord.py).
+## 📚 Documentation
 
-## License
+The documentation is organized into two main parts:
 
-MIT
+- **[API Reference](docs/API.md)**: Exhaustive list of types, functions, and events.
+- **[Cookbook](docs/cookbook/index.md)**: Step-by-step recipes for everything from basic bots to AI agents and voice transcription.
+
+### Popular Recipes:
+- [Your First Bot](docs/cookbook/01-basic-bot.md)
+- [Rich Embeds & Files](docs/cookbook/02-messages-and-embeds.md)
+- [Slash Commands & Autocomplete](docs/cookbook/03-slash-commands.md)
+- [Interactive Buttons & Modals](docs/cookbook/04-buttons-selects-modals.md)
+- [Voice Playback & Whisper AI](docs/cookbook/05-voice.md)
+- [LLM-Powered AI Agent](docs/cookbook/16-ai-agent.md)
+
+---
+
+## 🛠 Why Julia for Discord?
+
+Julia isn't just a language for math; its concurrency model (no GIL!) and multiple dispatch make it a compelling alternative to Python for real-time applications:
+
+| Feature | Python (discord.py) | Accord.jl |
+| :--- | :--- | :--- |
+| **Concurrency** | Cooperative (asyncio) | Parallel (Multi-threading) |
+| **Dispatch** | String-based/Decorators | Multiple Dispatch (Type-based) |
+| **Performance** | Interpreter overhead | JIT Compiled (C speed) |
+| **Integration** | Subprocess for ML/Data | Native (Flux.jl, Makie.jl, etc.) |
+
+---
+
+## 🤝 Credits & Inspiration
+
+Accord.jl is built on the shoulders of giants:
+- [discord.py](https://github.com/Rapptz/discord.py) for the API design philosophy.
+- [Discord.jl](https://github.com/Xh4H/Discord.jl) and [Ekztazy.jl](https://github.com/Humans-of-Julia/Ekztazy.jl) for early Julia implementations.
+
+## 📄 License
+
+MIT License. See [LICENSE](LICENSE) for details.
