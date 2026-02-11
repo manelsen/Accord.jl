@@ -30,7 +30,7 @@ Practical, copy-paste-ready recipes for building Discord bots in Julia with [Acc
 | # | Recipe | What you'll build |
 |---|--------|-------------------|
 | 05 | [Voice](05-voice.md) | Playback, recording, transcription |
-| 06 | [Permissions](06-permissions.md) | Computing permissions, guards, private channels |
+| 06 | [Permissions](06-permissions.md) | Computing permissions, `@check` guards, private channels |
 | 07 | [Caching](07-caching.md) | Cache strategies, per-resource config, memory tips |
 | 08 | [Sharding](08-sharding.md) | Multi-shard bots for 2,500+ guilds |
 | 09 | [Auto-Moderation](09-automod.md) | Keyword filters, spam protection, alert channels |
@@ -39,7 +39,7 @@ Practical, copy-paste-ready recipes for building Discord bots in Julia with [Acc
 
 | # | Recipe | What you'll build |
 |---|--------|-------------------|
-| 11 | [Architectural Patterns](11-architectural-patterns.md) | Project structure, middleware, error handling |
+| 11 | [Architectural Patterns](11-architectural-patterns.md) | Project structure, middleware, `@check` guards, `wait_for`, state injection |
 | 12 | [Performance](12-performance.md) | Type stability, precompilation, async patterns |
 | 13 | [Deployment](13-deploy.md) | Systemd, Docker, sysimages, health checks |
 | 14 | [Troubleshooting](14-troubleshooting.md) | Common errors, debug logging, gateway issues |

@@ -14,4 +14,5 @@ using Accord: has_flag, JSON3, StructTypes, BucketState, url,
     include("unit/test_ratelimiter.jl")
     include("unit/test_components.jl")
     include("unit/test_macros.jl")
+    include("unit/test_checks_waitfor.jl")
 end

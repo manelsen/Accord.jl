@@ -12,6 +12,7 @@ struct CommandDefinition
     options::Vector{Dict{String, Any}}
     handler::Function
     guild_id::Optional{Snowflake}
+    checks::Vector{Function}
 end
 
 """
@@ -42,8 +43,9 @@ function register_command!(tree::CommandTree, name::String, description::String,
     type::Int = ApplicationCommandTypes.CHAT_INPUT,
     options::Vector = [],
     guild_id::Optional{Snowflake} = missing,
+    checks::Vector = Function[],
 )
-    tree.commands[name] = CommandDefinition(name, description, type, options, handler, guild_id)
+    tree.commands[name] = CommandDefinition(name, description, type, options, handler, guild_id, Function[checks...])
 end
 
 """
@@ -143,6 +145,10 @@ function dispatch_interaction!(tree::CommandTree, client, interaction::Interacti
 
         cmd = get(tree.commands, data.name, nothing)
         if !isnothing(cmd)
+            # Run pre-execution checks (guards)
+            if !isempty(cmd.checks)
+                run_checks(cmd.checks, ctx) || return
+            end
             try
                 cmd.handler(ctx)
             catch e

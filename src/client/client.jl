@@ -1,16 +1,37 @@
 # Client — orchestrates Gateway, REST, and Cache
 
 """
+    EventWaiter
+
+Internal struct for `wait_for`. Holds the event type filter, predicate,
+and a `Channel` that receives the matching event.
+"""
+struct EventWaiter
+    event_type::Type{<:AbstractEvent}
+    check::Function
+    channel::Channel{Any}
+end
+
+"""
     Client
 
 The main Discord client that orchestrates gateway connections, REST API calls, and state caching.
 
 # Constructor
-    Client(token::String; intents=IntentAllNonPrivileged, num_shards=1, state_options...)
+    Client(token::String; intents=IntentAllNonPrivileged, num_shards=1, state=nothing, state_options...)
+
+# Fields
+- `state_data` — custom user state, accessible from handlers via `ctx.state`.
 
 # Example
 ```julia
-client = Client("Bot YOUR_TOKEN_HERE"; intents=IntentGuilds | IntentGuildMessages)
+# Inject custom state for database, config, etc.
+my_state = (db=my_database, config=my_config)
+client = Client("Bot YOUR_TOKEN_HERE";
+    intents=IntentGuilds | IntentGuildMessages,
+    state=my_state
+)
+
 on(client, MessageCreate) do c, event
     event.message.content == "ping" && create_message(c, event.message.channel_id; content="pong")
 end
@@ -22,6 +43,7 @@ mutable struct Client
     application_id::Nullable{Snowflake}
     intents::UInt32
     state::State
+    state_data::Any
     event_handler::EventHandler
     command_tree::CommandTree
     ratelimiter::RateLimiter
@@ -31,11 +53,14 @@ mutable struct Client
     running::Bool
     _event_loop_task::Nullable{Task}
     _supervisor_task::Nullable{Task}
+    _waiters::Vector{EventWaiter}
+    _waiters_lock::ReentrantLock
 end
 
 function Client(token::String;
     intents::Union{Intents, UInt32, Integer} = IntentAllNonPrivileged,
     num_shards::Int = 1,
+    state::Any = nothing,
     guild_strategy::CacheStrategy = CacheForever(),
     channel_strategy::CacheStrategy = CacheForever(),
     user_strategy::CacheStrategy = CacheLRU(10_000),
@@ -47,7 +72,7 @@ function Client(token::String;
 
     intents_val = intents isa Intents ? UInt32(intents.value) : UInt32(intents)
 
-    state = State(;
+    cache_state = State(;
         guild_strategy, channel_strategy, user_strategy,
         member_strategy, presence_strategy,
     )
@@ -62,6 +87,7 @@ function Client(token::String;
         actual_token,
         nothing,
         intents_val,
+        cache_state,
         state,
         EventHandler(),
         tree,
@@ -72,6 +98,8 @@ function Client(token::String;
         false,
         nothing,
         nothing,
+        EventWaiter[],
+        ReentrantLock(),
     )
 
     # Register interaction dispatcher
@@ -185,6 +213,97 @@ function wait_until_ready(client::Client)
     wait(client.ready)
 end
 
+"""
+    wait_for(check, client, EventType; timeout=30.0)
+
+Wait for a specific gateway event that matches a predicate.
+Uses Julia's `Channel` and `Timer` for an efficient, non-blocking wait
+that suspends only the current `Task`, not the entire bot.
+
+Returns the matching event, or `nothing` on timeout.
+
+# Arguments
+- `check::Function` — predicate `(event) -> Bool`. Only matching events are captured.
+- `client::Client` — the bot client.
+- `EventType` — the event type to listen for (e.g., `MessageCreate`).
+- `timeout` — seconds to wait before returning `nothing` (default: 30).
+
+# Example
+```julia
+@slash_command client "quiz" "Start a quiz" function(ctx)
+    respond(ctx; content="What color is the sky?")
+
+    event = wait_for(client, MessageCreate; timeout=30) do evt
+        evt.message.author.id == ctx.user.id &&
+        evt.message.channel_id == ctx.channel_id
+    end
+
+    if isnothing(event)
+        followup(ctx; content="⏰ Time's up!")
+    elseif event.message.content == "blue"
+        followup(ctx; content="✅ Correct!")
+    else
+        followup(ctx; content="❌ Wrong!")
+    end
+end
+```
+"""
+function wait_for(check::Function, client::Client, ::Type{T}; timeout::Real=30.0) where T <: AbstractEvent
+    ch = Channel{Any}(1)
+    waiter = EventWaiter(T, check, ch)
+
+    lock(client._waiters_lock) do
+        push!(client._waiters, waiter)
+    end
+
+    # Set up timeout to close the channel and clean up
+    timer = Timer(timeout) do _
+        lock(client._waiters_lock) do
+            filter!(w -> w !== waiter, client._waiters)
+        end
+        isopen(ch) && close(ch)
+    end
+
+    try
+        result = take!(ch)
+        close(timer)
+        return result
+    catch e
+        # Channel was closed (timeout) or interrupted
+        e isa InvalidStateException && return nothing
+        rethrow()
+    finally
+        lock(client._waiters_lock) do
+            filter!(w -> w !== waiter, client._waiters)
+        end
+    end
+end
+
+"""
+    _notify_waiters!(client::Client, event::AbstractEvent)
+
+Check registered waiters against an incoming event. If a waiter's predicate
+matches, deliver the event through its channel. Called from `_event_loop`.
+"""
+function _notify_waiters!(client::Client, event::AbstractEvent)
+    lock(client._waiters_lock) do
+        matched = Int[]
+        for (i, waiter) in enumerate(client._waiters)
+            if event isa waiter.event_type
+                try
+                    if waiter.check(event)
+                        isopen(waiter.channel) && put!(waiter.channel, event)
+                        push!(matched, i)
+                    end
+                catch e
+                    @debug "Waiter check error" exception=e
+                end
+            end
+        end
+        deleteat!(client._waiters, sort!(matched))
+    end
+end
+
 function _event_loop(client::Client)
     # All shards share the same events channel
     events = client.shards[1].events
@@ -222,6 +341,9 @@ function _event_loop(client::Client)
 
         # Dispatch to handlers
         dispatch_event!(client.event_handler, client, event)
+
+        # Notify any wait_for waiters
+        _notify_waiters!(client, event)
     end
 end
 

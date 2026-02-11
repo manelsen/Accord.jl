@@ -138,9 +138,9 @@ function register_moderation_commands!(client, config)
         command_option(type=ApplicationCommandOptionTypes.STRING, name="reason", description="Reason for kick"),
     ]
 
+    # Clean: guards are declared outside the handler
+    @check has_permissions(:KICK_MEMBERS)
     @slash_command client "kick" "Kick a member" options function(ctx)
-        require_mod(ctx) || return
-
         target = Snowflake(get_option(ctx, "user", ""))
         reason = get_option(ctx, "reason", "No reason")
 
@@ -376,19 +376,29 @@ end
 ### Avoid Global Mutable State
 
 ```julia
-# Instead of global Dicts, pass state through closures or structs
-
+# ✅ Preferred: inject state via Client's state parameter
 struct BotState
     warnings::Dict{Snowflake, Vector{String}}
     config::Dict{String, Any}
+    db::Any
 end
 
-function register_commands!(client, state::BotState)
+# State is accessible from handlers via ctx.state
+bot_state = BotState(Dict(), config, db_conn)
+client = Client(token; state=bot_state)
+
+function register_commands!(client)
     @slash_command client "warn" "Warn a user" function(ctx)
-        # state is captured by closure, not global
-        warns = get!(state.warnings, ctx.interaction.guild_id, String[])
+        # ctx.state is the BotState struct — no globals!
+        warns = get!(ctx.state.warnings, ctx.interaction.guild_id, String[])
         push!(warns, "warning")
         respond(ctx; content="Warning recorded ($(length(warns)) total)")
+    end
+
+    # Access database cleanly
+    @slash_command client "stats" "Show stats" function(ctx)
+        count = query_count(ctx.state.db, ctx.guild_id)
+        respond(ctx; content="Total: $count")
     end
 end
 ```

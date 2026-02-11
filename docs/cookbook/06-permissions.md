@@ -108,6 +108,60 @@ end
 
 ## 5. Permission Guard for Commands
 
+### Using `@check` Guards (Recommended)
+
+The cleanest way to protect commands — stack `@check` macros before `@slash_command`:
+
+```julia
+# Only users with BAN_MEMBERS permission can use this
+@check has_permissions(:BAN_MEMBERS)
+@slash_command client "ban" "Ban a user" options_ban function(ctx)
+    target_id = Snowflake(get_option(ctx, "user", ""))
+    reason = get_option(ctx, "reason", "No reason provided")
+
+    create_guild_ban(ctx.client.ratelimiter, ctx.interaction.guild_id, target_id;
+        token=ctx.client.token, body=Dict("delete_message_seconds" => 86400), reason=reason)
+
+    respond(ctx; content="Banned <@$(target_id)>. Reason: $reason")
+end
+```
+
+If the user lacks the required permission, an ephemeral "❌ You don't have permission"
+message is sent automatically — no boilerplate needed.
+
+#### Stacking Multiple Checks
+
+```julia
+@check is_in_guild()
+@check has_permissions(:MANAGE_GUILD)
+@check is_owner()
+@slash_command client "nuke" "Extreme action — owner only" function(ctx)
+    respond(ctx; content="💥 Done!")
+end
+```
+
+All checks must pass. If any fails, subsequent checks and the handler are skipped.
+
+#### Built-in Check Factories
+
+| Check | Description |
+|-------|-------------|
+| `has_permissions(perms...)` | Require Discord permissions. Accepts `Permissions` constants or symbols (`:ADMINISTRATOR`, `:BAN_MEMBERS`). |
+| `is_owner()` | Require the guild owner. |
+| `is_in_guild()` | Require guild context (deny DMs). |
+
+#### Accepts Both Permissions Constants and Symbols
+
+```julia
+# These are equivalent:
+@check has_permissions(PermManageGuild | PermBanMembers)
+@check has_permissions(:MANAGE_GUILD, :BAN_MEMBERS)
+```
+
+### Manual Approach (Legacy)
+
+For full control, you can still check permissions manually:
+
 ```julia
 function require_permissions(ctx, required::Permissions)
     guild_id = ctx.interaction.guild_id
@@ -145,20 +199,9 @@ end
 ### Mod-Only Command
 
 ```julia
-const MOD_PERMS = PermKickMembers | PermBanMembers | PermModerateMembers
-
-options_warn = [
-    command_option(type=ApplicationCommandOptionTypes.USER, name="user", description="User to warn", required=true),
-]
-
+# Using @check — clean and declarative
+@check has_permissions(:KICK_MEMBERS)
 @slash_command client "warn" "Warn a user" options_warn function(ctx)
-    # Check if user has any mod permission
-    perms = get_member_permissions(ctx.client, ctx.interaction.guild_id, ctx.interaction.member.user.id)
-    if !(has_flag(perms, PermKickMembers) || has_flag(perms, PermBanMembers) || has_flag(perms, PermModerateMembers))
-        respond(ctx; content="Moderators only.", ephemeral=true)
-        return
-    end
-    # ... handle warning
     respond(ctx; content="User warned.")
 end
 ```
@@ -166,13 +209,28 @@ end
 ### Admin-Only Command
 
 ```julia
+@check has_permissions(:ADMINISTRATOR)
 @slash_command client "config" "Configure the bot" function(ctx)
-    perms = get_member_permissions(ctx.client, ctx.interaction.guild_id, ctx.interaction.member.user.id)
-    if !has_flag(perms, PermAdministrator)
-        respond(ctx; content="Administrator only.", ephemeral=true)
-        return
-    end
     respond(ctx; content="Config panel:", ephemeral=true)
+end
+```
+
+### Owner-Only Command
+
+```julia
+@check is_owner()
+@slash_command client "shutdown" "Shut down the bot" function(ctx)
+    respond(ctx; content="Shutting down...")
+    stop(ctx.client)
+end
+```
+
+### Guild-Only (No DMs)
+
+```julia
+@check is_in_guild()
+@slash_command client "server-info" "Show server info" function(ctx)
+    respond(ctx; content="Guild: $(ctx.guild_id)")
 end
 ```
 
