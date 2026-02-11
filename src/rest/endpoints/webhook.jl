@@ -60,3 +60,14 @@ function delete_webhook_message(rl::RateLimiter, webhook_id::Snowflake, webhook_
     discord_delete(rl, "/webhooks/$(webhook_id)/$(webhook_token)/messages/$(message_id)"; token,
         major_params=["webhook_id" => string(webhook_id), "webhook_token" => webhook_token])
 end
+
+function modify_webhook_with_token(rl::RateLimiter, webhook_id::Snowflake, webhook_token::String; body::Dict, reason=nothing)
+    resp = discord_patch(rl, "/webhooks/$(webhook_id)/$(webhook_token)"; body, reason,
+        major_params=["webhook_id" => string(webhook_id), "webhook_token" => webhook_token])
+    parse_response(Webhook, resp)
+end
+
+function delete_webhook_with_token(rl::RateLimiter, webhook_id::Snowflake, webhook_token::String; reason=nothing)
+    discord_delete(rl, "/webhooks/$(webhook_id)/$(webhook_token)"; reason,
+        major_params=["webhook_id" => string(webhook_id), "webhook_token" => webhook_token])
+end
