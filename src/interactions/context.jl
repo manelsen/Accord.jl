@@ -18,13 +18,14 @@ end
 
 # --- Property accessors ---
 
+_is_present(x) = !ismissing(x) && !isnothing(x)
+
 """Get the user who triggered the interaction."""
 function Base.getproperty(ctx::InteractionContext, name::Symbol)
     if name === :user
         i = getfield(ctx, :interaction)
         # Prefer member.user in guild contexts, fall back to user
-        if !ismissing(i.member) && !isnothing(i.member) &&
-           !ismissing(i.member.user) && !isnothing(i.member.user)
+        if _is_present(i.member) && _is_present(i.member.user)
             return i.member.user
         end
         return ismissing(i.user) ? nothing : i.user

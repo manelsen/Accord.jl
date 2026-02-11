@@ -10,7 +10,7 @@ The handler receives `(client, message)` — the `Message` object directly.
 
 # Example
 ```julia
-@on_message client function(c, msg)
+@on_message client (c, msg) -> begin
     msg.content == "!ping" && reply(c, msg; content="Pong!")
 end
 ```
