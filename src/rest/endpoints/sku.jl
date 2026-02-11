@@ -35,6 +35,11 @@ function consume_entitlement(rl::RateLimiter, application_id::Snowflake, entitle
     discord_post(rl, "/applications/$(application_id)/entitlements/$(entitlement_id)/consume"; token)
 end
 
+function get_entitlement(rl::RateLimiter, application_id::Snowflake, entitlement_id::Snowflake; token::String)
+    resp = discord_get(rl, "/applications/$(application_id)/entitlements/$(entitlement_id)"; token)
+    parse_response(Entitlement, resp)
+end
+
 # --- Subscriptions ---
 function list_sku_subscriptions(rl::RateLimiter, sku_id::Snowflake; token::String, before=nothing, after=nothing, limit::Int=100, user_id=nothing)
     query = ["limit" => string(limit)]

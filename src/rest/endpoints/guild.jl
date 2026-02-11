@@ -198,3 +198,13 @@ function modify_guild_onboarding(rl::RateLimiter, guild_id::Snowflake; token::St
     resp = discord_put(rl, "/guilds/$(guild_id)/onboarding"; token, body, reason, major_params=["guild_id" => string(guild_id)])
     parse_response(Onboarding, resp)
 end
+
+function get_guild_role(rl::RateLimiter, guild_id::Snowflake, role_id::Snowflake; token::String)
+    resp = discord_get(rl, "/guilds/$(guild_id)/roles/$(role_id)"; token, major_params=["guild_id" => string(guild_id)])
+    parse_response(Role, resp)
+end
+
+function add_guild_member(rl::RateLimiter, guild_id::Snowflake, user_id::Snowflake; token::String, body::Dict)
+    resp = discord_put(rl, "/guilds/$(guild_id)/members/$(user_id)"; token, body, major_params=["guild_id" => string(guild_id)])
+    parse_response(Member, resp)
+end

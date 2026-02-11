@@ -112,3 +112,22 @@ end
 function delete_followup_message(rl::RateLimiter, application_id::Snowflake, interaction_token::String, message_id::Snowflake; token::String)
     discord_delete(rl, "/webhooks/$(application_id)/$(interaction_token)/messages/$(message_id)"; token)
 end
+
+# --- Application Command Permissions ---
+function get_guild_application_command_permissions(rl::RateLimiter, application_id::Snowflake, guild_id::Snowflake; token::String)
+    resp = discord_get(rl, "/applications/$(application_id)/guilds/$(guild_id)/commands/permissions"; token,
+        major_params=["guild_id" => string(guild_id)])
+    JSON3.read(resp.body, Vector{Dict{String, Any}})
+end
+
+function get_application_command_permissions(rl::RateLimiter, application_id::Snowflake, guild_id::Snowflake, command_id::Snowflake; token::String)
+    resp = discord_get(rl, "/applications/$(application_id)/guilds/$(guild_id)/commands/$(command_id)/permissions"; token,
+        major_params=["guild_id" => string(guild_id)])
+    JSON3.read(resp.body, Dict{String, Any})
+end
+
+function edit_application_command_permissions(rl::RateLimiter, application_id::Snowflake, guild_id::Snowflake, command_id::Snowflake; token::String, body::Dict)
+    resp = discord_put(rl, "/applications/$(application_id)/guilds/$(guild_id)/commands/$(command_id)/permissions"; token, body,
+        major_params=["guild_id" => string(guild_id)])
+    JSON3.read(resp.body, Dict{String, Any})
+end

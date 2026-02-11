@@ -83,6 +83,7 @@ include("rest/endpoints/channel.jl")
 include("rest/endpoints/message.jl")
 include("rest/endpoints/user.jl")
 include("rest/endpoints/interaction.jl")
+include("rest/endpoints/application.jl")
 include("rest/endpoints/webhook.jl")
 include("rest/endpoints/emoji.jl")
 include("rest/endpoints/sticker.jl")
@@ -230,42 +231,124 @@ export update_voice_state, update_presence, request_guild_members
 # State & Cache
 export State, Store, CacheStrategy, CacheForever, CacheNever, CacheLRU, CacheTTL
 
-# REST endpoints (module-level functions)
+# REST endpoints — Guild
 export get_guild, get_guild_preview, modify_guild, delete_guild
-export get_guild_channels, create_guild_channel
-export get_guild_member, list_guild_members, search_guild_members, modify_guild_member
+export get_guild_channels, create_guild_channel, modify_guild_channel_positions
+export list_active_guild_threads
+export get_guild_member, list_guild_members, search_guild_members
+export modify_guild_member, modify_current_member, add_guild_member
 export add_guild_member_role, remove_guild_member_role, remove_guild_member
-export get_guild_bans, create_guild_ban, remove_guild_ban, bulk_guild_ban
-export get_guild_roles, create_guild_role, modify_guild_role, delete_guild_role
-export get_guild_invites, get_guild_integrations
+export get_guild_bans, get_guild_ban, create_guild_ban, remove_guild_ban, bulk_guild_ban
+export get_guild_roles, get_guild_role, create_guild_role
+export modify_guild_role_positions, modify_guild_role, delete_guild_role
+export get_guild_prune_count, begin_guild_prune
+export get_guild_voice_regions, get_guild_invites
+export get_guild_integrations, delete_guild_integration
+export get_guild_widget_settings, modify_guild_widget, get_guild_widget
+export get_guild_vanity_url
+export get_guild_welcome_screen, modify_guild_welcome_screen
+export get_guild_onboarding, modify_guild_onboarding
+
+# REST endpoints — Guild Template
+export get_guild_templates, create_guild_template, sync_guild_template
+export modify_guild_template, delete_guild_template, create_guild_from_template
+
+# REST endpoints — Channel
 export get_channel, modify_channel, delete_channel
-export get_channel_messages, get_channel_message
+export edit_channel_permissions, delete_channel_permission
+export get_channel_invites, create_channel_invite
+export follow_announcement_channel, trigger_typing_indicator
+export get_pinned_messages, pin_message, unpin_message
+export start_thread_from_message, start_thread_without_message, start_thread_in_forum
+export join_thread, add_thread_member, leave_thread, remove_thread_member
+export get_thread_member, list_thread_members
+export list_public_archived_threads, list_private_archived_threads
+export list_joined_private_archived_threads
+
+# REST endpoints — Message
+export get_channel_messages, get_channel_message, create_message, edit_message, delete_message
 export crosspost_message, bulk_delete_messages
 export create_reaction, delete_own_reaction, delete_user_reaction, get_reactions
 export delete_all_reactions, delete_all_reactions_for_emoji
-export trigger_typing_indicator, get_pinned_messages, pin_message, unpin_message
-export start_thread_from_message, start_thread_without_message, start_thread_in_forum
-export get_current_user, get_user, modify_current_user, create_dm
+export get_answer_voters, end_poll
+
+# REST endpoints — User
+export get_current_user, get_user, modify_current_user
+export get_current_user_guilds, get_current_user_guild_member
+export leave_guild, create_dm, get_current_user_connections
+export get_current_user_application_role_connection
+export update_current_user_application_role_connection
+
+# REST endpoints — Application Commands & Interactions
 export get_global_application_commands, create_global_application_command
+export get_global_application_command
 export edit_global_application_command, delete_global_application_command
 export bulk_overwrite_global_application_commands
 export get_guild_application_commands, create_guild_application_command
+export get_guild_application_command
+export edit_guild_application_command, delete_guild_application_command
 export bulk_overwrite_guild_application_commands
-export create_interaction_response, edit_original_interaction_response
-export delete_original_interaction_response
-export create_followup_message, edit_followup_message, delete_followup_message
-export create_webhook, get_webhook, modify_webhook, delete_webhook, execute_webhook
-export list_guild_emojis, create_guild_emoji, modify_guild_emoji, delete_guild_emoji
-export get_sticker, list_guild_stickers, create_guild_sticker
+export get_guild_application_command_permissions
+export get_application_command_permissions, edit_application_command_permissions
+export create_interaction_response, get_original_interaction_response
+export edit_original_interaction_response, delete_original_interaction_response
+export create_followup_message, get_followup_message
+export edit_followup_message, delete_followup_message
+
+# REST endpoints — Application
+export get_current_application, modify_current_application
+export get_application_role_connection_metadata_records
+export update_application_role_connection_metadata_records
+
+# REST endpoints — Webhook
+export create_webhook, get_channel_webhooks, get_guild_webhooks
+export get_webhook, get_webhook_with_token
+export modify_webhook, modify_webhook_with_token
+export delete_webhook, delete_webhook_with_token
+export execute_webhook
+export get_webhook_message, edit_webhook_message, delete_webhook_message
+
+# REST endpoints — Emoji
+export list_guild_emojis, get_guild_emoji, create_guild_emoji
+export modify_guild_emoji, delete_guild_emoji
+export list_application_emojis, get_application_emoji, create_application_emoji
+export modify_application_emoji, delete_application_emoji
+
+# REST endpoints — Sticker
+export get_sticker, list_sticker_packs
+export list_guild_stickers, get_guild_sticker, create_guild_sticker
+export modify_guild_sticker, delete_guild_sticker
+
+# REST endpoints — Invite & Audit Log
 export get_invite, delete_invite
 export get_guild_audit_log
-export list_auto_moderation_rules, create_auto_moderation_rule
+
+# REST endpoints — Auto Moderation
+export list_auto_moderation_rules, get_auto_moderation_rule
+export create_auto_moderation_rule, modify_auto_moderation_rule, delete_auto_moderation_rule
+
+# REST endpoints — Scheduled Events
 export list_scheduled_events, create_guild_scheduled_event
+export get_guild_scheduled_event, modify_guild_scheduled_event, delete_guild_scheduled_event
+export get_guild_scheduled_event_users
+
+# REST endpoints — Stage Instance
 export create_stage_instance, get_stage_instance, modify_stage_instance, delete_stage_instance
+
+# REST endpoints — Soundboard
+export list_default_soundboard_sounds, list_guild_soundboard_sounds
+export get_guild_soundboard_sound, create_guild_soundboard_sound
+export modify_guild_soundboard_sound, delete_guild_soundboard_sound
+export send_soundboard_sound
+
+# REST endpoints — SKU, Entitlement, Subscription
+export list_skus
+export list_entitlements, get_entitlement, create_test_entitlement
+export delete_test_entitlement, consume_entitlement
+export list_sku_subscriptions, get_sku_subscription
+
+# REST endpoints — Voice
 export list_voice_regions
-export list_skus, list_entitlements
-export get_guild_templates, create_guild_template, sync_guild_template
-export modify_guild_template, delete_guild_template, create_guild_from_template
 
 # Interactions
 export InteractionContext, get_options, get_option, custom_id, selected_values, modal_values, target
