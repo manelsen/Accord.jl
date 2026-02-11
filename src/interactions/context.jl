@@ -16,6 +16,27 @@ function InteractionContext(client::Client, interaction::Interaction)
     InteractionContext(client, interaction, Ref(false), Ref(false))
 end
 
+# --- Property accessors ---
+
+"""Get the user who triggered the interaction."""
+function Base.getproperty(ctx::InteractionContext, name::Symbol)
+    if name === :user
+        i = getfield(ctx, :interaction)
+        # Prefer member.user in guild contexts, fall back to user
+        if !ismissing(i.member) && !isnothing(i.member) &&
+           !ismissing(i.member.user) && !isnothing(i.member.user)
+            return i.member.user
+        end
+        return ismissing(i.user) ? nothing : i.user
+    elseif name === :guild_id
+        return getfield(ctx, :interaction).guild_id
+    elseif name === :channel_id
+        return getfield(ctx, :interaction).channel_id
+    else
+        return getfield(ctx, name)
+    end
+end
+
 """Get the interaction data options as a Dict."""
 function get_options(ctx::InteractionContext)
     data = ctx.interaction.data

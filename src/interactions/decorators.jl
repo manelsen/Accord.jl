@@ -1,6 +1,33 @@
 # Macro-based decorators for registering commands and component handlers
 
 """
+    @on_message client handler
+
+Register a `MessageCreate` handler that automatically skips bot messages and
+messages with missing `author` or `content`.
+
+The handler receives `(client, message)` — the `Message` object directly.
+
+# Example
+```julia
+@on_message client function(c, msg)
+    msg.content == "!ping" && reply(c, msg; content="Pong!")
+end
+```
+"""
+macro on_message(client, handler)
+    quote
+        $(@__MODULE__).on($(esc(client)), $(@__MODULE__).MessageCreate) do _c_, _event_
+            _msg_ = _event_.message
+            ismissing(_msg_.author) && return
+            ismissing(_msg_.content) && return
+            !ismissing(_msg_.author.bot) && _msg_.author.bot == true && return
+            $(esc(handler))(_c_, _msg_)
+        end
+    end
+end
+
+"""
     @slash_command client [guild_id] name description [options] handler
 
 Register a slash command with the client's command tree.

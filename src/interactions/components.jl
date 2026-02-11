@@ -149,6 +149,35 @@ function embed(;
     e
 end
 
+"""Create an embed field dict."""
+function embed_field(name::String, value::String; inline::Bool=false)
+    d = Dict{String, Any}("name" => name, "value" => value)
+    inline && (d["inline"] = true)
+    d
+end
+
+"""Create an embed footer dict."""
+function embed_footer(text::String; icon_url::String="")
+    d = Dict{String, Any}("text" => text)
+    !isempty(icon_url) && (d["icon_url"] = icon_url)
+    d
+end
+
+"""Create an embed author dict."""
+function embed_author(name::String; url::String="", icon_url::String="")
+    d = Dict{String, Any}("name" => name)
+    !isempty(url) && (d["url"] = url)
+    !isempty(icon_url) && (d["icon_url"] = icon_url)
+    d
+end
+
+"""Create an activity dict for `update_presence`."""
+function activity(name::String, type::Int=ActivityTypes.GAME; url::String="")
+    d = Dict{String, Any}("name" => name, "type" => type)
+    !isempty(url) && (d["url"] = url)
+    d
+end
+
 """Create a command option dict."""
 function command_option(;
     type::Int,
