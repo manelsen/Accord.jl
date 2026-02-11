@@ -267,7 +267,7 @@ export CommandTree, CommandDefinition
 export register_command!, register_component!, register_modal!, register_autocomplete!
 export sync_commands!, dispatch_interaction!
 export @slash_command, @button_handler, @select_handler, @modal_handler, @autocomplete
-export @on_message
+export @on_message, @option
 
 # Component builders
 export action_row, button, string_select, select_option
