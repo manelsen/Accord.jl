@@ -137,4 +137,41 @@
         @test si.id == Snowflake(3001)
         @test si.topic == "Music Session"
     end
+
+    @testset "GuildTemplate" begin
+        json = """{
+            "code":"abc123",
+            "name":"Test Template",
+            "description":"A test template",
+            "usage_count":5,
+            "creator_id":"999",
+            "created_at":"2024-01-01T00:00:00+00:00",
+            "updated_at":"2024-06-01T00:00:00+00:00",
+            "source_guild_id":"888"
+        }"""
+        tmpl = JSON3.read(json, GuildTemplate)
+        @test tmpl.code == "abc123"
+        @test tmpl.name == "Test Template"
+        @test tmpl.description == "A test template"
+        @test tmpl.usage_count == 5
+        @test tmpl.creator_id == Snowflake(999)
+        @test tmpl.source_guild_id == Snowflake(888)
+
+        # Round-trip
+        json2 = JSON3.write(tmpl)
+        tmpl2 = JSON3.read(json2, GuildTemplate)
+        @test tmpl2.code == tmpl.code
+        @test tmpl2.name == tmpl.name
+        @test tmpl2.usage_count == tmpl.usage_count
+    end
+
+    @testset "GuildTemplate defaults" begin
+        tmpl = GuildTemplate()
+        @test tmpl.code == ""
+        @test tmpl.name == ""
+        @test ismissing(tmpl.description)
+        @test tmpl.usage_count == 0
+        @test ismissing(tmpl.creator)
+        @test ismissing(tmpl.is_dirty)
+    end
 end

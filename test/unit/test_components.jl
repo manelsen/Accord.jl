@@ -160,4 +160,106 @@
         @test a2["type"] == ActivityTypes.STREAMING
         @test a2["url"] == "https://twitch.tv/test"
     end
+
+    # === Components V2 ===
+
+    @testset "container" begin
+        c = container([text_display("Hello")])
+        @test c["type"] == ComponentTypes.CONTAINER
+        @test length(c["components"]) == 1
+        @test !haskey(c, "accent_color")
+        @test !haskey(c, "spoiler")
+
+        c2 = container([text_display("Hi")]; color=0xFF0000, spoiler=true)
+        @test c2["accent_color"] == 0xFF0000
+        @test c2["spoiler"] == true
+    end
+
+    @testset "section" begin
+        s = section([text_display("Content")])
+        @test s["type"] == ComponentTypes.SECTION
+        @test length(s["components"]) == 1
+        @test !haskey(s, "accessory")
+
+        thumb = thumbnail(media=unfurled_media("https://example.com/img.png"))
+        s2 = section([text_display("With thumb")]; accessory=thumb)
+        @test s2["accessory"]["type"] == ComponentTypes.THUMBNAIL
+    end
+
+    @testset "text_display" begin
+        td = text_display("Hello, world!")
+        @test td["type"] == ComponentTypes.TEXT_DISPLAY
+        @test td["content"] == "Hello, world!"
+    end
+
+    @testset "thumbnail" begin
+        m = unfurled_media("https://example.com/img.png")
+        t = thumbnail(media=m)
+        @test t["type"] == ComponentTypes.THUMBNAIL
+        @test t["media"]["url"] == "https://example.com/img.png"
+        @test !haskey(t, "description")
+        @test !haskey(t, "spoiler")
+
+        t2 = thumbnail(media=m, description="A thumbnail", spoiler=true)
+        @test t2["description"] == "A thumbnail"
+        @test t2["spoiler"] == true
+    end
+
+    @testset "media_gallery" begin
+        items = [
+            media_gallery_item(media=unfurled_media("https://example.com/1.png")),
+            media_gallery_item(media=unfurled_media("https://example.com/2.png"), description="Image 2", spoiler=true),
+        ]
+        mg = media_gallery(items)
+        @test mg["type"] == ComponentTypes.MEDIA_GALLERY
+        @test length(mg["items"]) == 2
+        @test mg["items"][2]["description"] == "Image 2"
+        @test mg["items"][2]["spoiler"] == true
+        @test !haskey(mg["items"][1], "description")
+    end
+
+    @testset "file_component" begin
+        m = unfurled_media("https://example.com/doc.pdf")
+        f = file_component(media=m)
+        @test f["type"] == ComponentTypes.FILE
+        @test f["file"]["url"] == "https://example.com/doc.pdf"
+        @test !haskey(f, "spoiler")
+
+        f2 = file_component(media=m, spoiler=true)
+        @test f2["spoiler"] == true
+    end
+
+    @testset "separator" begin
+        s = separator()
+        @test s["type"] == ComponentTypes.SEPARATOR
+        @test s["divider"] == true
+        @test !haskey(s, "spacing")
+
+        s2 = separator(divider=false, spacing=2)
+        @test s2["divider"] == false
+        @test s2["spacing"] == 2
+    end
+
+    @testset "unfurled_media" begin
+        m = unfurled_media("https://example.com/test.png")
+        @test m["url"] == "https://example.com/test.png"
+    end
+
+    @testset "v2 composition" begin
+        # Build a full v2 layout
+        layout = container([
+            section([text_display("Welcome!")]; accessory=thumbnail(media=unfurled_media("https://example.com/avatar.png"))),
+            separator(),
+            media_gallery([
+                media_gallery_item(media=unfurled_media("https://example.com/1.png")),
+            ]),
+        ]; color=0x5865F2)
+
+        @test layout["type"] == ComponentTypes.CONTAINER
+        @test length(layout["components"]) == 3
+        @test layout["components"][1]["type"] == ComponentTypes.SECTION
+        @test layout["components"][2]["type"] == ComponentTypes.SEPARATOR
+        @test layout["components"][3]["type"] == ComponentTypes.MEDIA_GALLERY
+        @test layout["accent_color"] == 0x5865F2
+    end
 end

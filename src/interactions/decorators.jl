@@ -3,9 +3,10 @@
 """
     @check check_function
 
-Add a pre-execution check (guard) to the next `@slash_command`.
+Add a pre-execution check (guard) to the next `@slash_command`, `@user_command`,
+or `@message_command`.
 Checks are stacked — multiple `@check` macros accumulate and are
-all drained when `@slash_command` is invoked.
+all drained when a command macro is invoked.
 
 Check functions receive an `InteractionContext` and return `true` (pass)
 or `false` (deny). If a check fails, the command handler is never called
@@ -15,13 +16,14 @@ and a default "permission denied" ephemeral message is sent.
 - `has_permissions(perms...)` — require specific permissions
 - `is_owner()` — require guild owner
 - `is_in_guild()` — require guild context (not DMs)
+- `cooldown(seconds; per=:user)` — rate-limit per user/guild/channel/global
 
 # Example
 ```julia
 @check has_permissions(:MANAGE_GUILD)
 @check is_owner()
 @slash_command client "nuke" "Owner-only danger command" function(ctx)
-    respond(ctx; content="💥 Boom!")
+    respond(ctx; content="Boom!")
 end
 ```
 """
@@ -204,6 +206,86 @@ end
 macro autocomplete(client, command_name, handler)
     quote
         $(@__MODULE__).register_autocomplete!($(esc(client)).command_tree, $(esc(command_name)), $(esc(handler)))
+    end
+end
+
+"""
+    @user_command client [guild_id] name handler
+
+Register a User Context Menu command (right-click on a user).
+Context menu commands have no description or options.
+
+# Example
+```julia
+@user_command client "User Info" function(ctx)
+    user = target(ctx)
+    respond(ctx; content="User: \$(user.username)")
+end
+
+# Guild-specific:
+@user_command client guild_id "Warn User" function(ctx)
+    user = target(ctx)
+    respond(ctx; content="Warned \$(user.username)", ephemeral=true)
+end
+```
+"""
+macro user_command(client, args...)
+    if length(args) == 2
+        # @user_command client name handler
+        name, handler = args
+        return quote
+            _checks_ = $(@__MODULE__).drain_pending_checks!()
+            $(@__MODULE__).register_command!($(esc(client)).command_tree, $(esc(name)), "", $(esc(handler));
+                type=$(@__MODULE__).ApplicationCommandTypes.USER, checks=_checks_)
+        end
+    elseif length(args) == 3
+        # @user_command client guild_id name handler
+        guild_id, name, handler = args
+        return quote
+            _checks_ = $(@__MODULE__).drain_pending_checks!()
+            $(@__MODULE__).register_command!($(esc(client)).command_tree, $(esc(name)), "", $(esc(handler));
+                type=$(@__MODULE__).ApplicationCommandTypes.USER,
+                guild_id=$(@__MODULE__).Snowflake($(esc(guild_id))), checks=_checks_)
+        end
+    else
+        error("Invalid @user_command syntax. Expected: @user_command client [guild_id] name handler")
+    end
+end
+
+"""
+    @message_command client [guild_id] name handler
+
+Register a Message Context Menu command (right-click on a message).
+Context menu commands have no description or options.
+
+# Example
+```julia
+@message_command client "Bookmark" function(ctx)
+    msg = target(ctx)
+    respond(ctx; content="Bookmarked message \$(msg.id)", ephemeral=true)
+end
+```
+"""
+macro message_command(client, args...)
+    if length(args) == 2
+        # @message_command client name handler
+        name, handler = args
+        return quote
+            _checks_ = $(@__MODULE__).drain_pending_checks!()
+            $(@__MODULE__).register_command!($(esc(client)).command_tree, $(esc(name)), "", $(esc(handler));
+                type=$(@__MODULE__).ApplicationCommandTypes.MESSAGE, checks=_checks_)
+        end
+    elseif length(args) == 3
+        # @message_command client guild_id name handler
+        guild_id, name, handler = args
+        return quote
+            _checks_ = $(@__MODULE__).drain_pending_checks!()
+            $(@__MODULE__).register_command!($(esc(client)).command_tree, $(esc(name)), "", $(esc(handler));
+                type=$(@__MODULE__).ApplicationCommandTypes.MESSAGE,
+                guild_id=$(@__MODULE__).Snowflake($(esc(guild_id))), checks=_checks_)
+        end
+    else
+        error("Invalid @message_command syntax. Expected: @message_command client [guild_id] name handler")
     end
 end
 

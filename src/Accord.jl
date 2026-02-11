@@ -47,6 +47,7 @@ include("types/poll.jl")
 include("types/channel.jl")
 include("types/message.jl")
 include("types/guild.jl")
+include("types/guild_template.jl")
 
 # Complex types
 include("types/interaction.jl")
@@ -77,6 +78,7 @@ include("rest/route.jl")
 include("rest/ratelimiter.jl")
 include("rest/http_client.jl")
 include("rest/endpoints/guild.jl")
+include("rest/endpoints/guild_template.jl")
 include("rest/endpoints/channel.jl")
 include("rest/endpoints/message.jl")
 include("rest/endpoints/user.jl")
@@ -136,6 +138,7 @@ export Presence, Activity, VoiceState, VoiceRegion
 export Integration, Connection, SoundboardSound, StageInstance
 export SKU, Entitlement, Subscription
 export Onboarding, OnboardingPrompt
+export GuildTemplate
 export Overwrite, Ban, ThreadMetadata, ThreadMember, ForumTag
 export MessageReference, MessageActivity, AllowedMentions
 export WelcomeScreen, WelcomeScreenChannel
@@ -261,24 +264,29 @@ export list_scheduled_events, create_guild_scheduled_event
 export create_stage_instance, get_stage_instance, modify_stage_instance, delete_stage_instance
 export list_voice_regions
 export list_skus, list_entitlements
+export get_guild_templates, create_guild_template, sync_guild_template
+export modify_guild_template, delete_guild_template, create_guild_from_template
 
 # Interactions
-export InteractionContext, get_options, get_option, custom_id, selected_values, modal_values
+export InteractionContext, get_options, get_option, custom_id, selected_values, modal_values, target
 export respond, defer, edit_response, followup, show_modal
 export CommandTree, CommandDefinition
 export register_command!, register_component!, register_modal!, register_autocomplete!
 export sync_commands!, dispatch_interaction!
 export @slash_command, @button_handler, @select_handler, @modal_handler, @autocomplete
+export @user_command, @message_command
 export @on_message, @option, @check
 
 # Check guards
-export has_permissions, is_owner, is_in_guild, run_checks
+export has_permissions, is_owner, is_in_guild, cooldown, run_checks
 
 # Component builders
 export action_row, button, string_select, select_option
 export user_select, role_select, mentionable_select, channel_select
 export text_input, embed, command_option
 export embed_field, embed_footer, embed_author, activity
+export container, section, text_display, thumbnail
+export media_gallery, media_gallery_item, file_component, separator, unfurled_media
 
 # Voice
 export VoiceClient, connect!, disconnect!
