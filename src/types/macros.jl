@@ -1,4 +1,3 @@
-"""
     @discord_struct Name begin
         field::Type
         field::Optional{Type}  # = missing
@@ -11,7 +10,6 @@ Generate a Discord API struct with:
 - All Nullable{T} fields default to `nothing`
 - All other fields get sensible defaults for zero-arg construction
 - JSON3/StructTypes Mutable() integration
-"""
 macro discord_struct(name, block)
     field_exprs = []
     
@@ -105,7 +103,7 @@ function _default_for_type(ftype)
     end
 
     if sym == :Snowflake
-        return :($Accord.Snowflake(0))
+        return :(Accord.Snowflake(0))
     elseif sym == :String
         return ""
     elseif sym == :Int || sym == :Int64 || sym == :Int32
