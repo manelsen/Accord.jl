@@ -149,21 +149,41 @@ function embed(;
     e
 end
 
-"""Create an embed field dict."""
+"""
+    embed_field(name, value; inline=false)
+
+Create an embed field dict. Use with the `embed()` builder's `fields` parameter.
+
+# Example
+```julia
+embed(title="Info", fields=[
+    embed_field("Name", "Accord.jl"; inline=true),
+    embed_field("Version", "0.1.0"; inline=true),
+])
+```
+"""
 function embed_field(name::String, value::String; inline::Bool=false)
     d = Dict{String, Any}("name" => name, "value" => value)
     inline && (d["inline"] = true)
     d
 end
 
-"""Create an embed footer dict."""
+"""
+    embed_footer(text; icon_url="")
+
+Create an embed footer dict. Use with the `embed()` builder's `footer` parameter.
+"""
 function embed_footer(text::String; icon_url::String="")
     d = Dict{String, Any}("text" => text)
     !isempty(icon_url) && (d["icon_url"] = icon_url)
     d
 end
 
-"""Create an embed author dict."""
+"""
+    embed_author(name; url="", icon_url="")
+
+Create an embed author dict. Use with the `embed()` builder's `author` parameter.
+"""
 function embed_author(name::String; url::String="", icon_url::String="")
     d = Dict{String, Any}("name" => name)
     !isempty(url) && (d["url"] = url)
@@ -171,7 +191,17 @@ function embed_author(name::String; url::String="", icon_url::String="")
     d
 end
 
-"""Create an activity dict for `update_presence`."""
+"""
+    activity(name, type=ActivityTypes.GAME; url="")
+
+Create an activity dict for use with `update_presence`. The `type` should be a constant
+from `ActivityTypes` (e.g. `GAME`, `STREAMING`, `LISTENING`, `WATCHING`, `COMPETING`).
+
+# Example
+```julia
+update_presence(client; activities=[activity("Accord.jl", ActivityTypes.GAME)])
+```
+"""
 function activity(name::String, type::Int=ActivityTypes.GAME; url::String="")
     d = Dict{String, Any}("name" => name, "type" => type)
     !isempty(url) && (d["url"] = url)
