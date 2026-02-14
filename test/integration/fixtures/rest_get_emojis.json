@@ -1,0 +1,47 @@
+[
+    {
+        "items": [
+            {
+                "user": {
+                    "collectibles": null,
+                    "username": "voiddragon",
+                    "accent_color": null,
+                    "display_name_styles": null,
+                    "global_name": "Void Dragon",
+                    "id": "383221796700291082",
+                    "clan": {
+                        "identity_guild_id": "1346756824233148527",
+                        "tag": "Z.ai",
+                        "badge": "7f968d34689b032120d7a0f2a3d69b83",
+                        "identity_enabled": true
+                    },
+                    "primary_guild": {
+                        "identity_guild_id": "1346756824233148527",
+                        "tag": "Z.ai",
+                        "badge": "7f968d34689b032120d7a0f2a3d69b83",
+                        "identity_enabled": true
+                    },
+                    "discriminator": "0",
+                    "public_flags": 0,
+                    "banner_color": null,
+                    "banner": null,
+                    "flags": 0,
+                    "avatar_decoration_data": {
+                        "expires_at": null,
+                        "asset": "a_94febf08c37b21ee5ed92c49ef98bf00",
+                        "sku_id": "1366494385583165630"
+                    },
+                    "avatar": "904d256347c060ddb0071fa23a13c6ec"
+                },
+                "name": "UniHands",
+                "animated": false,
+                "managed": false,
+                "id": "1457062926287376497",
+                "roles": [
+                ],
+                "available": true,
+                "require_colons": true
+            }
+        ]
+    }
+]
