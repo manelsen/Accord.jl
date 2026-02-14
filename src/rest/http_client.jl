@@ -61,7 +61,7 @@ function discord_request(
     result_ch = Channel{Any}(1)
     job = RestJob(route, route.method, request_url, headers, request_body, result_ch)
 
-    return submit_rest(rl, job)
+    return @mock submit_rest(rl, job)
 end
 
 """

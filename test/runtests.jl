@@ -22,6 +22,7 @@ using Accord: has_flag, JSON3, StructTypes, BucketState, url,
     if "integration" in ARGS || get(ENV, "ACCORD_INTEGRATION_TESTS", "") == "1"
         @testset "Integration" begin
             include("integration/test_fixtures.jl")
+            include("integration/test_rest_mock.jl")
         end
     end
 

@@ -6,6 +6,11 @@ const API_BASE = "https://discord.com/api/v$(API_VERSION)"
 const ACCORD_VERSION = v"0.1.0"
 const USER_AGENT = "DiscordBot (Accord.jl, $ACCORD_VERSION)"
 
+# Mocking support (dummy macro for production)
+macro mock(expr)
+    esc(expr)
+end
+
 # === Type aliases ===
 const Optional{T} = Union{T, Missing}
 const Nullable{T} = Union{T, Nothing}
