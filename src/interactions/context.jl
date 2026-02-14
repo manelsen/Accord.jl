@@ -25,8 +25,9 @@ function Base.getproperty(ctx::InteractionContext, name::Symbol)
     if name === :user || name === :author
         i = getfield(ctx, :interaction)
         # Prefer member.user in guild contexts, fall back to user
-        if _is_present(i.member) && _is_present(i.member.user)
-            return i.member.user
+        member = i.member
+        if _is_present(member) && _is_present(member.user)
+            return member.user
         end
         return ismissing(i.user) ? nothing : i.user
     elseif name === :guild_id
@@ -48,10 +49,11 @@ Get all interaction data options as a dictionary mapping option names to values.
 function get_options(ctx::InteractionContext)
     data = ctx.interaction.data
     ismissing(data) && return Dict{String, Any}()
-    ismissing(data.options) && return Dict{String, Any}()
+    options = data.options
+    ismissing(options) && return Dict{String, Any}()
 
     result = Dict{String, Any}()
-    for opt in data.options
+    for opt in options
         if !ismissing(opt.value)
             result[opt.name] = opt.value
         end
@@ -77,8 +79,9 @@ Get the `custom_id` for component interactions (buttons, selects) or modal submi
 function custom_id(ctx::InteractionContext)
     data = ctx.interaction.data
     ismissing(data) && return nothing
-    ismissing(data.custom_id) && return nothing
-    return data.custom_id
+    cid = data.custom_id
+    ismissing(cid) && return nothing
+    return cid
 end
 
 """
@@ -89,8 +92,9 @@ Get the selected values for a select menu interaction.
 function selected_values(ctx::InteractionContext)
     data = ctx.interaction.data
     ismissing(data) && return String[]
-    ismissing(data.values) && return String[]
-    return data.values
+    vals = data.values
+    ismissing(vals) && return String[]
+    return vals
 end
 
 """
@@ -101,14 +105,18 @@ Get modal component values as a dictionary mapping `custom_id` to the input valu
 function modal_values(ctx::InteractionContext)
     data = ctx.interaction.data
     ismissing(data) && return Dict{String, String}()
-    ismissing(data.components) && return Dict{String, String}()
+    rows = data.components
+    ismissing(rows) && return Dict{String, String}()
 
     result = Dict{String, String}()
-    for row in data.components
-        if !ismissing(row.components)
-            for comp in row.components
-                if !ismissing(comp.custom_id) && !ismissing(comp.value)
-                    result[comp.custom_id] = comp.value
+    for row in rows
+        inner = row.components
+        if !ismissing(inner)
+            for comp in inner
+                cid = comp.custom_id
+                val = comp.value
+                if !ismissing(cid) && !ismissing(val)
+                    result[cid] = val
                 end
             end
         end
@@ -180,11 +188,12 @@ function respond(ctx::InteractionContext;
 
     if ctx.deferred[]
         # Edit the deferred response
-        if isnothing(ctx.client.application_id)
+        app_id = ctx.client.application_id
+        if isnothing(app_id)
             error("Cannot respond to deferred interaction: application_id not set (READY event may not have been processed)")
         end
         edit_original_interaction_response(
-            ctx.client.ratelimiter, ctx.client.application_id, ctx.interaction.token;
+            ctx.client.ratelimiter, app_id, ctx.interaction.token;
             token=ctx.client.token, body=data, files
         )
     else
@@ -239,13 +248,16 @@ function edit_response(ctx::InteractionContext;
     components = nothing,
     files = nothing,
 )
+    app_id = ctx.client.application_id
+    isnothing(app_id) && error("Cannot edit response: application_id not set")
+
     body = Dict{String, Any}()
     !isnothing(content) && (body["content"] = content)
     !isnothing(embeds) && (body["embeds"] = embeds)
     !isnothing(components) && (body["components"] = components)
 
     edit_original_interaction_response(
-        ctx.client.ratelimiter, ctx.client.application_id, ctx.interaction.token;
+        ctx.client.ratelimiter, app_id, ctx.interaction.token;
         token=ctx.client.token, body, files
     )
 end
@@ -262,6 +274,9 @@ function followup(ctx::InteractionContext;
     ephemeral::Bool = false,
     files = nothing,
 )
+    app_id = ctx.client.application_id
+    isnothing(app_id) && error("Cannot send followup: application_id not set")
+
     body = Dict{String, Any}()
     !isempty(content) && (body["content"] = content)
     !isempty(embeds) && (body["embeds"] = embeds)
@@ -269,7 +284,7 @@ function followup(ctx::InteractionContext;
     ephemeral && (body["flags"] = 64)
 
     create_followup_message(
-        ctx.client.ratelimiter, ctx.client.application_id, ctx.interaction.token;
+        ctx.client.ratelimiter, app_id, ctx.interaction.token;
         token=ctx.client.token, body, files
     )
 end

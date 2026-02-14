@@ -356,7 +356,8 @@ function _supervisor_loop(client::Client)
         
         for shard in client.shards
             # If the task is finished but we didn't stop the bot, restart it
-            if !isnothing(shard.task) && istaskdone(shard.task) && client.running
+            task = shard.task
+            if !isnothing(task) && istaskdone(task) && client.running
                 # Check if it was an intentional stop (connected would be false)
                 # shard.session.connected is managed by gateway_connect and stop_shard
                 if shard.session.connected
@@ -488,7 +489,7 @@ Send a gateway command to update voice state (join/leave/move voice channels).
 function update_voice_state(client::Client, guild_id::Snowflake; channel_id=nothing, self_mute::Bool=false, self_deaf::Bool=false)
     shard_id = shard_for_guild(guild_id, client.num_shards)
     shard = client.shards[shard_id + 1]
-    cmd = GatewayCommand(GatewayOpcodes.VOICE_STATE_UPDATE, Dict(
+    cmd = GatewayCommand(GatewayOpcodes.VOICE_STATE_UPDATE, Dict{String, Any}(
         "guild_id" => string(guild_id),
         "channel_id" => isnothing(channel_id) ? nothing : string(channel_id),
         "self_mute" => self_mute,
@@ -504,7 +505,7 @@ Send a gateway command to update the bot's presence/status.
 """
 function update_presence(client::Client; status::String="online", activities::Vector=[], afk::Bool=false, since=nothing)
     for shard in client.shards
-        cmd = GatewayCommand(GatewayOpcodes.PRESENCE_UPDATE, Dict(
+        cmd = GatewayCommand(GatewayOpcodes.PRESENCE_UPDATE, Dict{String, Any}(
             "since" => since,
             "activities" => activities,
             "status" => status,

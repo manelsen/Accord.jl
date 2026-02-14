@@ -16,17 +16,25 @@ StructTypes = "856f2bd8-1eba-4b0a-8007-ebc267875bd4"
 libsodium_jll = "a9144af2-ca23-56d9-984f-0d03f7b5ccf8"
 
 [compat]
+Aqua = "0.8"
 CodecZlib = "0.7"
+Dates = "1"
 HTTP = "1"
+JET = "0.9, 0.10, 0.11"
 JSON3 = "1"
 LRUCache = "1"
+Logging = "1"
 Opus_jll = "1"
+Sockets = "1"
 StructTypes = "1"
+Test = "1"
 libsodium_jll = "1"
 julia = "1.11"
 
 [extras]
+Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
+JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test"]
+test = ["Aqua", "JET", "Test"]

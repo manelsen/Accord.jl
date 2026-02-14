@@ -7,6 +7,7 @@ using Accord: has_flag, JSON3, StructTypes, BucketState, url,
     CommandTree, register_command!, register_component!, register_modal!, register_autocomplete!
 
 @testset "Accord.jl" begin
+    include("unit/test_aqua.jl")
     include("unit/test_snowflake.jl")
     include("unit/test_flags.jl")
     include("unit/test_types.jl")
@@ -21,6 +22,13 @@ using Accord: has_flag, JSON3, StructTypes, BucketState, url,
     if "integration" in ARGS || get(ENV, "ACCORD_INTEGRATION_TESTS", "") == "1"
         @testset "Integration" begin
             include("integration/test_fixtures.jl")
+        end
+    end
+
+    # Static analysis - run with: ACCORD_JET=1 julia --project=. -e 'using Pkg; Pkg.test()'
+    if get(ENV, "ACCORD_JET", "") == "1"
+        @testset "Static Analysis" begin
+            include("unit/test_jet.jl")
         end
     end
 end

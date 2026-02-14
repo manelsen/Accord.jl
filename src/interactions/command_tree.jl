@@ -144,9 +144,10 @@ function dispatch_interaction!(tree::CommandTree, client, interaction::Interacti
     if interaction.type == InteractionTypes.APPLICATION_COMMAND
         data = interaction.data
         ismissing(data) && return
-        ismissing(data.name) && return
+        cmd_name = data.name
+        ismissing(cmd_name) && return
 
-        cmd = get(tree.commands, data.name, nothing)
+        cmd = get(tree.commands, cmd_name, nothing)
         if !isnothing(cmd)
             # Run pre-execution checks (guards)
             if !isempty(cmd.checks)
@@ -155,18 +156,18 @@ function dispatch_interaction!(tree::CommandTree, client, interaction::Interacti
             try
                 cmd.handler(ctx)
             catch e
-                @error "Error in command handler" command=data.name exception=(e, catch_backtrace())
+                @error "Error in command handler" command=cmd_name exception=(e, catch_backtrace())
             end
         else
-            @warn "Unknown command" name=data.name
+            @warn "Unknown command" name=cmd_name
         end
 
     elseif interaction.type == InteractionTypes.MESSAGE_COMPONENT
         data = interaction.data
         ismissing(data) && return
-        ismissing(data.custom_id) && return
 
         cid = data.custom_id
+        ismissing(cid) && return
         # Try exact match first, then prefix match
         handler = get(tree.component_handlers, cid, nothing)
         if isnothing(handler)
@@ -189,28 +190,31 @@ function dispatch_interaction!(tree::CommandTree, client, interaction::Interacti
     elseif interaction.type == InteractionTypes.APPLICATION_COMMAND_AUTOCOMPLETE
         data = interaction.data
         ismissing(data) && return
-        ismissing(data.name) && return
+        ac_name = data.name
+        ismissing(ac_name) && return
 
-        handler = get(tree.autocomplete_handlers, data.name, nothing)
+        handler = get(tree.autocomplete_handlers, ac_name, nothing)
         if !isnothing(handler)
             try
                 handler(ctx)
             catch e
-                @error "Error in autocomplete handler" command=data.name exception=(e, catch_backtrace())
+                @error "Error in autocomplete handler" command=ac_name exception=(e, catch_backtrace())
             end
         end
 
     elseif interaction.type == InteractionTypes.MODAL_SUBMIT
         data = interaction.data
         ismissing(data) && return
-        ismissing(data.custom_id) && return
 
-        handler = get(tree.modal_handlers, data.custom_id, nothing)
+        modal_cid = data.custom_id
+        ismissing(modal_cid) && return
+
+        handler = get(tree.modal_handlers, modal_cid, nothing)
         if !isnothing(handler)
             try
                 handler(ctx)
             catch e
-                @error "Error in modal handler" custom_id=data.custom_id exception=(e, catch_backtrace())
+                @error "Error in modal handler" custom_id=modal_cid exception=(e, catch_backtrace())
             end
         end
     end

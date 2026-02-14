@@ -110,8 +110,14 @@ function _playback_loop(player::AudioPlayer, send_fn::Function)
         end
 
         # Encode to Opus
+        encoder = player.encoder
+        if isnothing(encoder)
+            @warn "No Opus encoder available"
+            player.playing = false
+            break
+        end
         opus_data = try
-            opus_encode(player.encoder, pcm)
+            opus_encode(encoder, pcm)
         catch e
             @warn "Opus encode error" exception=e
             continue
