@@ -33,42 +33,30 @@ jobs:
       - uses: julia-actions/julia-runtest@v1
         env:
           ACCORD_INTEGRATION_TESTS: '1'
-      - uses: julia-actions/julia-processcoverage@v1
       - name: Show coverage summary
         run: |
           julia -e '
             using Pkg
             Pkg.activate(temp=true)
-            Pkg.add([
-              PackageSpec(name="LocalCoverage", uuid="5f6e1e16-694c-5876-87ef-16b5274f298e"),
-              PackageSpec(name="Coverage")
-            ])
-            using LocalCoverage, Coverage
-            cols = LCOV.readfile("lcov.info")
-            relevant, covered = get_summary(cols)
+            Pkg.add("Coverage")
+            using Coverage
+            # process_folder finds all .cov files
+            coverage = process_folder("src")
+            relevant, covered = get_summary(coverage)
             println("----------------------------------------------")
             println("Coverage Summary:")
             println("Relevant lines: ", relevant)
             println("Covered lines:  ", covered)
             println("Total Coverage: ", round(covered / relevant * 100, digits=2), "%")
             println("----------------------------------------------")
-          '
-      - name: Generate HTML report
-        run: |
-          julia -e '
-            using Pkg
-            Pkg.activate(temp=true)
-            Pkg.add(PackageSpec(name="LocalCoverage", uuid="5f6e1e16-694c-5876-87ef-16b5274f298e"))
-            using LocalCoverage
-            generate_pages(pwd(); run_tests=false, lcov_info="lcov.info")
+            # Generate LCOV file for the artifact
+            LCOV.writefile("lcov.info", coverage)
           '
       - name: Upload coverage results
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-report-${{ matrix.os }}-${{ matrix.julia-version }}
-          path: |
-            lcov.info
-            coverage/
+          name: coverage-lcov-${{ matrix.os }}-${{ matrix.julia-version }}
+          path: lcov.info
 
   jet:
     name: Static Analysis (JET)
