@@ -20,5 +20,5 @@ Thumbs.db
 bot.log
 KANBAN.md
 
-# Integration test fixtures (contain real Discord payloads)
-test/integration/fixtures/
+# Integration test fixtures (manifest only by default, but we need the files for CI)
+# test/integration/fixtures/
