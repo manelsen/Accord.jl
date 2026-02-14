@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>AI Agent Bot · Accord.jl</title><meta name="title" content="AI Agent Bot · Accord.jl"/><meta property="og:title" content="AI Agent Bot · Accord.jl"/><meta property="twitter:title" content="AI Agent Bot · Accord.jl"/><meta name="description" content="Documentation for Accord.jl."/><meta property="og:description" content="Documentation for Accord.jl."/><meta property="twitter:description" content="Documentation for Accord.jl."/><meta property="og:url" content="https://manelsen.github.io/Accord.jl/cookbook/16-ai-agent/"/><meta property="twitter:url" content="https://manelsen.github.io/Accord.jl/cookbook/16-ai-agent/"/><link rel="canonical" href="https://manelsen.github.io/Accord.jl/cookbook/16-ai-agent/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Accord.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Cookbook</span><ul><li><a class="tocitem" href="../">Accord.jl Cookbook</a></li><li><a class="tocitem" href="../01-basic-bot/">Your First Bot</a></li><li><a class="tocitem" href="../02-messages-and-embeds/">Rich Messages</a></li><li><a class="tocitem" href="../03-slash-commands/">Slash Commands</a></li><li><a class="tocitem" href="../04-buttons-selects-modals/">Buttons, Selects &amp; Modals</a></li><li><a class="tocitem" href="../05-voice/">Voice</a></li><li><a class="tocitem" href="../06-permissions/">Permissions</a></li><li><a class="tocitem" href="../07-caching/">Caching</a></li><li><a class="tocitem" href="../08-sharding/">Sharding</a></li><li><a class="tocitem" href="../09-automod/">Auto-Moderation</a></li><li><a class="tocitem" href="../10-polls/">Polls</a></li><li><a class="tocitem" href="../11-architectural-patterns/">Architectural Patterns</a></li><li><a class="tocitem" href="../12-performance/">Performance</a></li><li><a class="tocitem" href="../13-deploy/">Deployment</a></li><li><a class="tocitem" href="../14-troubleshooting/">Troubleshooting</a></li><li><a class="tocitem" href="../15-why-julia/">Why Julia?</a></li><li class="is-active"><a class="tocitem" href>AI Agent Bot</a><ul class="internal"><li><a class="tocitem" href="#1.-Architecture"><span>1. Architecture</span></a></li><li><a class="tocitem" href="#2.-Calling-LLM-APIs-from-Julia"><span>2. Calling LLM APIs from Julia</span></a></li><li><a class="tocitem" href="#3.-Streaming-Responses"><span>3. Streaming Responses</span></a></li><li><a class="tocitem" href="#4.-Tool-Use-/-Function-Calling"><span>4. Tool Use / Function Calling</span></a></li><li><a class="tocitem" href="#5.-Conversation-Memory"><span>5. Conversation Memory</span></a></li><li><a class="tocitem" href="#6.-Per-User-Rate-Limiting"><span>6. Per-User Rate Limiting</span></a></li><li><a class="tocitem" href="#7.-Complete-Working-Bot"><span>7. Complete Working Bot</span></a></li><li><a class="tocitem" href="#8.-Advanced:-Voice-Commanded-AI-Agent"><span>8. Advanced: Voice-Commanded AI Agent</span></a></li><li><a class="tocitem" href="#9.-Choosing-an-LLM-Provider"><span>9. Choosing an LLM Provider</span></a></li></ul></li></ul></li><li><a class="tocitem" href="../../api/">API Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Cookbook</a></li><li class="is-active"><a href>AI Agent Bot</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>AI Agent Bot</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/manelsen/Accord.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/manelsen/Accord.jl/blob/master/docs/src/cookbook/16-ai-agent.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Recipe-16-—-AI-Agent-Bot"><a class="docs-heading-anchor" href="#Recipe-16-—-AI-Agent-Bot">Recipe 16 — AI Agent Bot</a><a id="Recipe-16-—-AI-Agent-Bot-1"></a><a class="docs-heading-anchor-permalink" href="#Recipe-16-—-AI-Agent-Bot" title="Permalink"></a></h1><p><strong>Difficulty:</strong> Advanced <strong>What you will build:</strong> A Discord bot that connects to LLM APIs (OpenAI, Anthropic Claude, Ollama) with streaming responses, tool use, conversation memory, and rate limiting.</p><p><strong>Prerequisites:</strong> <a href="../03-slash-commands/">Recipe 03</a>, <a href="../04-buttons-selects-modals/">Recipe 04</a></p><hr/><h2 id="1.-Architecture"><a class="docs-heading-anchor" href="#1.-Architecture">1. Architecture</a><a id="1.-Architecture-1"></a><a class="docs-heading-anchor-permalink" href="#1.-Architecture" title="Permalink"></a></h2><pre><code class="language-text hljs">User message → Discord → Accord.jl → LLM API → Discord
                              ↑                    ↓
                       Conversation memory    Streaming edits
-                      Tool execution         Followup messages</code></pre><h2 id="2.-Calling-LLM-APIs-from-Julia"><a class="docs-heading-anchor" href="#2.-Calling-LLM-APIs-from-Julia">2. Calling LLM APIs from Julia</a><a id="2.-Calling-LLM-APIs-from-Julia-1"></a><a class="docs-heading-anchor-permalink" href="#2.-Calling-LLM-APIs-from-Julia" title="Permalink"></a></h2><p>All three major providers work via HTTP.jl.</p><h3 id="OpenAI"><a class="docs-heading-anchor" href="#OpenAI">OpenAI</a><a id="OpenAI-1"></a><a class="docs-heading-anchor-permalink" href="#OpenAI" title="Permalink"></a></h3><pre><code class="language-julia hljs">import HTTP
+                      Tool execution         Followup messages</code></pre><h2 id="2.-Calling-LLM-APIs-from-Julia"><a class="docs-heading-anchor" href="#2.-Calling-LLM-APIs-from-Julia">2. Calling LLM APIs from Julia</a><a id="2.-Calling-LLM-APIs-from-Julia-1"></a><a class="docs-heading-anchor-permalink" href="#2.-Calling-LLM-APIs-from-Julia" title="Permalink"></a></h2><p>All three major providers work via HTTP.jl.</p><h3 id="OpenAI"><a class="docs-heading-anchor" href="#OpenAI">OpenAI</a><a id="OpenAI-1"></a><a class="docs-heading-anchor-permalink" href="#OpenAI" title="Permalink"></a></h3><pre><code class="language-text hljs">import HTTP
 import JSON3
 
 function openai_chat(messages::Vector{Dict}; model=&quot;gpt-4o&quot;, api_key=ENV[&quot;OPENAI_API_KEY&quot;])
@@ -14,13 +14,13 @@ function openai_chat(messages::Vector{Dict}; model=&quot;gpt-4o&quot;, api_key=E
 
     resp = HTTP.post(
         &quot;https://api.openai.com/v1/chat/completions&quot;,
-        [&quot;Authorization&quot; =&gt; &quot;Bearer $api_key&quot;, &quot;Content-Type&quot; =&gt; &quot;application/json&quot;],
+        [&quot;Authorization&quot; =&gt; &quot;Bearer \$api_key&quot;, &quot;Content-Type&quot; =&gt; &quot;application/json&quot;],
         JSON3.write(body)
     )
 
     data = JSON3.read(resp.body)
     return data[&quot;choices&quot;][1][&quot;message&quot;][&quot;content&quot;]
-end</code></pre><h3 id="Anthropic-Claude"><a class="docs-heading-anchor" href="#Anthropic-Claude">Anthropic Claude</a><a id="Anthropic-Claude-1"></a><a class="docs-heading-anchor-permalink" href="#Anthropic-Claude" title="Permalink"></a></h3><pre><code class="language-julia hljs">function claude_chat(messages::Vector{Dict}; model=&quot;claude-sonnet-4-5-20250929&quot;, api_key=ENV[&quot;ANTHROPIC_API_KEY&quot;])
+end</code></pre><h3 id="Anthropic-Claude"><a class="docs-heading-anchor" href="#Anthropic-Claude">Anthropic Claude</a><a id="Anthropic-Claude-1"></a><a class="docs-heading-anchor-permalink" href="#Anthropic-Claude" title="Permalink"></a></h3><pre><code class="language-text hljs">function claude_chat(messages::Vector{Dict}; model=&quot;claude-sonnet-4-5-20250929&quot;, api_key=ENV[&quot;ANTHROPIC_API_KEY&quot;])
     body = Dict(
         &quot;model&quot; =&gt; model,
         &quot;max_tokens&quot; =&gt; 1024,
@@ -30,7 +30,7 @@ end</code></pre><h3 id="Anthropic-Claude"><a class="docs-heading-anchor" href="#
     resp = HTTP.post(
         &quot;https://api.anthropic.com/v1/messages&quot;,
         [
-            &quot;x-api-key&quot; =&gt; api_key,
+            &quot;x-api-key&quot; =&gt; \$api_key,
             &quot;anthropic-version&quot; =&gt; &quot;2023-06-01&quot;,
             &quot;Content-Type&quot; =&gt; &quot;application/json&quot;,
         ],
@@ -39,7 +39,7 @@ end</code></pre><h3 id="Anthropic-Claude"><a class="docs-heading-anchor" href="#
 
     data = JSON3.read(resp.body)
     return data[&quot;content&quot;][1][&quot;text&quot;]
-end</code></pre><h3 id="Local-Ollama"><a class="docs-heading-anchor" href="#Local-Ollama">Local Ollama</a><a id="Local-Ollama-1"></a><a class="docs-heading-anchor-permalink" href="#Local-Ollama" title="Permalink"></a></h3><pre><code class="language-julia hljs">function ollama_chat(messages::Vector{Dict}; model=&quot;llama3.1&quot;, base_url=&quot;http://localhost:11434&quot;)
+end</code></pre><h3 id="Local-Ollama"><a class="docs-heading-anchor" href="#Local-Ollama">Local Ollama</a><a id="Local-Ollama-1"></a><a class="docs-heading-anchor-permalink" href="#Local-Ollama" title="Permalink"></a></h3><pre><code class="language-text hljs">function ollama_chat(messages::Vector{Dict}; model=&quot;llama3.1&quot;, base_url=&quot;http://localhost:11434&quot;)
     body = Dict(
         &quot;model&quot; =&gt; model,
         &quot;messages&quot; =&gt; messages,
@@ -47,14 +47,14 @@ end</code></pre><h3 id="Local-Ollama"><a class="docs-heading-anchor" href="#Loca
     )
 
     resp = HTTP.post(
-        &quot;$base_url/api/chat&quot;,
+        &quot;\$base_url/api/chat&quot;,
         [&quot;Content-Type&quot; =&gt; &quot;application/json&quot;],
         JSON3.write(body)
     )
 
     data = JSON3.read(resp.body)
     return data[&quot;message&quot;][&quot;content&quot;]
-end</code></pre><h2 id="3.-Streaming-Responses"><a class="docs-heading-anchor" href="#3.-Streaming-Responses">3. Streaming Responses</a><a id="3.-Streaming-Responses-1"></a><a class="docs-heading-anchor-permalink" href="#3.-Streaming-Responses" title="Permalink"></a></h2><p>Show the LLM&#39;s response progressively by editing the message:</p><pre><code class="language-julia hljs">function openai_chat_stream(messages::Vector{Dict}, update_fn::Function;
+end</code></pre><h2 id="3.-Streaming-Responses"><a class="docs-heading-anchor" href="#3.-Streaming-Responses">3. Streaming Responses</a><a id="3.-Streaming-Responses-1"></a><a class="docs-heading-anchor-permalink" href="#3.-Streaming-Responses" title="Permalink"></a></h2><p>Show the LLM&#39;s response progressively by editing the message:</p><pre><code class="language-text hljs">function openai_chat_stream(messages::Vector{Dict}, update_fn::Function;
         model=&quot;gpt-4o&quot;, api_key=ENV[&quot;OPENAI_API_KEY&quot;])
     body = Dict(
         &quot;model&quot; =&gt; model,
@@ -68,7 +68,7 @@ end</code></pre><h2 id="3.-Streaming-Responses"><a class="docs-heading-anchor" h
     full_text = Ref(&quot;&quot;)
 
     HTTP.open(&quot;POST&quot;, &quot;https://api.openai.com/v1/chat/completions&quot;,
-        [&quot;Authorization&quot; =&gt; &quot;Bearer $api_key&quot;, &quot;Content-Type&quot; =&gt; &quot;application/json&quot;],
+        [&quot;Authorization&quot; =&gt; &quot;Bearer \$api_key&quot;, &quot;Content-Type&quot; =&gt; &quot;application/json&quot;],
     ) do io
         write(io, JSON3.write(body))
         HTTP.closewrite(io)
@@ -158,17 +158,17 @@ function execute_tool(name::String, args::Dict)
     if name == &quot;get_weather&quot;
         city = args[&quot;city&quot;]
         # Simulated — replace with real API
-        return &quot;&quot;&quot;{&quot;city&quot;: &quot;$city&quot;, &quot;temp&quot;: &quot;22°C&quot;, &quot;condition&quot;: &quot;Sunny&quot;}&quot;&quot;&quot;
+        return &quot;&quot;&quot;{&quot;city&quot;: &quot;\$city&quot;, &quot;temp&quot;: &quot;22°C&quot;, &quot;condition&quot;: &quot;Sunny&quot;}&quot;&quot;&quot;
     elseif name == &quot;roll_dice&quot;
         notation = args[&quot;notation&quot;]
         m = match(r&quot;(\d+)d(\d+)&quot;, notation)
         isnothing(m) &amp;&amp; return &quot;&quot;&quot;{&quot;error&quot;: &quot;Invalid notation&quot;}&quot;&quot;&quot;
         n, sides = parse(Int, m[1]), parse(Int, m[2])
         rolls = [rand(1:sides) for _ in 1:n]
-        return &quot;&quot;&quot;{&quot;rolls&quot;: $rolls, &quot;total&quot;: $(sum(rolls))}&quot;&quot;&quot;
+        return &quot;&quot;&quot;{&quot;rolls&quot;: \$rolls, &quot;total&quot;: \$(sum(rolls))}&quot;&quot;&quot;
     end
     return &quot;&quot;&quot;{&quot;error&quot;: &quot;Unknown tool&quot;}&quot;&quot;&quot;
-end</code></pre><h3 id="Agent-Loop"><a class="docs-heading-anchor" href="#Agent-Loop">Agent Loop</a><a id="Agent-Loop-1"></a><a class="docs-heading-anchor-permalink" href="#Agent-Loop" title="Permalink"></a></h3><pre><code class="language-julia hljs">function agent_chat(messages::Vector{Dict}; model=&quot;gpt-4o&quot;, api_key=ENV[&quot;OPENAI_API_KEY&quot;], max_iterations=5)
+end</code></pre><h3 id="Agent-Loop"><a class="docs-heading-anchor" href="#Agent-Loop">Agent Loop</a><a id="Agent-Loop-1"></a><a class="docs-heading-anchor-permalink" href="#Agent-Loop" title="Permalink"></a></h3><pre><code class="language-text hljs">function agent_chat(messages::Vector{Dict}; model=&quot;gpt-4o&quot;, api_key=ENV[&quot;OPENAI_API_KEY&quot;], max_iterations=5)
     for _ in 1:max_iterations
         body = Dict(
             &quot;model&quot; =&gt; model,
@@ -179,7 +179,7 @@ end</code></pre><h3 id="Agent-Loop"><a class="docs-heading-anchor" href="#Agent-
 
         resp = HTTP.post(
             &quot;https://api.openai.com/v1/chat/completions&quot;,
-            [&quot;Authorization&quot; =&gt; &quot;Bearer $api_key&quot;, &quot;Content-Type&quot; =&gt; &quot;application/json&quot;],
+            [&quot;Authorization&quot; =&gt; &quot;Bearer \$api_key&quot;, &quot;Content-Type&quot; =&gt; &quot;application/json&quot;],
             JSON3.write(body)
         )
 
@@ -328,7 +328,7 @@ function call_llm(messages; api_key=ENV[&quot;OPENAI_API_KEY&quot;])
     )
     resp = HTTP.post(
         &quot;https://api.openai.com/v1/chat/completions&quot;,
-        [&quot;Authorization&quot; =&gt; &quot;Bearer $api_key&quot;, &quot;Content-Type&quot; =&gt; &quot;application/json&quot;],
+        [&quot;Authorization&quot; =&gt; &quot;Bearer \$api_key&quot;, &quot;Content-Type&quot; =&gt; &quot;application/json&quot;],
         JSON3.write(body)
     )
     data = JSON3.read(resp.body)
@@ -395,7 +395,7 @@ end
         color=0x5865F2,
         fields=[
             Dict(&quot;name&quot; =&gt; &quot;Model&quot;, &quot;value&quot; =&gt; &quot;GPT-4o&quot;, &quot;inline&quot; =&gt; true),
-            Dict(&quot;name&quot; =&gt; &quot;History&quot;, &quot;value&quot; =&gt; &quot;$history_len / $MAX_HISTORY messages&quot;, &quot;inline&quot; =&gt; true),
+            Dict(&quot;name&quot; =&gt; &quot;History&quot;, &quot;value&quot; =&gt; &quot;\$history_len / \$MAX_HISTORY messages&quot;, &quot;inline&quot; =&gt; true),
             Dict(&quot;name&quot; =&gt; &quot;Rate Limit&quot;, &quot;value&quot; =&gt; &quot;5 requests / 50 seconds&quot;, &quot;inline&quot; =&gt; true),
         ]
     )
@@ -424,7 +424,7 @@ start(client)</code></pre><h2 id="8.-Advanced:-Voice-Commanded-AI-Agent"><a clas
 # The voice capture code from Recipe 05 feeds into:
 function handle_voice_transcript(client, channel_id, transcript)
     # Add to conversation and get AI response
-    add_to_history!(channel_id, &quot;user&quot;, &quot;[Voice] $transcript&quot;)
+    add_to_history!(channel_id, &quot;user&quot;, &quot;[Voice] \$transcript&quot;)
 
     messages = vcat(
         [Dict(&quot;role&quot; =&gt; &quot;system&quot;, &quot;content&quot; =&gt; SYSTEM_PROMPT)],
@@ -435,4 +435,4 @@ function handle_voice_transcript(client, channel_id, transcript)
     add_to_history!(channel_id, &quot;assistant&quot;, response)
 
     create_message(client, channel_id; content=response)
-end</code></pre><h2 id="9.-Choosing-an-LLM-Provider"><a class="docs-heading-anchor" href="#9.-Choosing-an-LLM-Provider">9. Choosing an LLM Provider</a><a id="9.-Choosing-an-LLM-Provider-1"></a><a class="docs-heading-anchor-permalink" href="#9.-Choosing-an-LLM-Provider" title="Permalink"></a></h2><table><tr><th style="text-align: right">Provider</th><th style="text-align: right">Strengths</th><th style="text-align: right">Cost</th><th style="text-align: right">Local?</th></tr><tr><td style="text-align: right">OpenAI GPT-4o</td><td style="text-align: right">Tool calling, streaming, function calling</td><td style="text-align: right">$<span>$</span></td><td style="text-align: right">No</td></tr><tr><td style="text-align: right">Anthropic Claude</td><td style="text-align: right">Long context, careful reasoning</td><td style="text-align: right">$<span>$</span></td><td style="text-align: right">No</td></tr><tr><td style="text-align: right">Ollama (Llama 3)</td><td style="text-align: right">Free, private, no rate limits</td><td style="text-align: right">Free</td><td style="text-align: right">Yes</td></tr><tr><td style="text-align: right">Ollama (Mistral)</td><td style="text-align: right">Fast, good quality/speed ratio</td><td style="text-align: right">Free</td><td style="text-align: right">Yes</td></tr></table><p>For development, start with Ollama (free, no API key needed). For production, choose based on your quality/cost requirements.</p><hr/><p>This recipe brings together everything in the cookbook: slash commands, embeds, async patterns, and external API integration. You now have all the tools to build production Discord bots in Julia.</p><p><strong>Back to:</strong> <a href="../">Cookbook Index</a></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../15-why-julia/">« Why Julia?</a><a class="docs-footer-nextpage" href="../../api/">API Reference »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Saturday 14 February 2026 23:15">Saturday 14 February 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end</code></pre><h2 id="9.-Choosing-an-LLM-Provider"><a class="docs-heading-anchor" href="#9.-Choosing-an-LLM-Provider">9. Choosing an LLM Provider</a><a id="9.-Choosing-an-LLM-Provider-1"></a><a class="docs-heading-anchor-permalink" href="#9.-Choosing-an-LLM-Provider" title="Permalink"></a></h2><table><tr><th style="text-align: right">Provider</th><th style="text-align: right">Strengths</th><th style="text-align: right">Cost</th><th style="text-align: right">Local?</th></tr><tr><td style="text-align: right">OpenAI GPT-4o</td><td style="text-align: right">Tool calling, streaming, function calling</td><td style="text-align: right">$<span>$</span></td><td style="text-align: right">No</td></tr><tr><td style="text-align: right">Anthropic Claude</td><td style="text-align: right">Long context, careful reasoning</td><td style="text-align: right">$<span>$</span></td><td style="text-align: right">No</td></tr><tr><td style="text-align: right">Ollama (Llama 3)</td><td style="text-align: right">Free, private, no rate limits</td><td style="text-align: right">Free</td><td style="text-align: right">Yes</td></tr><tr><td style="text-align: right">Ollama (Mistral)</td><td style="text-align: right">Fast, good quality/speed ratio</td><td style="text-align: right">Free</td><td style="text-align: right">Yes</td></tr></table><p>For development, start with Ollama (free, no API key needed). For production, choose based on your quality/cost requirements.</p><hr/><p>This recipe brings together everything in the cookbook: slash commands, embeds, async patterns, and external API integration. You now have all the tools to build production Discord bots in Julia.</p><p><strong>Back to:</strong> <a href="../#cookbook-index">Cookbook Index</a></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../15-why-julia/">« Why Julia?</a><a class="docs-footer-nextpage" href="../../api/">API Reference »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Saturday 14 February 2026 23:36">Saturday 14 February 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
