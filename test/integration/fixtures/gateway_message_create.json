@@ -1,0 +1,301 @@
+[
+    {
+        "t": "MESSAGE_CREATE",
+        "op": 0,
+        "s": 4,
+        "d": {
+            "member": {
+                "pending": false,
+                "banner": null,
+                "mute": false,
+                "flags": 0,
+                "communication_disabled_until": null,
+                "roles": [
+                    "1292918902988345414"
+                ],
+                "premium_since": null,
+                "nick": null,
+                "joined_at": "2024-02-27T19:50:51.701000+00:00",
+                "deaf": false,
+                "avatar": null
+            },
+            "channel_type": 0,
+            "guild_id": "1212124712629440612",
+            "edited_timestamp": null,
+            "author": {
+                "collectibles": null,
+                "username": "voiddragon",
+                "display_name_styles": null,
+                "global_name": "Void Dragon",
+                "primary_guild": {
+                    "identity_guild_id": "1346756824233148527",
+                    "tag": "Z.ai",
+                    "badge": "7f968d34689b032120d7a0f2a3d69b83",
+                    "identity_enabled": true
+                },
+                "id": "383221796700291082",
+                "clan": {
+                    "identity_guild_id": "1346756824233148527",
+                    "tag": "Z.ai",
+                    "badge": "7f968d34689b032120d7a0f2a3d69b83",
+                    "identity_enabled": true
+                },
+                "public_flags": 0,
+                "discriminator": "0",
+                "avatar_decoration_data": {
+                    "expires_at": null,
+                    "asset": "a_94febf08c37b21ee5ed92c49ef98bf00",
+                    "sku_id": "1366494385583165630"
+                },
+                "avatar": "904d256347c060ddb0071fa23a13c6ec"
+            },
+            "pinned": false,
+            "id": "1472053922800734339",
+            "channel_id": "1212124713271304246",
+            "content": "Ei",
+            "embeds": [
+            ],
+            "mentions": [
+            ],
+            "components": [
+            ],
+            "flags": 0,
+            "mention_everyone": false,
+            "tts": false,
+            "mention_roles": [
+            ],
+            "attachments": [
+            ],
+            "timestamp": "2026-02-14T02:16:44.635000+00:00",
+            "type": 0,
+            "nonce": "1472053792059949056"
+        }
+    },
+    {
+        "t": "MESSAGE_CREATE",
+        "op": 0,
+        "s": 9,
+        "d": {
+            "member": {
+                "pending": false,
+                "banner": null,
+                "mute": false,
+                "flags": 0,
+                "communication_disabled_until": null,
+                "roles": [
+                    "1292918902988345414"
+                ],
+                "premium_since": null,
+                "nick": null,
+                "joined_at": "2024-02-27T19:50:51.701000+00:00",
+                "deaf": false,
+                "avatar": null
+            },
+            "channel_type": 11,
+            "guild_id": "1212124712629440612",
+            "message_reference": {
+                "message_id": "1471995906302935183",
+                "guild_id": "1212124712629440612",
+                "channel_id": "1212124713271304246",
+                "type": 0
+            },
+            "edited_timestamp": null,
+            "author": {
+                "collectibles": null,
+                "username": "voiddragon",
+                "display_name_styles": null,
+                "global_name": "Void Dragon",
+                "primary_guild": {
+                    "identity_guild_id": "1346756824233148527",
+                    "tag": "Z.ai",
+                    "badge": "7f968d34689b032120d7a0f2a3d69b83",
+                    "identity_enabled": true
+                },
+                "id": "383221796700291082",
+                "clan": {
+                    "identity_guild_id": "1346756824233148527",
+                    "tag": "Z.ai",
+                    "badge": "7f968d34689b032120d7a0f2a3d69b83",
+                    "identity_enabled": true
+                },
+                "public_flags": 0,
+                "discriminator": "0",
+                "avatar_decoration_data": {
+                    "expires_at": null,
+                    "asset": "a_94febf08c37b21ee5ed92c49ef98bf00",
+                    "sku_id": "1366494385583165630"
+                },
+                "avatar": "904d256347c060ddb0071fa23a13c6ec"
+            },
+            "pinned": false,
+            "id": "1472054083064959038",
+            "position": 0,
+            "channel_id": "1471995906302935183",
+            "content": "",
+            "embeds": [
+            ],
+            "mentions": [
+            ],
+            "components": [
+            ],
+            "flags": 0,
+            "mention_everyone": false,
+            "tts": false,
+            "mention_roles": [
+            ],
+            "attachments": [
+            ],
+            "timestamp": "2026-02-14T02:17:22.845000+00:00",
+            "type": 21
+        }
+    },
+    {
+        "t": "MESSAGE_CREATE",
+        "op": 0,
+        "s": 10,
+        "d": {
+            "member": {
+                "pending": false,
+                "banner": null,
+                "mute": false,
+                "flags": 0,
+                "communication_disabled_until": null,
+                "roles": [
+                    "1292918902988345414"
+                ],
+                "premium_since": null,
+                "nick": null,
+                "joined_at": "2024-02-27T19:50:51.701000+00:00",
+                "deaf": false,
+                "avatar": null
+            },
+            "channel_type": 0,
+            "guild_id": "1212124712629440612",
+            "message_reference": {
+                "guild_id": "1212124712629440612",
+                "channel_id": "1471995906302935183",
+                "type": 0
+            },
+            "edited_timestamp": null,
+            "author": {
+                "collectibles": null,
+                "username": "voiddragon",
+                "display_name_styles": null,
+                "global_name": "Void Dragon",
+                "primary_guild": {
+                    "identity_guild_id": "1346756824233148527",
+                    "tag": "Z.ai",
+                    "badge": "7f968d34689b032120d7a0f2a3d69b83",
+                    "identity_enabled": true
+                },
+                "id": "383221796700291082",
+                "clan": {
+                    "identity_guild_id": "1346756824233148527",
+                    "tag": "Z.ai",
+                    "badge": "7f968d34689b032120d7a0f2a3d69b83",
+                    "identity_enabled": true
+                },
+                "public_flags": 0,
+                "discriminator": "0",
+                "avatar_decoration_data": {
+                    "expires_at": null,
+                    "asset": "a_94febf08c37b21ee5ed92c49ef98bf00",
+                    "sku_id": "1366494385583165630"
+                },
+                "avatar": "904d256347c060ddb0071fa23a13c6ec"
+            },
+            "pinned": false,
+            "id": "1472054083509686438",
+            "channel_id": "1212124713271304246",
+            "content": "É isso aí, companheiro",
+            "embeds": [
+            ],
+            "mentions": [
+            ],
+            "components": [
+            ],
+            "flags": 0,
+            "mention_everyone": false,
+            "tts": false,
+            "mention_roles": [
+            ],
+            "attachments": [
+            ],
+            "timestamp": "2026-02-14T02:17:22.951000+00:00",
+            "type": 18
+        }
+    },
+    {
+        "t": "MESSAGE_CREATE",
+        "op": 0,
+        "s": 11,
+        "d": {
+            "member": {
+                "pending": false,
+                "banner": null,
+                "mute": false,
+                "flags": 0,
+                "communication_disabled_until": null,
+                "roles": [
+                    "1292918902988345414"
+                ],
+                "premium_since": null,
+                "nick": null,
+                "joined_at": "2024-02-27T19:50:51.701000+00:00",
+                "deaf": false,
+                "avatar": null
+            },
+            "channel_type": 11,
+            "guild_id": "1212124712629440612",
+            "edited_timestamp": null,
+            "author": {
+                "collectibles": null,
+                "username": "voiddragon",
+                "display_name_styles": null,
+                "global_name": "Void Dragon",
+                "primary_guild": {
+                    "identity_guild_id": "1346756824233148527",
+                    "tag": "Z.ai",
+                    "badge": "7f968d34689b032120d7a0f2a3d69b83",
+                    "identity_enabled": true
+                },
+                "id": "383221796700291082",
+                "clan": {
+                    "identity_guild_id": "1346756824233148527",
+                    "tag": "Z.ai",
+                    "badge": "7f968d34689b032120d7a0f2a3d69b83",
+                    "identity_enabled": true
+                },
+                "public_flags": 0,
+                "discriminator": "0",
+                "avatar_decoration_data": {
+                    "expires_at": null,
+                    "asset": "a_94febf08c37b21ee5ed92c49ef98bf00",
+                    "sku_id": "1366494385583165630"
+                },
+                "avatar": "904d256347c060ddb0071fa23a13c6ec"
+            },
+            "pinned": false,
+            "id": "1472054086127059025",
+            "position": 0,
+            "channel_id": "1471995906302935183",
+            "content": "A terra",
+            "embeds": [
+            ],
+            "mentions": [
+            ],
+            "components": [
+            ],
+            "flags": 0,
+            "mention_everyone": false,
+            "tts": false,
+            "mention_roles": [
+            ],
+            "attachments": [
+            ],
+            "timestamp": "2026-02-14T02:17:23.575000+00:00",
+            "type": 0,
+            "nonce": "1472053955402924032"
+        }
+    }
+]
