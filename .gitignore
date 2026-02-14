@@ -6,6 +6,8 @@ Manifest.toml
 deps/build.log
 docs/build/
 docs/site/
+coverage/
+lcov.info
 
 # IDE
 .vscode/

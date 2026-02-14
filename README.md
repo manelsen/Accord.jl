@@ -126,6 +126,21 @@ Accord.jl is built on the shoulders of giants:
 - [discord.py](https://github.com/Rapptz/discord.py) for the API design philosophy.
 - [Discord.jl](https://github.com/Xh4H/Discord.jl) and [Ekztazy.jl](https://github.com/Humans-of-Julia/Ekztazy.jl) for early Julia implementations.
 
+## 🛠 Development
+
+### Testing
+Run the full suite of unit tests:
+```bash
+julia --project=. -e 'using Pkg; Pkg.test()'
+```
+
+### Coverage
+Generate a local HTML coverage report using `LocalCoverage.jl`:
+```bash
+julia --project=. test/coverage.jl
+```
+The report will be generated in the `coverage/` directory. Open `coverage/index.html` in your browser to view results.
+
 ## 📄 License
 
 MIT License. See [LICENSE](LICENSE) for details.

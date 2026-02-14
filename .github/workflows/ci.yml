@@ -34,11 +34,32 @@ jobs:
         env:
           ACCORD_INTEGRATION_TESTS: '1'
       - uses: julia-actions/julia-processcoverage@v1
-      - uses: codecov/codecov-action@v5
+      - name: Show coverage summary
+        shell: julia --project=. {0}
+        run: |
+          using LocalCoverage
+          using Coverage
+          cols = LCOV.readfile("lcov.info")
+          summary = get_summary(cols)
+          println("----------------------------------------------")
+          println("Coverage Summary:")
+          println("Relevant lines: ", summary.relevant)
+          println("Covered lines:  ", summary.covered)
+          println("Total Coverage: ", round(summary.covered / summary.relevant * 100, digits=2), "%")
+          println("----------------------------------------------")
+      - name: Generate HTML report
+        shell: julia --project=. {0}
+        run: |
+          using LocalCoverage
+          # Generate HTML from the lcov.info already created
+          generate_pages("Accord"; run_tests=false, lcov_info="lcov.info")
+      - name: Upload coverage results
+        uses: actions/upload-artifact@v4
         with:
-          files: lcov.info
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: false
+          name: coverage-report-${{ matrix.os }}-${{ matrix.julia-version }}
+          path: |
+            lcov.info
+            coverage/
 
   jet:
     name: Static Analysis (JET)
