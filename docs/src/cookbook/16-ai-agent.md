@@ -22,7 +22,7 @@ All three major providers work via HTTP.jl.
 
 ### OpenAI
 
-```julia
+```text
 import HTTP
 import JSON3
 
@@ -35,7 +35,7 @@ function openai_chat(messages::Vector{Dict}; model="gpt-4o", api_key=ENV["OPENAI
 
     resp = HTTP.post(
         "https://api.openai.com/v1/chat/completions",
-        ["Authorization" => "Bearer $api_key", "Content-Type" => "application/json"],
+        ["Authorization" => "Bearer \$api_key", "Content-Type" => "application/json"],
         JSON3.write(body)
     )
 
@@ -46,7 +46,7 @@ end
 
 ### Anthropic Claude
 
-```julia
+```text
 function claude_chat(messages::Vector{Dict}; model="claude-sonnet-4-5-20250929", api_key=ENV["ANTHROPIC_API_KEY"])
     body = Dict(
         "model" => model,
@@ -57,7 +57,7 @@ function claude_chat(messages::Vector{Dict}; model="claude-sonnet-4-5-20250929",
     resp = HTTP.post(
         "https://api.anthropic.com/v1/messages",
         [
-            "x-api-key" => api_key,
+            "x-api-key" => \$api_key,
             "anthropic-version" => "2023-06-01",
             "Content-Type" => "application/json",
         ],
@@ -71,7 +71,7 @@ end
 
 ### Local Ollama
 
-```julia
+```text
 function ollama_chat(messages::Vector{Dict}; model="llama3.1", base_url="http://localhost:11434")
     body = Dict(
         "model" => model,
@@ -80,7 +80,7 @@ function ollama_chat(messages::Vector{Dict}; model="llama3.1", base_url="http://
     )
 
     resp = HTTP.post(
-        "$base_url/api/chat",
+        "\$base_url/api/chat",
         ["Content-Type" => "application/json"],
         JSON3.write(body)
     )
@@ -94,7 +94,7 @@ end
 
 Show the LLM's response progressively by editing the message:
 
-```julia
+```text
 function openai_chat_stream(messages::Vector{Dict}, update_fn::Function;
         model="gpt-4o", api_key=ENV["OPENAI_API_KEY"])
     body = Dict(
@@ -109,7 +109,7 @@ function openai_chat_stream(messages::Vector{Dict}, update_fn::Function;
     full_text = Ref("")
 
     HTTP.open("POST", "https://api.openai.com/v1/chat/completions",
-        ["Authorization" => "Bearer $api_key", "Content-Type" => "application/json"],
+        ["Authorization" => "Bearer \$api_key", "Content-Type" => "application/json"],
     ) do io
         write(io, JSON3.write(body))
         HTTP.closewrite(io)
@@ -214,14 +214,14 @@ function execute_tool(name::String, args::Dict)
     if name == "get_weather"
         city = args["city"]
         # Simulated — replace with real API
-        return """{"city": "$city", "temp": "22°C", "condition": "Sunny"}"""
+        return """{"city": "\$city", "temp": "22°C", "condition": "Sunny"}"""
     elseif name == "roll_dice"
         notation = args["notation"]
         m = match(r"(\d+)d(\d+)", notation)
         isnothing(m) && return """{"error": "Invalid notation"}"""
         n, sides = parse(Int, m[1]), parse(Int, m[2])
         rolls = [rand(1:sides) for _ in 1:n]
-        return """{"rolls": $rolls, "total": $(sum(rolls))}"""
+        return """{"rolls": \$rolls, "total": \$(sum(rolls))}"""
     end
     return """{"error": "Unknown tool"}"""
 end
@@ -229,7 +229,7 @@ end
 
 ### Agent Loop
 
-```julia
+```text
 function agent_chat(messages::Vector{Dict}; model="gpt-4o", api_key=ENV["OPENAI_API_KEY"], max_iterations=5)
     for _ in 1:max_iterations
         body = Dict(
@@ -241,7 +241,7 @@ function agent_chat(messages::Vector{Dict}; model="gpt-4o", api_key=ENV["OPENAI_
 
         resp = HTTP.post(
             "https://api.openai.com/v1/chat/completions",
-            ["Authorization" => "Bearer $api_key", "Content-Type" => "application/json"],
+            ["Authorization" => "Bearer \$api_key", "Content-Type" => "application/json"],
             JSON3.write(body)
         )
 
@@ -412,7 +412,7 @@ function call_llm(messages; api_key=ENV["OPENAI_API_KEY"])
     )
     resp = HTTP.post(
         "https://api.openai.com/v1/chat/completions",
-        ["Authorization" => "Bearer $api_key", "Content-Type" => "application/json"],
+        ["Authorization" => "Bearer \$api_key", "Content-Type" => "application/json"],
         JSON3.write(body)
     )
     data = JSON3.read(resp.body)
@@ -479,7 +479,7 @@ end
         color=0x5865F2,
         fields=[
             Dict("name" => "Model", "value" => "GPT-4o", "inline" => true),
-            Dict("name" => "History", "value" => "$history_len / $MAX_HISTORY messages", "inline" => true),
+            Dict("name" => "History", "value" => "\$history_len / \$MAX_HISTORY messages", "inline" => true),
             Dict("name" => "Rate Limit", "value" => "5 requests / 50 seconds", "inline" => true),
         ]
     )
@@ -516,7 +516,7 @@ Combine [Recipe 05 (Voice)](05-voice.md) with this recipe for a voice-commanded 
 # The voice capture code from Recipe 05 feeds into:
 function handle_voice_transcript(client, channel_id, transcript)
     # Add to conversation and get AI response
-    add_to_history!(channel_id, "user", "[Voice] $transcript")
+    add_to_history!(channel_id, "user", "[Voice] \$transcript")
 
     messages = vcat(
         [Dict("role" => "system", "content" => SYSTEM_PROMPT)],
@@ -545,4 +545,4 @@ For development, start with Ollama (free, no API key needed). For production, ch
 
 This recipe brings together everything in the cookbook: slash commands, embeds, async patterns, and external API integration. You now have all the tools to build production Discord bots in Julia.
 
-**Back to:** [Cookbook Index](index.md)
+**Back to:** [Cookbook Index](@ref cookbook-index)

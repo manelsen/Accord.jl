@@ -1,4 +1,4 @@
-# Accord.jl — API Reference
+# [Accord.jl — API Reference](@id api-reference)
 
 > Discord API v10 library for Julia.
 > Version: 0.1.0 | API Base: `https://discord.com/api/v10`
@@ -1998,74 +1998,12 @@ Normally you don't interact with these directly. Documented for advanced use cas
 | `REQUEST_GUILD_MEMBERS` | 8     | Send      |
 | `INVALID_SESSION`       | 9     | Receive   |
 | `HELLO`                 | 10    | Receive   |
-| `HEARTBEAT_ACK`         | 11    | Receive   |
-
-### VoiceOpcodes
-
-| Constant              | Value | Direction |
-|-----------------------|-------|-----------|
-| `IDENTIFY`            | 0     | Send      |
-| `SELECT_PROTOCOL`     | 1     | Send      |
-| `READY`               | 2     | Receive   |
-| `HEARTBEAT`           | 3     | Send      |
-| `SESSION_DESCRIPTION` | 4     | Receive   |
-| `SPEAKING`            | 5     | Both      |
-| `HEARTBEAT_ACK`       | 6     | Receive   |
-| `RESUME`              | 7     | Send      |
-| `HELLO`               | 8     | Receive   |
-| `RESUMED`             | 9     | Receive   |
-| `CLIENT_DISCONNECT`   | 13    | Receive   |
-
-### GatewaySession
-
-```julia
-mutable struct GatewaySession
-    ws::Any
-    session_id::Nullable{String}
-    resume_gateway_url::Nullable{String}
-    seq::Nullable{Int}
-    heartbeat_task::Nullable{Task}
-    connected::Bool
-end
-```
-
-### ShardInfo
-
-```julia
-mutable struct ShardInfo
-    id::Int
-    total::Int
-    task::Nullable{Task}
-    session::GatewaySession
-    events::Channel{AbstractEvent}   # Shared across all shards
-    commands::Channel{GatewayCommand}
-    ready::Base.Event
-end
-```
-
-Accord.jl runs an automatic **Supervisor Task** that monitors all shards every 5 seconds. If a shard's task dies unexpectedly while the client is running, the supervisor will automatically restart it.
-
-shard_for_guild(guild_id, num_shards) = (guild_id.value >> 22) % num_shards
-```
-
-### GatewayCommand
-
-```julia
-struct GatewayCommand
-    op::Int
-    data::Any
-end
-```
-
-Used internally to send commands to the gateway (voice state, presence, etc.).
 
 ---
 
-*Generated from Accord.jl source code. For the latest version, see the source files in `src/`.*
-
-
-## Technical Reference
+## 41. Internal & Other Functions
 
 ```@autodocs
 Modules = [Accord]
+Order   = [:function, :type, :macro]
 ```
