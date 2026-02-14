@@ -35,7 +35,7 @@ julia = "1.11"
 [extras]
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
-LocalCoverage = "b85f4697-e243-5bc6-a2ed-38e55e51086a"
+LocalCoverage = "5f6e1e16-694c-5876-87ef-16b5274f298e"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
