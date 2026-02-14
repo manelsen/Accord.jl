@@ -370,9 +370,19 @@ function _supervisor_loop(client::Client)
     @debug "Supervisor task stopped"
 end
 
-# --- Convenience REST methods on Client ---
+"""
+    create_message(client::Client, channel_id::Snowflake; kwargs...) -> Message
 
-"""Send a message to a channel."""
+Send a message to a channel.
+
+# Arguments
+- `content::String`: Message text content.
+- `embeds::Vector`: Vector of embed dictionaries or objects.
+- `components::Vector`: Vector of action rows/components.
+- `files`: Optional files to upload.
+- `tts::Bool`: Whether to send as a text-to-speech message.
+- `message_reference`: Optional dictionary to reply to a specific message.
+"""
 function create_message(client::Client, channel_id::Snowflake; content::String="", embeds::Vector=[], components::Vector=[], files=nothing, tts::Bool=false, message_reference=nothing)
     body = Dict{String, Any}()
     !isempty(content) && (body["content"] = content)
@@ -384,9 +394,9 @@ function create_message(client::Client, channel_id::Snowflake; content::String="
 end
 
 """
-    reply(client, message; kwargs...)
+    reply(client::Client, message::Message; kwargs...) -> Message
 
-Reply to a message. Automatically sets channel and message reference.
+Reply to a message. Automatically sets the channel ID and the `message_reference`.
 
 # Example
 ```julia
@@ -402,7 +412,11 @@ function reply(client::Client, message::Message; content::String="", embeds::Vec
         message_reference=ref)
 end
 
-"""Edit a message."""
+"""
+    edit_message(client::Client, channel_id::Snowflake, message_id::Snowflake; kwargs...) -> Message
+
+Edit an existing message. `kwargs` correspond to the Discord API fields (content, embeds, etc.).
+"""
 function edit_message(client::Client, channel_id::Snowflake, message_id::Snowflake; kwargs...)
     body = Dict{String, Any}()
     for (k, v) in kwargs
@@ -411,17 +425,29 @@ function edit_message(client::Client, channel_id::Snowflake, message_id::Snowfla
     edit_message(client.ratelimiter, channel_id, message_id; token=client.token, body)
 end
 
-"""Delete a message."""
+"""
+    delete_message(client::Client, channel_id::Snowflake, message_id::Snowflake; reason=nothing)
+
+Delete a message.
+"""
 function delete_message(client::Client, channel_id::Snowflake, message_id::Snowflake; reason=nothing)
     delete_message(client.ratelimiter, channel_id, message_id; token=client.token, reason)
 end
 
-"""Create a reaction on a message."""
+"""
+    create_reaction(client::Client, channel_id::Snowflake, message_id::Snowflake, emoji::String)
+
+Create a reaction on a message. The `emoji` parameter should be a URL-encoded string: `"👍"` or `"custom_emoji:123456"`.
+"""
 function create_reaction(client::Client, channel_id::Snowflake, message_id::Snowflake, emoji::String)
     create_reaction(client.ratelimiter, channel_id, message_id, emoji; token=client.token)
 end
 
-"""Get a channel by ID."""
+"""
+    get_channel(client::Client, channel_id::Snowflake) -> DiscordChannel
+
+Get a channel by ID. Checks the local state cache first.
+"""
 function get_channel(client::Client, channel_id::Snowflake)
     # Check cache first
     cached = get(client.state.channels, channel_id)
@@ -430,7 +456,11 @@ function get_channel(client::Client, channel_id::Snowflake)
     get_channel(client.ratelimiter, channel_id; token=client.token)
 end
 
-"""Get a guild by ID."""
+"""
+    get_guild(client::Client, guild_id::Snowflake) -> Guild
+
+Get a guild by ID. Checks the local state cache first.
+"""
 function get_guild(client::Client, guild_id::Snowflake)
     cached = get(client.state.guilds, guild_id)
     !isnothing(cached) && return cached
@@ -438,7 +468,11 @@ function get_guild(client::Client, guild_id::Snowflake)
     get_guild(client.ratelimiter, guild_id; token=client.token)
 end
 
-"""Get a user by ID."""
+"""
+    get_user(client::Client, user_id::Snowflake) -> User
+
+Get a user by ID. Checks the local state cache first.
+"""
 function get_user(client::Client, user_id::Snowflake)
     cached = get(client.state.users, user_id)
     !isnothing(cached) && return cached
@@ -446,7 +480,11 @@ function get_user(client::Client, user_id::Snowflake)
     get_user(client.ratelimiter, user_id; token=client.token)
 end
 
-"""Send a gateway command to update voice state (join/leave/move voice channels)."""
+"""
+    update_voice_state(client, guild_id; channel_id=nothing, self_mute=false, self_deaf=false)
+
+Send a gateway command to update voice state (join/leave/move voice channels).
+"""
 function update_voice_state(client::Client, guild_id::Snowflake; channel_id=nothing, self_mute::Bool=false, self_deaf::Bool=false)
     shard_id = shard_for_guild(guild_id, client.num_shards)
     shard = client.shards[shard_id + 1]
@@ -459,7 +497,11 @@ function update_voice_state(client::Client, guild_id::Snowflake; channel_id=noth
     send_to_shard(shard, cmd)
 end
 
-"""Send a gateway command to update the bot's presence/status."""
+"""
+    update_presence(client; status="online", activities=[], afk=false, since=nothing)
+
+Send a gateway command to update the bot's presence/status.
+"""
 function update_presence(client::Client; status::String="online", activities::Vector=[], afk::Bool=false, since=nothing)
     for shard in client.shards
         cmd = GatewayCommand(GatewayOpcodes.PRESENCE_UPDATE, Dict(
@@ -472,7 +514,11 @@ function update_presence(client::Client; status::String="online", activities::Ve
     end
 end
 
-"""Request guild members via the gateway."""
+"""
+    request_guild_members(client, guild_id; query="", limit=0, presences=false, user_ids=nothing, nonce=nothing)
+
+Request guild members via the gateway.
+"""
 function request_guild_members(client::Client, guild_id::Snowflake; query::String="", limit::Int=0, presences::Bool=false, user_ids=nothing, nonce=nothing)
     shard_id = shard_for_guild(guild_id, client.num_shards)
     shard = client.shards[shard_id + 1]

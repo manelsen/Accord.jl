@@ -34,6 +34,24 @@ end
     replied_user::Optional{Bool}
 end
 
+"""
+    Message
+
+Represents a message sent in a channel within Discord.
+
+# Fields
+- `id`: The message ID.
+- `channel_id`: The channel ID.
+- `author`: The user who sent the message (optional).
+- `content`: The message text content.
+- `timestamp`: The time the message was sent.
+- `attachments`: Vector of attachments.
+- `embeds`: Vector of embeds.
+- `reactions`: Vector of reactions.
+- `pinned`: Whether the message is pinned.
+- `type`: The type of message.
+- `referenced_message`: The message being replied to (if any).
+"""
 @discord_struct Message begin
     id::Snowflake
     channel_id::Snowflake

@@ -1,3 +1,17 @@
+"""
+    User
+
+Represents a Discord user.
+
+# Fields
+- `id`: The user's snowflake ID.
+- `username`: The user's username.
+- `discriminator`: The user's 4-digit discord-tag (optional).
+- `global_name`: The user's display name (optional).
+- `avatar`: The user's avatar hash.
+- `bot`: Whether the user is a bot.
+- `system`: Whether the user is an Official Discord System user.
+"""
 @discord_struct User begin
     id::Snowflake
     username::String
