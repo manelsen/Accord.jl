@@ -205,10 +205,72 @@ manifest = JSON3.read(read(joinpath(FIXTURES_DIR, "_manifest.json"), String), Di
                 @test msg2.id == msg.id
                 @test msg2.channel_id == msg.channel_id
 
+                # Components V2 validation
+                if !ismissing(msg.components)
+                    for row in msg.components
+                        !ismissing(row.components) && for comp in row.components
+                            if comp.type >= 9 # Section, TextDisplay, etc.
+                                @test comp.type in (9, 10, 11, 12, 13, 14, 17)
+                            end
+                        end
+                    end
+                end
+
                 i >= 5 && break
             end
         else
             @test_skip "no MESSAGE_CREATE fixture"
+        end
+    end
+
+    # ── INTERACTION_CREATE ─────────────────────────────────────────────────
+    @testset "INTERACTION_CREATE" begin
+        if has_fixture("gateway_interaction_create")
+            payloads = load_fixture("gateway_interaction_create")
+            for (i, payload) in enumerate(payloads)
+                data = get_data(payload)
+                event = parse_event("INTERACTION_CREATE", data)
+                @test event isa InteractionCreate
+                
+                int = event.interaction
+                @test int.id isa Snowflake
+                @test int.application_id isa Snowflake
+                @test int.type in (1, 2, 3, 4, 5)
+
+                # Context Menu specific validation
+                if int.type == 2 && !ismissing(int.data)
+                    data = int.data
+                    if !ismissing(data.type) && data.type in (2, 3) # USER or MESSAGE
+                        @test !ismissing(data.target_id)
+                        @test !ismissing(data.resolved)
+                    end
+                end
+
+                # Modal Submit validation
+                if int.type == 5 && !ismissing(int.data)
+                    @test !ismissing(int.data.components)
+                end
+
+                i >= 10 && break
+            end
+        else
+            @test_skip "no INTERACTION_CREATE fixture"
+        end
+    end
+
+    # ── AUTO_MODERATION_ACTION_EXECUTION ───────────────────────────────────
+    @testset "AUTO_MODERATION_ACTION_EXECUTION" begin
+        if has_fixture("gateway_auto_moderation_action_execution")
+            payload = load_fixture_one("gateway_auto_moderation_action_execution")
+            data = get_data(payload)
+            event = parse_event("AUTO_MODERATION_ACTION_EXECUTION", data)
+            
+            @test event isa AutoModActionExecution
+            @test event.guild_id isa Snowflake
+            @test event.rule_id isa Snowflake
+            @test event.action isa AutoModAction
+        else
+            @test_skip "no AUTO_MODERATION_ACTION_EXECUTION fixture"
         end
     end
 

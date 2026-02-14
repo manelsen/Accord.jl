@@ -29,8 +29,8 @@ const API_BASE = "https://discord.com/api/v10"
 const GATEWAY_URL = "wss://gateway.discord.gg/?v=10&encoding=json"
 const FIXTURES_DIR = joinpath(@__DIR__, "fixtures")
 
-# Minimal intents: guilds + guild messages + message content
-const INTENTS = UInt32(1 << 0 | 1 << 9 | 1 << 15)
+# Minimal intents: guilds + guild messages + message content + auto mod
+const INTENTS = UInt32(1 << 0 | 1 << 9 | 1 << 15 | 1 << 20 | 1 << 21)
 
 isempty(TOKEN) && error("Set DISCORD_TOKEN env var (e.g. 'Bot your_token_here')")
 

@@ -1,0 +1,16 @@
+============================================================
+ENDURANCE TEST FINAL REPORT
+============================================================
+Duration: 1.0 hours
+Ready events: 2
+Reconnects: 1
+Total errors: 0
+Peak memory: 765.2 MB
+
+Event counts:
+  GuildCreate: 4
+  MessageCreate: 3
+  READY: 2
+
+Heartbeat ACK gaps: avg=60.6s, min=60.01s, max=94.05s (n=59)
+============================================================
