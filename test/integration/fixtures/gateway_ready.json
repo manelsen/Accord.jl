@@ -1,0 +1,69 @@
+[
+    {
+        "t": "READY",
+        "op": 0,
+        "s": 1,
+        "d": {
+            "resume_gateway_url": "wss://gateway-us-east1-c.discord.gg",
+            "presences": [
+            ],
+            "private_channels": [
+            ],
+            "session_type": "normal",
+            "user": {
+                "username": "Bellegendas Premium",
+                "bot": true,
+                "global_name": null,
+                "primary_guild": null,
+                "id": "1470119116374282333",
+                "clan": null,
+                "discriminator": "7281",
+                "email": null,
+                "flags": 0,
+                "mfa_enabled": true,
+                "verified": true,
+                "avatar": null
+            },
+            "session_id": "55dfeecb1a7214c5ef1bd9b00cd37f54",
+            "shard": [
+                0,
+                1
+            ],
+            "_trace": [
+                "[\"gateway-prd-arm-us-east1-c-x73q\",{\"micros\":138026,\"calls\":[\"id_created\",{\"micros\":1045,\"calls\":[]},\"session_lookup_time\",{\"micros\":244,\"calls\":[]},\"session_lookup_finished\",{\"micros\":12,\"calls\":[]},\"discord-sessions-prd-2-176\",{\"micros\":136404,\"calls\":[\"start_session\",{\"micros\":89480,\"calls\":[\"discord-api-rpc-558f5c96bb-hskqb\",{\"micros\":34049,\"calls\":[\"get_user\",{\"micros\":5718},\"get_guilds\",{\"micros\":3556},\"send_scheduled_deletion_message\",{\"micros\":15},\"guild_join_requests\",{\"micros\":3},\"authorized_ip_coro\",{\"micros\":10},\"pending_payments\",{\"micros\":1882},\"apex_experiments\",{\"micros\":45036},\"sessions_experiments\",{\"micros\":15},\"user_activities\",{\"micros\":5},\"played_application_ids\",{\"micros\":8},\"linked_users\",{\"micros\":3},\"ad_personalization_toggles_disabled\",{\"micros\":3},\"regional_feature_config\",{\"micros\":2}]}]},\"starting_guild_connect\",{\"micros\":33,\"calls\":[]},\"presence_started\",{\"micros\":13551,\"calls\":[]},\"guilds_started\",{\"micros\":101,\"calls\":[]},\"lobbies_started\",{\"micros\":1,\"calls\":[]},\"guilds_connect\",{\"micros\":1,\"calls\":[]},\"presence_connect\",{\"micros\":33202,\"calls\":[]},\"connect_finished\",{\"micros\":33218,\"calls\":[]},\"build_ready\",{\"micros\":17,\"calls\":[]},\"clean_ready\",{\"micros\":1,\"calls\":[]},\"optimize_ready\",{\"micros\":0,\"calls\":[]},\"split_ready\",{\"micros\":1,\"calls\":[]}]}]}]"
+            ],
+            "user_settings": {
+            },
+            "v": 10,
+            "guild_join_requests": [
+            ],
+            "auth": {
+            },
+            "relationships": [
+            ],
+            "guilds": [
+                {
+                    "unavailable": true,
+                    "id": "969760589838712873"
+                },
+                {
+                    "unavailable": true,
+                    "id": "1212124712629440612"
+                }
+            ],
+            "application": {
+                "flags": 11051008,
+                "id": "1470119116374282333"
+            },
+            "game_relationships": [
+            ],
+            "geo_ordered_rtc_regions": [
+                "frankfurt",
+                "brussels",
+                "milan",
+                "paris",
+                "rotterdam"
+            ]
+        }
+    }
+]

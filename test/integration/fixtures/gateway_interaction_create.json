@@ -1,0 +1,214 @@
+[
+    {
+        "t": "INTERACTION_CREATE",
+        "op": 0,
+        "s": 5,
+        "d": {
+            "member": {
+                "collectibles": null,
+                "user": {
+                    "collectibles": null,
+                    "username": "voiddragon",
+                    "display_name_styles": null,
+                    "global_name": "Void Dragon",
+                    "primary_guild": {
+                        "identity_guild_id": "1346756824233148527",
+                        "tag": "Z.ai",
+                        "badge": "7f968d34689b032120d7a0f2a3d69b83",
+                        "identity_enabled": true
+                    },
+                    "id": "383221796700291082",
+                    "clan": {
+                        "identity_guild_id": "1346756824233148527",
+                        "tag": "Z.ai",
+                        "badge": "7f968d34689b032120d7a0f2a3d69b83",
+                        "identity_enabled": true
+                    },
+                    "public_flags": 0,
+                    "discriminator": "0",
+                    "avatar_decoration_data": {
+                        "expires_at": null,
+                        "asset": "a_94febf08c37b21ee5ed92c49ef98bf00",
+                        "sku_id": "1366494385583165630"
+                    },
+                    "avatar": "904d256347c060ddb0071fa23a13c6ec"
+                },
+                "display_name_styles": null,
+                "pending": false,
+                "permissions": "9007199254740991",
+                "unusual_dm_activity_until": null,
+                "banner": null,
+                "mute": false,
+                "flags": 0,
+                "communication_disabled_until": null,
+                "roles": [
+                    "1292918902988345414"
+                ],
+                "premium_since": null,
+                "nick": null,
+                "joined_at": "2024-02-27T19:50:51.701000+00:00",
+                "deaf": false,
+                "avatar": null
+            },
+            "guild_id": "1212124712629440612",
+            "data": {
+                "name": "ping",
+                "guild_id": "1212124712629440612",
+                "id": "1471991205431738593",
+                "type": 1
+            },
+            "app_permissions": "2248473465835073",
+            "id": "1472053946766987285",
+            "channel_id": "1212124713271304246",
+            "version": 1,
+            "entitlement_sku_ids": [
+            ],
+            "attachment_size_limit": 524288000,
+            "entitlements": [
+            ],
+            "channel": {
+                "topic": null,
+                "guild_id": "1212124712629440612",
+                "parent_id": "1212124713271304243",
+                "theme_color": null,
+                "name": "geral",
+                "nsfw": false,
+                "last_pin_timestamp": "2025-12-30T21:05:57.113000+00:00",
+                "last_message_id": "1472053922800734339",
+                "id": "1212124713271304246",
+                "position": 0,
+                "icon_emoji": {
+                    "name": "👋",
+                    "id": null
+                },
+                "rate_limit_per_user": 0,
+                "permissions": "9007199254740991",
+                "flags": 0,
+                "type": 0
+            },
+            "token": "aW50ZXJhY3Rpb246MTQ3MjA1Mzk0Njc2Njk4NzI4NTpoeVM0ZUlnbXRHVnVzc0lUenZWbkxtQmVLdHN1VHFUZlVKd1VBc20wQ3Yzc1h6N0pQaFlsTUJsYXM2Y1hvV0JPRXR1NEJyMVpDeUhDTVJlcjY1aFlCWENDNzhiWUViMXloMkYxMTZaNU55S0JkZzh2MnFXRFBVM1g5YTRob2dJUA",
+            "locale": "en-GB",
+            "guild_locale": "en-US",
+            "guild": {
+                "locale": "en-US",
+                "features": [
+                    "PIN_PERMISSION_MIGRATION_COMPLETE",
+                    "BYPASS_SLOWMODE_PERMISSION_MIGRATION_COMPLETE"
+                ],
+                "id": "1212124712629440612"
+            },
+            "application_id": "1470119116374282333",
+            "context": 0,
+            "type": 2,
+            "authorizing_integration_owners": {
+                "0": "1212124712629440612"
+            }
+        }
+    },
+    {
+        "t": "INTERACTION_CREATE",
+        "op": 0,
+        "s": 6,
+        "d": {
+            "member": {
+                "collectibles": null,
+                "user": {
+                    "collectibles": null,
+                    "username": "voiddragon",
+                    "display_name_styles": null,
+                    "global_name": "Void Dragon",
+                    "primary_guild": {
+                        "identity_guild_id": "1346756824233148527",
+                        "tag": "Z.ai",
+                        "badge": "7f968d34689b032120d7a0f2a3d69b83",
+                        "identity_enabled": true
+                    },
+                    "id": "383221796700291082",
+                    "clan": {
+                        "identity_guild_id": "1346756824233148527",
+                        "tag": "Z.ai",
+                        "badge": "7f968d34689b032120d7a0f2a3d69b83",
+                        "identity_enabled": true
+                    },
+                    "public_flags": 0,
+                    "discriminator": "0",
+                    "avatar_decoration_data": {
+                        "expires_at": null,
+                        "asset": "a_94febf08c37b21ee5ed92c49ef98bf00",
+                        "sku_id": "1366494385583165630"
+                    },
+                    "avatar": "904d256347c060ddb0071fa23a13c6ec"
+                },
+                "display_name_styles": null,
+                "pending": false,
+                "permissions": "9007199254740991",
+                "unusual_dm_activity_until": null,
+                "banner": null,
+                "mute": false,
+                "flags": 0,
+                "communication_disabled_until": null,
+                "roles": [
+                    "1292918902988345414"
+                ],
+                "premium_since": null,
+                "nick": null,
+                "joined_at": "2024-02-27T19:50:51.701000+00:00",
+                "deaf": false,
+                "avatar": null
+            },
+            "guild_id": "1212124712629440612",
+            "data": {
+                "name": "pingephemeral",
+                "guild_id": "1212124712629440612",
+                "id": "1471991205431738594",
+                "type": 1
+            },
+            "app_permissions": "2248473465835073",
+            "id": "1472053967843492094",
+            "channel_id": "1212124713271304246",
+            "version": 1,
+            "entitlement_sku_ids": [
+            ],
+            "attachment_size_limit": 524288000,
+            "entitlements": [
+            ],
+            "channel": {
+                "topic": null,
+                "guild_id": "1212124712629440612",
+                "parent_id": "1212124713271304243",
+                "theme_color": null,
+                "name": "geral",
+                "nsfw": false,
+                "last_pin_timestamp": "2025-12-30T21:05:57.113000+00:00",
+                "last_message_id": "1472053922800734339",
+                "id": "1212124713271304246",
+                "position": 0,
+                "icon_emoji": {
+                    "name": "👋",
+                    "id": null
+                },
+                "rate_limit_per_user": 0,
+                "permissions": "9007199254740991",
+                "flags": 0,
+                "type": 0
+            },
+            "token": "aW50ZXJhY3Rpb246MTQ3MjA1Mzk2Nzg0MzQ5MjA5NDpKV0t1d2JQMnZNdVdKbWFlU1A0bGp0dnlVRWJrQU5XY0tLSHdKYzNJcDN5VmNWRzFmYXQ1V0FXalAwMkkyZERsNmFXY0FoV2R6MFRFcHdrSkg4NTRGTUJoMGpVS3NCYkU4S1F4YU5ETkFFYXRuTW43MU55MG5hR0dLOWg4N1VKMg",
+            "locale": "en-GB",
+            "guild_locale": "en-US",
+            "guild": {
+                "locale": "en-US",
+                "features": [
+                    "BYPASS_SLOWMODE_PERMISSION_MIGRATION_COMPLETE",
+                    "PIN_PERMISSION_MIGRATION_COMPLETE"
+                ],
+                "id": "1212124712629440612"
+            },
+            "application_id": "1470119116374282333",
+            "context": 0,
+            "type": 2,
+            "authorizing_integration_owners": {
+                "0": "1212124712629440612"
+            }
+        }
+    }
+]
