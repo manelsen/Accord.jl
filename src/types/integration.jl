@@ -22,7 +22,7 @@ end
     expire_behavior::Optional{Int}
     expire_grace_period::Optional{Int}
     user::Optional{User}
-    account::IntegrationAccount
+    account::Optional{IntegrationAccount}
     synced_at::Optional{String}
     subscriber_count::Optional{Int}
     revoked::Optional{Bool}

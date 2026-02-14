@@ -1,4 +1,4 @@
 @discord_struct Ban begin
     reason::Nullable{String}
-    user::User
+    user::Optional{User}
 end

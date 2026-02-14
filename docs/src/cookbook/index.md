@@ -1,4 +1,4 @@
-# Accord.jl Cookbook
+# [Accord.jl Cookbook](@id cookbook-index)
 
 Practical, copy-paste-ready recipes for building Discord bots in Julia with [Accord.jl](https://github.com/your-org/Accord.jl).
 
