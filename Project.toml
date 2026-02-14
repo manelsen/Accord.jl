@@ -24,6 +24,7 @@ JET = "0.9, 0.10, 0.11"
 JSON3 = "1"
 LRUCache = "1"
 Logging = "1"
+Mocking = "0.7"
 Opus_jll = "1"
 Sockets = "1"
 StructTypes = "1"
@@ -34,7 +35,8 @@ libsodium_jll = "1"
 [extras]
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
+Mocking = "78c3b35d-d492-501b-9361-3d52fe80e533"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Aqua", "JET", "Test"]
+test = ["Aqua", "JET", "Mocking", "Test"]

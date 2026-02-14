@@ -135,11 +135,23 @@ julia --project=. -e 'using Pkg; Pkg.test()'
 ```
 
 ### Coverage
-Generate a local HTML coverage report using `LocalCoverage.jl`:
+Generate a local HTML coverage report using `Coverage.jl`:
 ```bash
-julia --project=. test/coverage.jl
+julia test/coverage.jl
 ```
-The report will be generated in the `coverage/` directory. Open `coverage/index.html` in your browser to view results.
+The report will be generated in the `coverage/` directory (if configured) or summarized in the terminal.
+
+### Offline Integration Tests (Mocking)
+Accord.jl uses `Mocking.jl` to simulate Discord API responses using local JSON fixtures. This allows for fast, reliable, and offline testing.
+
+To add a new mocked test:
+1. Place the Discord API response JSON in `test/integration/fixtures/`.
+2. Add a test case in `test/integration/test_rest_mock.jl` using the `@patch` and `apply()` pattern.
+
+Run integration tests:
+```bash
+ACCORD_INTEGRATION_TESTS=1 julia --project=. -e 'using Pkg; Pkg.test()'
+```
 
 ## 📄 License
 
