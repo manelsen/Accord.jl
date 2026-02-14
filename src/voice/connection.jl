@@ -66,7 +66,7 @@ function _voice_gateway_loop(ws, session::VoiceGatewaySession)
             break
         end
 
-        data isa Nothing && break
+        (data isa Nothing || data isa HTTP.WebSockets.CloseFrameBody) && break
 
         msg = try
             JSON3.read(data, Dict{String, Any})

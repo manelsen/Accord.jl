@@ -140,42 +140,49 @@ function update_state!(state::State, event::GuildCreate)
     state.guilds[g.id] = g
 
     # Cache channels
-    if !ismissing(g.channels)
-        for ch in g.channels
+    channels = g.channels
+    if !ismissing(channels)
+        for ch in channels
             state.channels[ch.id] = ch
         end
     end
 
     # Cache threads
-    if !ismissing(g.threads)
-        for th in g.threads
+    threads = g.threads
+    if !ismissing(threads)
+        for th in threads
             state.channels[th.id] = th
         end
     end
 
     # Cache roles
-    if !ismissing(g.roles)
+    roles = g.roles
+    if !ismissing(roles)
         store = get!(state.roles, g.id, Store{Role}())
-        for role in g.roles
+        for role in roles
             store[role.id] = role
         end
     end
 
     # Cache emojis
-    if !ismissing(g.emojis)
+    emojis = g.emojis
+    if !ismissing(emojis)
         store = get!(state.emojis, g.id, Store{Emoji}())
-        for emoji in g.emojis
-            !isnothing(emoji.id) && (store[emoji.id] = emoji)
+        for emoji in emojis
+            eid = emoji.id
+            !isnothing(eid) && (store[eid] = emoji)
         end
     end
 
     # Cache members
-    if !ismissing(g.members)
+    members = g.members
+    if !ismissing(members)
         store = get!(state.members, g.id, Store{Member}())
-        for member in g.members
-            if !ismissing(member.user)
-                state.users[member.user.id] = member.user
-                store[member.user.id] = member
+        for member in members
+            user = member.user
+            if !ismissing(user)
+                state.users[user.id] = user
+                store[user.id] = member
             end
         end
     end
@@ -215,9 +222,10 @@ end
 
 function update_state!(state::State, event::GuildMemberAdd)
     store = get!(state.members, event.guild_id, Store{Member}())
-    if !ismissing(event.member.user)
-        state.users[event.member.user.id] = event.member.user
-        store[event.member.user.id] = event.member
+    user = event.member.user
+    if !ismissing(user)
+        state.users[user.id] = user
+        store[user.id] = event.member
     end
 end
 
@@ -257,7 +265,8 @@ function update_state!(state::State, event::GuildEmojisUpdate)
     # Replace all emojis for this guild
     empty!(store.data)
     for emoji in event.emojis
-        !isnothing(emoji.id) && (store[emoji.id] = emoji)
+        eid = emoji.id
+        !isnothing(eid) && (store[eid] = emoji)
     end
 end
 
@@ -268,8 +277,9 @@ end
 
 function update_state!(state::State, event::VoiceStateUpdateEvent)
     vs = event.state
-    if !ismissing(vs.guild_id)
-        guild_vs = get!(state.voice_states, vs.guild_id, Dict{Snowflake, VoiceState}())
+    gid = vs.guild_id
+    if !ismissing(gid)
+        guild_vs = get!(state.voice_states, gid, Dict{Snowflake, VoiceState}())
         if isnothing(vs.channel_id)
             # User left voice
             delete!(guild_vs, vs.user_id)
@@ -281,8 +291,9 @@ end
 
 function update_state!(state::State, event::MessageCreate)
     msg = event.message
-    if !ismissing(msg.author)
-        state.users[msg.author.id] = msg.author
+    author = msg.author
+    if !ismissing(author)
+        state.users[author.id] = author
     end
 end
 

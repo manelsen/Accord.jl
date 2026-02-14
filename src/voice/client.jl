@@ -83,23 +83,25 @@ function connect!(vc::VoiceClient)
     me = vc.client.state.me
     isnothing(me) && error("Client user not available")
 
-    vc.session = VoiceGatewaySession(
+    session = VoiceGatewaySession(
         vc.guild_id, vc.channel_id, me.id,
         vc._voice_session_id, vc._voice_endpoint, vc._voice_token
     )
+    vc.session = session
 
-    voice_gateway_connect(vc.session)
-    wait(vc.session.ready)
+    voice_gateway_connect(session)
+    wait(session.ready)
 
     # Step 4: IP Discovery
     @info "Performing IP discovery"
-    vc.udp_socket = create_voice_udp(vc.session.ip, vc.session.port)
-    our_ip, our_port = ip_discovery(vc.udp_socket, vc.session.ip, vc.session.port, vc.session.ssrc)
+    socket = create_voice_udp(session.ip, session.port)
+    vc.udp_socket = socket
+    our_ip, our_port = ip_discovery(socket, session.ip, session.port, session.ssrc)
 
     # Step 5: Select protocol
-    vc.encryption_mode = select_encryption_mode(vc.session.modes)
+    vc.encryption_mode = select_encryption_mode(session.modes)
     @info "Selected encryption mode" mode=vc.encryption_mode
-    send_select_protocol(vc.session, our_ip, our_port, vc.encryption_mode)
+    send_select_protocol(session, our_ip, our_port, vc.encryption_mode)
 
     # Wait briefly for session description
     sleep(1.0)
@@ -121,14 +123,16 @@ function disconnect!(vc::VoiceClient)
     stop!(vc.player)
 
     # Close UDP socket
-    if !isnothing(vc.udp_socket)
-        close(vc.udp_socket)
+    socket = vc.udp_socket
+    if !isnothing(socket)
+        close(socket)
         vc.udp_socket = nothing
     end
 
     # Close voice gateway
-    if !isnothing(vc.session)
-        vc.session.connected = false
+    session = vc.session
+    if !isnothing(session)
+        session.connected = false
         vc.session = nothing
     end
 
@@ -145,11 +149,12 @@ Play audio from the given source.
 """
 function play!(vc::VoiceClient, source::AbstractAudioSource)
     !vc.connected && error("Not connected to voice")
-    isnothing(vc.session) && error("No voice session")
-    isempty(vc.session.secret_key) && error("No encryption key — session not fully established")
+    session = vc.session
+    isnothing(session) && error("No voice session")
+    isempty(session.secret_key) && error("No encryption key — session not fully established")
 
     # Signal that we're speaking
-    send_speaking(vc.session, true)
+    send_speaking(session, true)
 
     play!(vc.player, source, opus_data -> _send_audio(vc, opus_data))
 
@@ -163,29 +168,37 @@ Stop audio playback.
 """
 function stop!(vc::VoiceClient)
     stop!(vc.player)
-    if vc.connected && !isnothing(vc.session)
+    session = vc.session
+    if vc.connected && !isnothing(session)
         try
-            send_speaking(vc.session, false)
+            send_speaking(session, false)
         catch
         end
     end
 end
 
 function _send_audio(vc::VoiceClient, opus_data::Vector{UInt8})
+    session = vc.session
+    isnothing(session) && error("No voice session")
+    socket = vc.udp_socket
+    isnothing(socket) && error("No UDP socket")
+
     vc.sequence = vc.sequence == typemax(UInt16) ? UInt16(0) : vc.sequence + UInt16(1)
     vc.timestamp += UInt32(OPUS_FRAME_SIZE)
 
-    header = rtp_header(vc.sequence, vc.timestamp, vc.session.ssrc)
+    header = rtp_header(vc.sequence, vc.timestamp, session.ssrc)
 
     # Encrypt based on mode
     encrypted = _encrypt_audio(vc, header, opus_data)
 
     # Send via UDP
-    send_voice_packet(vc.udp_socket, vc.session.ip, vc.session.port, header, encrypted)
+    send_voice_packet(socket, session.ip, session.port, header, encrypted)
 end
 
 function _encrypt_audio(vc::VoiceClient, header::Vector{UInt8}, opus_data::Vector{UInt8})
-    key = vc.session.secret_key
+    session = vc.session
+    isnothing(session) && error("No voice session")
+    key = session.secret_key
 
     if vc.encryption_mode == "xsalsa20_poly1305"
         # Nonce is the RTP header padded to 24 bytes

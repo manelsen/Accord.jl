@@ -56,8 +56,9 @@ function gateway_connect(
     resume = false
 
     while reconnect
-        url = if resume && !isnothing(session.resume_gateway_url)
-            session.resume_gateway_url * "/?v=$(API_VERSION)&encoding=json"
+        resume_url = session.resume_gateway_url
+        url = if resume && !isnothing(resume_url)
+            resume_url * "/?v=$(API_VERSION)&encoding=json"
         else
             GATEWAY_URL
         end
@@ -76,12 +77,17 @@ function gateway_connect(
             end
         catch e
             if e isa HTTP.WebSockets.WebSocketError
-                code = e.status
-                @warn "Gateway WebSocket closed" code
-                if !GatewayCloseCodes.can_reconnect(code)
-                    @error "Cannot reconnect — fatal close code" code
-                    reconnect = false
-                    continue
+                msg = e.message
+                if msg isa HTTP.WebSockets.CloseFrameBody
+                    code = msg.status
+                    @warn "Gateway WebSocket closed" code
+                    if !GatewayCloseCodes.can_reconnect(code)
+                        @error "Cannot reconnect — fatal close code" code
+                        reconnect = false
+                        continue
+                    end
+                else
+                    @warn "Gateway WebSocket error" message=msg
                 end
             elseif e isa Base.IOError || e isa HTTP.Exceptions.ConnectError
                 @warn "Gateway connection error, will retry" exception=e
@@ -92,8 +98,9 @@ function gateway_connect(
             end
         end
 
-        if !isnothing(session.heartbeat_state)
-            stop_heartbeat!(session.heartbeat_state)
+        hb = session.heartbeat_state
+        if !isnothing(hb)
+            stop_heartbeat!(hb)
         end
 
         # If session was explicitly stopped (connected set to false externally), don't reconnect
@@ -125,8 +132,8 @@ function _gateway_loop(
             break
         end
 
-        if data isa Nothing
-            @warn "WebSocket received Nothing, breaking loop"
+        if data isa Nothing || data isa HTTP.WebSockets.CloseFrameBody
+            @warn "WebSocket received close/nothing, breaking loop"
             break
         end
 
@@ -177,8 +184,9 @@ function _gateway_loop(
             HTTP.WebSockets.send(ws, payload_str)
 
         elseif op == GatewayOpcodes.HEARTBEAT_ACK
-            if !isnothing(session.heartbeat_state)
-                heartbeat_ack!(session.heartbeat_state)
+            hb_state = session.heartbeat_state
+            if !isnothing(hb_state)
+                heartbeat_ack!(hb_state)
             end
 
         elseif op == GatewayOpcodes.RECONNECT
