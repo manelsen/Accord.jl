@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Deployment · Accord.jl</title><meta name="title" content="Deployment · Accord.jl"/><meta property="og:title" content="Deployment · Accord.jl"/><meta property="twitter:title" content="Deployment · Accord.jl"/><meta name="description" content="Documentation for Accord.jl."/><meta property="og:description" content="Documentation for Accord.jl."/><meta property="twitter:description" content="Documentation for Accord.jl."/><meta property="og:url" content="https://manelsen.github.io/Accord.jl/cookbook/13-deploy/"/><meta property="twitter:url" content="https://manelsen.github.io/Accord.jl/cookbook/13-deploy/"/><link rel="canonical" href="https://manelsen.github.io/Accord.jl/cookbook/13-deploy/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Accord.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Cookbook</span><ul><li><a class="tocitem" href="../">Accord.jl Cookbook</a></li><li><a class="tocitem" href="../01-basic-bot/">Your First Bot</a></li><li><a class="tocitem" href="../02-messages-and-embeds/">Rich Messages</a></li><li><a class="tocitem" href="../03-slash-commands/">Slash Commands</a></li><li><a class="tocitem" href="../04-buttons-selects-modals/">Buttons, Selects &amp; Modals</a></li><li><a class="tocitem" href="../05-voice/">Voice</a></li><li><a class="tocitem" href="../06-permissions/">Permissions</a></li><li><a class="tocitem" href="../07-caching/">Caching</a></li><li><a class="tocitem" href="../08-sharding/">Sharding</a></li><li><a class="tocitem" href="../09-automod/">Auto-Moderation</a></li><li><a class="tocitem" href="../10-polls/">Polls</a></li><li><a class="tocitem" href="../11-architectural-patterns/">Architectural Patterns</a></li><li><a class="tocitem" href="../12-performance/">Performance</a></li><li class="is-active"><a class="tocitem" href>Deployment</a><ul class="internal"><li><a class="tocitem" href="#1.-Environment-Management"><span>1. Environment Management</span></a></li><li><a class="tocitem" href="#2.-Systemd-Service"><span>2. Systemd Service</span></a></li><li><a class="tocitem" href="#3.-Docker"><span>3. Docker</span></a></li><li><a class="tocitem" href="#4.-PackageCompiler-Sysimage"><span>4. PackageCompiler Sysimage</span></a></li><li><a class="tocitem" href="#5.-Health-Checks"><span>5. Health Checks</span></a></li><li><a class="tocitem" href="#6.-Log-Rotation"><span>6. Log Rotation</span></a></li><li><a class="tocitem" href="#7.-Update-Workflow"><span>7. Update Workflow</span></a></li></ul></li><li><a class="tocitem" href="../14-troubleshooting/">Troubleshooting</a></li><li><a class="tocitem" href="../15-why-julia/">Why Julia?</a></li><li><a class="tocitem" href="../16-ai-agent/">AI Agent Bot</a></li></ul></li><li><a class="tocitem" href="../../api/">API Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Cookbook</a></li><li class="is-active"><a href>Deployment</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Deployment</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/manelsen/Accord.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/manelsen/Accord.jl/blob/main/docs/src/cookbook/13-deploy.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Recipe-13-—-Deployment"><a class="docs-heading-anchor" href="#Recipe-13-—-Deployment">Recipe 13 — Deployment</a><a id="Recipe-13-—-Deployment-1"></a><a class="docs-heading-anchor-permalink" href="#Recipe-13-—-Deployment" title="Permalink"></a></h1><p><strong>Difficulty:</strong> Intermediate <strong>What you will build:</strong> Production deployment with systemd, Docker, sysimages, and health checks.</p><p><strong>Prerequisites:</strong> <a href="../11-architectural-patterns/">Recipe 11</a></p><hr/><h2 id="1.-Environment-Management"><a class="docs-heading-anchor" href="#1.-Environment-Management">1. Environment Management</a><a id="1.-Environment-Management-1"></a><a class="docs-heading-anchor-permalink" href="#1.-Environment-Management" title="Permalink"></a></h2><h3 id=".env-File"><a class="docs-heading-anchor" href="#.env-File">.env File</a><a id=".env-File-1"></a><a class="docs-heading-anchor-permalink" href="#.env-File" title="Permalink"></a></h3><pre><code class="language-bash hljs"># .env — NEVER commit this file
+DISCORD_TOKEN=Bot XXXXXXXXXXXXXXXXXXXXXXXXXX.XXXXXX.XXXXXXXXXXXXXXXXXXXXXXXX
+OPENAI_API_KEY=sk-...
+DATABASE_URL=sqlite:///data/bot.db</code></pre><h3 id=".gitignore"><a class="docs-heading-anchor" href="#.gitignore">.gitignore</a><a id=".gitignore-1"></a><a class="docs-heading-anchor-permalink" href="#.gitignore" title="Permalink"></a></h3><pre><code class="language-gitignore hljs">.env
+*.db
+Manifest.toml
+bot_sysimage.so
+/data/
+/logs/</code></pre><h3 id="Loading-in-Julia"><a class="docs-heading-anchor" href="#Loading-in-Julia">Loading in Julia</a><a id="Loading-in-Julia-1"></a><a class="docs-heading-anchor-permalink" href="#Loading-in-Julia" title="Permalink"></a></h3><pre><code class="language-julia hljs">function load_env(path=&quot;.env&quot;)
+    isfile(path) || return
+    for line in eachline(path)
+        stripped = strip(line)
+        (isempty(stripped) || startswith(stripped, &#39;#&#39;)) &amp;&amp; continue
+        eq_pos = findfirst(&#39;=&#39;, stripped)
+        isnothing(eq_pos) &amp;&amp; continue
+        key = strip(stripped[1:eq_pos-1])
+        value = strip(stripped[eq_pos+1:end])
+        ENV[key] = value
+    end
+end</code></pre><h2 id="2.-Systemd-Service"><a class="docs-heading-anchor" href="#2.-Systemd-Service">2. Systemd Service</a><a id="2.-Systemd-Service-1"></a><a class="docs-heading-anchor-permalink" href="#2.-Systemd-Service" title="Permalink"></a></h2><h3 id="Service-Unit-File"><a class="docs-heading-anchor" href="#Service-Unit-File">Service Unit File</a><a id="Service-Unit-File-1"></a><a class="docs-heading-anchor-permalink" href="#Service-Unit-File" title="Permalink"></a></h3><pre><code class="language-ini hljs"># /etc/systemd/system/discord-bot.service
+[Unit]
+Description=Accord.jl Discord Bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=botuser
+Group=botuser
+WorkingDirectory=/opt/mybot
+EnvironmentFile=/opt/mybot/.env
+ExecStart=/usr/local/bin/julia --project=/opt/mybot --threads=4 /opt/mybot/bin/run.jl
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=discord-bot
+
+# Security hardening
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/opt/mybot/data /opt/mybot/logs
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target</code></pre><h3 id="With-Sysimage-(Fast-Startup)"><a class="docs-heading-anchor" href="#With-Sysimage-(Fast-Startup)">With Sysimage (Fast Startup)</a><a id="With-Sysimage-(Fast-Startup)-1"></a><a class="docs-heading-anchor-permalink" href="#With-Sysimage-(Fast-Startup)" title="Permalink"></a></h3><pre><code class="language-ini hljs">ExecStart=/usr/local/bin/julia --sysimage=/opt/mybot/bot_sysimage.so --project=/opt/mybot --threads=4 /opt/mybot/bin/run.jl</code></pre><h3 id="Managing-the-Service"><a class="docs-heading-anchor" href="#Managing-the-Service">Managing the Service</a><a id="Managing-the-Service-1"></a><a class="docs-heading-anchor-permalink" href="#Managing-the-Service" title="Permalink"></a></h3><pre><code class="language-bash hljs">sudo systemctl daemon-reload
+sudo systemctl enable discord-bot
+sudo systemctl start discord-bot
+sudo systemctl status discord-bot
+sudo journalctl -u discord-bot -f      # follow logs
+sudo journalctl -u discord-bot --since &quot;1 hour ago&quot;</code></pre><h2 id="3.-Docker"><a class="docs-heading-anchor" href="#3.-Docker">3. Docker</a><a id="3.-Docker-1"></a><a class="docs-heading-anchor-permalink" href="#3.-Docker" title="Permalink"></a></h2><h3 id="Dockerfile"><a class="docs-heading-anchor" href="#Dockerfile">Dockerfile</a><a id="Dockerfile-1"></a><a class="docs-heading-anchor-permalink" href="#Dockerfile" title="Permalink"></a></h3><pre><code class="language-dockerfile hljs"># Multi-stage build for smaller image
+
+# Stage 1: Build sysimage
+FROM julia:1.11 AS builder
+
+WORKDIR /app
+COPY Project.toml Manifest.toml ./
+RUN julia --project=. -e &#39;using Pkg; Pkg.instantiate(); Pkg.precompile()&#39;
+
+COPY . .
+
+# Optional: create sysimage for fast startup
+RUN julia --project=. -e &#39;
+    using PackageCompiler
+    create_sysimage(
+        [&quot;Accord&quot;, &quot;HTTP&quot;, &quot;JSON3&quot;],
+        sysimage_path=&quot;bot_sysimage.so&quot;,
+        precompile_execution_file=&quot;precompile_script.jl&quot;,
+    )
+&#39;
+
+# Stage 2: Runtime
+FROM julia:1.11-slim
+
+# Install ffmpeg for voice support
+RUN apt-get update &amp;&amp; apt-get install -y --no-install-recommends ffmpeg &amp;&amp; rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy project and sysimage
+COPY --from=builder /app /app
+
+# Create data directory
+RUN mkdir -p /app/data /app/logs
+
+# Run as non-root
+RUN useradd -m botuser
+USER botuser
+
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+    CMD julia -e &#39;exit(isfile(&quot;/app/data/healthcheck&quot;) &amp;&amp; time() - mtime(&quot;/app/data/healthcheck&quot;) &lt; 60 ? 0 : 1)&#39;
+
+ENTRYPOINT [&quot;julia&quot;, &quot;--sysimage=/app/bot_sysimage.so&quot;, &quot;--project=/app&quot;, &quot;--threads=4&quot;, &quot;bin/run.jl&quot;]</code></pre><h3 id="Dockerfile-(Simple,-No-Sysimage)"><a class="docs-heading-anchor" href="#Dockerfile-(Simple,-No-Sysimage)">Dockerfile (Simple, No Sysimage)</a><a id="Dockerfile-(Simple,-No-Sysimage)-1"></a><a class="docs-heading-anchor-permalink" href="#Dockerfile-(Simple,-No-Sysimage)" title="Permalink"></a></h3><pre><code class="language-dockerfile hljs">FROM julia:1.11
+
+RUN apt-get update &amp;&amp; apt-get install -y --no-install-recommends ffmpeg &amp;&amp; rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY Project.toml Manifest.toml ./
+RUN julia --project=. -e &#39;using Pkg; Pkg.instantiate(); Pkg.precompile()&#39;
+
+COPY . .
+RUN mkdir -p /app/data
+
+ENTRYPOINT [&quot;julia&quot;, &quot;--project=/app&quot;, &quot;--threads=4&quot;, &quot;bin/run.jl&quot;]</code></pre><h3 id="docker-compose.yml"><a class="docs-heading-anchor" href="#docker-compose.yml">docker-compose.yml</a><a id="docker-compose.yml-1"></a><a class="docs-heading-anchor-permalink" href="#docker-compose.yml" title="Permalink"></a></h3><pre><code class="language-yaml hljs">version: &quot;3.8&quot;
+
+services:
+  bot:
+    build: .
+    env_file: .env
+    restart: always
+    volumes:
+      - bot-data:/app/data
+      - bot-logs:/app/logs
+    logging:
+      driver: json-file
+      options:
+        max-size: &quot;10m&quot;
+        max-file: &quot;3&quot;
+
+volumes:
+  bot-data:
+  bot-logs:</code></pre><h3 id="Running"><a class="docs-heading-anchor" href="#Running">Running</a><a id="Running-1"></a><a class="docs-heading-anchor-permalink" href="#Running" title="Permalink"></a></h3><pre><code class="language-bash hljs"># Build and start
+docker compose up -d --build
+
+# View logs
+docker compose logs -f bot
+
+# Restart
+docker compose restart bot
+
+# Update
+git pull
+docker compose up -d --build</code></pre><h2 id="4.-PackageCompiler-Sysimage"><a class="docs-heading-anchor" href="#4.-PackageCompiler-Sysimage">4. PackageCompiler Sysimage</a><a id="4.-PackageCompiler-Sysimage-1"></a><a class="docs-heading-anchor-permalink" href="#4.-PackageCompiler-Sysimage" title="Permalink"></a></h2><p>Create a sysimage for near-instant startup (~1s vs ~10s):</p><pre><code class="language-julia hljs"># build_sysimage.jl
+using PackageCompiler
+
+create_sysimage(
+    [&quot;Accord&quot;, &quot;HTTP&quot;, &quot;JSON3&quot;],
+    sysimage_path=&quot;bot_sysimage.so&quot;,
+    precompile_execution_file=&quot;precompile_script.jl&quot;,
+)</code></pre><pre><code class="language-julia hljs"># precompile_script.jl
+using Accord
+
+# Exercise the code paths that matter
+client = Client(&quot;Bot fake&quot;; intents=IntentGuilds)
+tree = CommandTree()
+
+# Components
+embed(title=&quot;T&quot;, color=0x5865F2)
+button(label=&quot;B&quot;, custom_id=&quot;b&quot;)
+action_row([button(label=&quot;X&quot;, custom_id=&quot;x&quot;)])
+string_select(custom_id=&quot;s&quot;, options=[select_option(label=&quot;L&quot;, value=&quot;V&quot;)])
+text_input(custom_id=&quot;ti&quot;, label=&quot;L&quot;)
+command_option(type=3, name=&quot;n&quot;, description=&quot;d&quot;)
+
+println(&quot;Precompilation complete&quot;)</code></pre><p>Build:</p><pre><code class="language-bash hljs">julia --project=. build_sysimage.jl</code></pre><h2 id="5.-Health-Checks"><a class="docs-heading-anchor" href="#5.-Health-Checks">5. Health Checks</a><a id="5.-Health-Checks-1"></a><a class="docs-heading-anchor-permalink" href="#5.-Health-Checks" title="Permalink"></a></h2><h3 id="Simple-File-Based-Health-Check"><a class="docs-heading-anchor" href="#Simple-File-Based-Health-Check">Simple File-Based Health Check</a><a id="Simple-File-Based-Health-Check-1"></a><a class="docs-heading-anchor-permalink" href="#Simple-File-Based-Health-Check" title="Permalink"></a></h3><pre><code class="language-julia hljs"># In your bot, write a timestamp file periodically
+@async begin
+    while client.running
+        write(&quot;data/healthcheck&quot;, string(time()))
+        sleep(30)
+    end
+end</code></pre><h3 id="HTTP-Health-Endpoint"><a class="docs-heading-anchor" href="#HTTP-Health-Endpoint">HTTP Health Endpoint</a><a id="HTTP-Health-Endpoint-1"></a><a class="docs-heading-anchor-permalink" href="#HTTP-Health-Endpoint" title="Permalink"></a></h3><pre><code class="language-julia hljs">import HTTP
+
+function start_health_server(client; port=8080)
+    @async HTTP.serve(&quot;0.0.0.0&quot;, port) do request
+        if request.target == &quot;/health&quot;
+            status = client.running ? 200 : 503
+            body = JSON3.write(Dict(
+                &quot;status&quot; =&gt; client.running ? &quot;ok&quot; : &quot;down&quot;,
+                &quot;guilds&quot; =&gt; length(client.state.guilds),
+                &quot;uptime_s&quot; =&gt; round(Int, time() - start_time),
+            ))
+            return HTTP.Response(status, [&quot;Content-Type&quot; =&gt; &quot;application/json&quot;], body)
+        end
+        return HTTP.Response(404, &quot;Not found&quot;)
+    end
+end
+
+const start_time = time()
+
+on(client, ReadyEvent) do c, event
+    start_health_server(c)
+    @info &quot;Health endpoint running on :8080/health&quot;
+end</code></pre><h2 id="6.-Log-Rotation"><a class="docs-heading-anchor" href="#6.-Log-Rotation">6. Log Rotation</a><a id="6.-Log-Rotation-1"></a><a class="docs-heading-anchor-permalink" href="#6.-Log-Rotation" title="Permalink"></a></h2><h3 id="With-systemd-(automatic-via-journald)"><a class="docs-heading-anchor" href="#With-systemd-(automatic-via-journald)">With systemd (automatic via journald)</a><a id="With-systemd-(automatic-via-journald)-1"></a><a class="docs-heading-anchor-permalink" href="#With-systemd-(automatic-via-journald)" title="Permalink"></a></h3><pre><code class="language-bash hljs"># journald handles rotation automatically
+# Configure limits in /etc/systemd/journald.conf:
+# SystemMaxUse=500M
+# MaxRetentionSec=30day</code></pre><h3 id="Manual-File-Logging"><a class="docs-heading-anchor" href="#Manual-File-Logging">Manual File Logging</a><a id="Manual-File-Logging-1"></a><a class="docs-heading-anchor-permalink" href="#Manual-File-Logging" title="Permalink"></a></h3><pre><code class="language-julia hljs">using Logging, Dates
+
+function setup_file_logging(path=&quot;logs/bot.log&quot;)
+    mkpath(dirname(path))
+    io = open(path, &quot;a&quot;)
+    logger = SimpleLogger(io, Logging.Info)
+    global_logger(logger)
+    return io
+end
+
+# Rotate daily
+function rotate_logs(base_path=&quot;logs/bot.log&quot;)
+    date_str = Dates.format(today(), &quot;yyyy-mm-dd&quot;)
+    archive = &quot;logs/bot-$(date_str).log&quot;
+    isfile(base_path) &amp;&amp; mv(base_path, archive; force=true)
+end</code></pre><h2 id="7.-Update-Workflow"><a class="docs-heading-anchor" href="#7.-Update-Workflow">7. Update Workflow</a><a id="7.-Update-Workflow-1"></a><a class="docs-heading-anchor-permalink" href="#7.-Update-Workflow" title="Permalink"></a></h2><h3 id="Manual-Deployment"><a class="docs-heading-anchor" href="#Manual-Deployment">Manual Deployment</a><a id="Manual-Deployment-1"></a><a class="docs-heading-anchor-permalink" href="#Manual-Deployment" title="Permalink"></a></h3><pre><code class="language-bash hljs"># SSH into server
+ssh botserver
+
+# Pull latest code
+cd /opt/mybot
+git pull
+
+# Update dependencies
+julia --project=. -e &#39;using Pkg; Pkg.update(); Pkg.precompile()&#39;
+
+# Rebuild sysimage (optional, takes a few minutes)
+julia --project=. build_sysimage.jl
+
+# Restart
+sudo systemctl restart discord-bot
+sudo journalctl -u discord-bot -f  # watch for errors</code></pre><h3 id="Docker-Deployment"><a class="docs-heading-anchor" href="#Docker-Deployment">Docker Deployment</a><a id="Docker-Deployment-1"></a><a class="docs-heading-anchor-permalink" href="#Docker-Deployment" title="Permalink"></a></h3><pre><code class="language-bash hljs">ssh botserver
+cd /opt/mybot
+git pull
+docker compose up -d --build
+docker compose logs -f bot</code></pre><hr/><p><strong>Next steps:</strong> <a href="../14-troubleshooting/">Recipe 14 — Troubleshooting</a> for debugging common issues.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../12-performance/">« Performance</a><a class="docs-footer-nextpage" href="../14-troubleshooting/">Troubleshooting »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Saturday 14 February 2026 01:47">Saturday 14 February 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

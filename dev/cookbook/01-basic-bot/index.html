@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Your First Bot · Accord.jl</title><meta name="title" content="Your First Bot · Accord.jl"/><meta property="og:title" content="Your First Bot · Accord.jl"/><meta property="twitter:title" content="Your First Bot · Accord.jl"/><meta name="description" content="Documentation for Accord.jl."/><meta property="og:description" content="Documentation for Accord.jl."/><meta property="twitter:description" content="Documentation for Accord.jl."/><meta property="og:url" content="https://manelsen.github.io/Accord.jl/cookbook/01-basic-bot/"/><meta property="twitter:url" content="https://manelsen.github.io/Accord.jl/cookbook/01-basic-bot/"/><link rel="canonical" href="https://manelsen.github.io/Accord.jl/cookbook/01-basic-bot/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Accord.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Cookbook</span><ul><li><a class="tocitem" href="../">Accord.jl Cookbook</a></li><li class="is-active"><a class="tocitem" href>Your First Bot</a><ul class="internal"><li><a class="tocitem" href="#1.-Project-Setup"><span>1. Project Setup</span></a></li><li><a class="tocitem" href="#2.-Token-Management"><span>2. Token Management</span></a></li><li><a class="tocitem" href="#3.-Hello-World-Bot"><span>3. Hello World Bot</span></a></li><li><a class="tocitem" href="#4.-Ping/Pong-with-Latency"><span>4. Ping/Pong with Latency</span></a></li><li><a class="tocitem" href="#5.-Understanding-Intents"><span>5. Understanding Intents</span></a></li><li><a class="tocitem" href="#6.-Non-Blocking-Mode-(REPL-Development)"><span>6. Non-Blocking Mode (REPL Development)</span></a></li><li><a class="tocitem" href="#7.-Graceful-Shutdown"><span>7. Graceful Shutdown</span></a></li><li><a class="tocitem" href="#8.-Handling-Multiple-Events"><span>8. Handling Multiple Events</span></a></li><li><a class="tocitem" href="#9.-Logging-Guild-Activity"><span>9. Logging Guild Activity</span></a></li><li><a class="tocitem" href="#Complete-Example"><span>Complete Example</span></a></li></ul></li><li><a class="tocitem" href="../02-messages-and-embeds/">Rich Messages</a></li><li><a class="tocitem" href="../03-slash-commands/">Slash Commands</a></li><li><a class="tocitem" href="../04-buttons-selects-modals/">Buttons, Selects &amp; Modals</a></li><li><a class="tocitem" href="../05-voice/">Voice</a></li><li><a class="tocitem" href="../06-permissions/">Permissions</a></li><li><a class="tocitem" href="../07-caching/">Caching</a></li><li><a class="tocitem" href="../08-sharding/">Sharding</a></li><li><a class="tocitem" href="../09-automod/">Auto-Moderation</a></li><li><a class="tocitem" href="../10-polls/">Polls</a></li><li><a class="tocitem" href="../11-architectural-patterns/">Architectural Patterns</a></li><li><a class="tocitem" href="../12-performance/">Performance</a></li><li><a class="tocitem" href="../13-deploy/">Deployment</a></li><li><a class="tocitem" href="../14-troubleshooting/">Troubleshooting</a></li><li><a class="tocitem" href="../15-why-julia/">Why Julia?</a></li><li><a class="tocitem" href="../16-ai-agent/">AI Agent Bot</a></li></ul></li><li><a class="tocitem" href="../../api/">API Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Cookbook</a></li><li class="is-active"><a href>Your First Bot</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Your First Bot</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/manelsen/Accord.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/manelsen/Accord.jl/blob/main/docs/src/cookbook/01-basic-bot.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Recipe-01-—-Your-First-Bot"><a class="docs-heading-anchor" href="#Recipe-01-—-Your-First-Bot">Recipe 01 — Your First Bot</a><a id="Recipe-01-—-Your-First-Bot-1"></a><a class="docs-heading-anchor-permalink" href="#Recipe-01-—-Your-First-Bot" title="Permalink"></a></h1><p><strong>Difficulty:</strong> Beginner <strong>What you will build:</strong> A Discord bot that responds to messages, measures latency, and runs interactively in the REPL.</p><hr/><h2 id="1.-Project-Setup"><a class="docs-heading-anchor" href="#1.-Project-Setup">1. Project Setup</a><a id="1.-Project-Setup-1"></a><a class="docs-heading-anchor-permalink" href="#1.-Project-Setup" title="Permalink"></a></h2><pre><code class="language-bash hljs"># Create a new project
+mkdir MyBot &amp;&amp; cd MyBot
+julia --project=. -e &#39;using Pkg; Pkg.add(&quot;Accord&quot;)&#39;</code></pre><p>Your <code>Project.toml</code> now tracks Accord.jl as a dependency.</p><h2 id="2.-Token-Management"><a class="docs-heading-anchor" href="#2.-Token-Management">2. Token Management</a><a id="2.-Token-Management-1"></a><a class="docs-heading-anchor-permalink" href="#2.-Token-Management" title="Permalink"></a></h2><p>Create a <code>.env</code> file (add it to <code>.gitignore</code> immediately):</p><pre><code class="language-env hljs"># .env
+DISCORD_TOKEN=Bot MTIzNDU2Nzg5MDEyMzQ1Njc4OQ.XXXXXX.XXXXXXXXXXXXXXXXXXXXXXXX</code></pre><pre><code class="language-gitignore hljs"># .gitignore
+.env
+Manifest.toml</code></pre><p>Load it in your bot:</p><pre><code class="language-julia hljs"># Load token from environment
+function load_env(path=&quot;.env&quot;)
+    isfile(path) || return
+    for line in eachline(path)
+        stripped = strip(line)
+        (isempty(stripped) || startswith(stripped, &#39;#&#39;)) &amp;&amp; continue
+        key, value = split(stripped, &#39;=&#39;; limit=2)
+        ENV[strip(key)] = strip(value)
+    end
+end
+
+load_env()
+token = ENV[&quot;DISCORD_TOKEN&quot;]</code></pre><h2 id="3.-Hello-World-Bot"><a class="docs-heading-anchor" href="#3.-Hello-World-Bot">3. Hello World Bot</a><a id="3.-Hello-World-Bot-1"></a><a class="docs-heading-anchor-permalink" href="#3.-Hello-World-Bot" title="Permalink"></a></h2><pre><code class="language-julia hljs">using Accord
+
+load_env()  # from above
+token = ENV[&quot;DISCORD_TOKEN&quot;]
+
+# Create client with specific intents
+client = Client(token;
+    intents = IntentGuilds | IntentGuildMessages | IntentMessageContent
+)
+
+# Log when connected
+on(client, ReadyEvent) do c, event
+    @info &quot;Bot online!&quot; user=event.user.username guilds=length(event.guilds)
+end
+
+# Respond to messages
+on(client, MessageCreate) do c, event
+    msg = event.message
+    ismissing(msg.author) &amp;&amp; return
+    ismissing(msg.content) &amp;&amp; return
+    !ismissing(msg.author.bot) &amp;&amp; msg.author.bot == true &amp;&amp; return
+
+    if msg.content == &quot;!hello&quot;
+        create_message(c, msg.channel_id; content=&quot;Hello from Accord.jl!&quot;)
+    end
+end
+
+start(client)</code></pre><p>Run it:</p><pre><code class="language-bash hljs">julia --project=. bot.jl</code></pre><h2 id="4.-Ping/Pong-with-Latency"><a class="docs-heading-anchor" href="#4.-Ping/Pong-with-Latency">4. Ping/Pong with Latency</a><a id="4.-Ping/Pong-with-Latency-1"></a><a class="docs-heading-anchor-permalink" href="#4.-Ping/Pong-with-Latency" title="Permalink"></a></h2><pre><code class="language-julia hljs">on(client, MessageCreate) do c, event
+    msg = event.message
+    ismissing(msg.author) &amp;&amp; return
+    ismissing(msg.content) &amp;&amp; return
+    !ismissing(msg.author.bot) &amp;&amp; msg.author.bot == true &amp;&amp; return
+
+    if msg.content == &quot;!ping&quot;
+        t_start = time()
+        sent = create_message(c, msg.channel_id; content=&quot;Pong!&quot;)
+        latency_ms = round(Int, (time() - t_start) * 1000)
+
+        e = embed(
+            title=&quot;Pong!&quot;,
+            description=&quot;Round-trip latency: **$(latency_ms) ms**&quot;,
+            color=0x57F287  # green
+        )
+        edit_message(c, msg.channel_id, sent.id; embeds=[e])
+    end
+end</code></pre><h2 id="5.-Understanding-Intents"><a class="docs-heading-anchor" href="#5.-Understanding-Intents">5. Understanding Intents</a><a id="5.-Understanding-Intents-1"></a><a class="docs-heading-anchor-permalink" href="#5.-Understanding-Intents" title="Permalink"></a></h2><p>Intents control which events your bot receives. Combine them with <code>|</code>:</p><pre><code class="language-julia hljs">client = Client(token;
+    intents = IntentGuilds | IntentGuildMessages | IntentMessageContent
+)</code></pre><h3 id="Intent-Reference"><a class="docs-heading-anchor" href="#Intent-Reference">Intent Reference</a><a id="Intent-Reference-1"></a><a class="docs-heading-anchor-permalink" href="#Intent-Reference" title="Permalink"></a></h3><table><tr><th style="text-align: right">Intent</th><th style="text-align: right">Bit</th><th style="text-align: right">Privileged</th><th style="text-align: right">Events</th></tr><tr><td style="text-align: right"><code>IntentGuilds</code></td><td style="text-align: right">0</td><td style="text-align: right">No</td><td style="text-align: right">GuildCreate, GuildUpdate, GuildDelete, channels, roles</td></tr><tr><td style="text-align: right"><code>IntentGuildMembers</code></td><td style="text-align: right">1</td><td style="text-align: right"><strong>Yes</strong></td><td style="text-align: right">GuildMemberAdd/Remove/Update</td></tr><tr><td style="text-align: right"><code>IntentGuildModeration</code></td><td style="text-align: right">2</td><td style="text-align: right">No</td><td style="text-align: right">GuildBanAdd/Remove, GuildAuditLogEntryCreate</td></tr><tr><td style="text-align: right"><code>IntentGuildExpressions</code></td><td style="text-align: right">3</td><td style="text-align: right">No</td><td style="text-align: right">GuildEmojisUpdate, GuildStickersUpdate</td></tr><tr><td style="text-align: right"><code>IntentGuildIntegrations</code></td><td style="text-align: right">4</td><td style="text-align: right">No</td><td style="text-align: right">IntegrationCreate/Update/Delete</td></tr><tr><td style="text-align: right"><code>IntentGuildWebhooks</code></td><td style="text-align: right">5</td><td style="text-align: right">No</td><td style="text-align: right">WebhooksUpdate</td></tr><tr><td style="text-align: right"><code>IntentGuildInvites</code></td><td style="text-align: right">6</td><td style="text-align: right">No</td><td style="text-align: right">InviteCreate/Delete</td></tr><tr><td style="text-align: right"><code>IntentGuildVoiceStates</code></td><td style="text-align: right">7</td><td style="text-align: right">No</td><td style="text-align: right">VoiceStateUpdateEvent</td></tr><tr><td style="text-align: right"><code>IntentGuildPresences</code></td><td style="text-align: right">8</td><td style="text-align: right"><strong>Yes</strong></td><td style="text-align: right">PresenceUpdate</td></tr><tr><td style="text-align: right"><code>IntentGuildMessages</code></td><td style="text-align: right">9</td><td style="text-align: right">No</td><td style="text-align: right">MessageCreate/Update/Delete in guilds</td></tr><tr><td style="text-align: right"><code>IntentGuildMessageReactions</code></td><td style="text-align: right">10</td><td style="text-align: right">No</td><td style="text-align: right">MessageReactionAdd/Remove</td></tr><tr><td style="text-align: right"><code>IntentGuildMessageTyping</code></td><td style="text-align: right">11</td><td style="text-align: right">No</td><td style="text-align: right">TypingStart</td></tr><tr><td style="text-align: right"><code>IntentDirectMessages</code></td><td style="text-align: right">12</td><td style="text-align: right">No</td><td style="text-align: right">MessageCreate/Update/Delete in DMs</td></tr><tr><td style="text-align: right"><code>IntentDirectMessageReactions</code></td><td style="text-align: right">13</td><td style="text-align: right">No</td><td style="text-align: right">MessageReactionAdd/Remove in DMs</td></tr><tr><td style="text-align: right"><code>IntentDirectMessageTyping</code></td><td style="text-align: right">14</td><td style="text-align: right">No</td><td style="text-align: right">TypingStart in DMs</td></tr><tr><td style="text-align: right"><code>IntentMessageContent</code></td><td style="text-align: right">15</td><td style="text-align: right"><strong>Yes</strong></td><td style="text-align: right">Populates <code>message.content</code>, <code>embeds</code>, <code>attachments</code></td></tr><tr><td style="text-align: right"><code>IntentGuildScheduledEvents</code></td><td style="text-align: right">16</td><td style="text-align: right">No</td><td style="text-align: right">ScheduledEvent events</td></tr><tr><td style="text-align: right"><code>IntentAutoModerationConfiguration</code></td><td style="text-align: right">20</td><td style="text-align: right">No</td><td style="text-align: right">AutoModerationRuleCreate/Update/Delete</td></tr><tr><td style="text-align: right"><code>IntentAutoModerationExecution</code></td><td style="text-align: right">21</td><td style="text-align: right">No</td><td style="text-align: right">AutoModerationActionExecution</td></tr><tr><td style="text-align: right"><code>IntentGuildMessagePolls</code></td><td style="text-align: right">24</td><td style="text-align: right">No</td><td style="text-align: right">MessagePollVoteAdd/Remove</td></tr><tr><td style="text-align: right"><code>IntentDirectMessagePolls</code></td><td style="text-align: right">25</td><td style="text-align: right">No</td><td style="text-align: right">MessagePollVoteAdd/Remove in DMs</td></tr></table><p>Privileged intents must be enabled in the Discord Developer Portal under <strong>Bot &gt; Privileged Gateway Intents</strong>.</p><p>Shortcuts:</p><pre><code class="language-julia hljs">IntentAllNonPrivileged  # all non-privileged intents (default)
+IntentAll               # all intents including privileged</code></pre><h2 id="6.-Non-Blocking-Mode-(REPL-Development)"><a class="docs-heading-anchor" href="#6.-Non-Blocking-Mode-(REPL-Development)">6. Non-Blocking Mode (REPL Development)</a><a id="6.-Non-Blocking-Mode-(REPL-Development)-1"></a><a class="docs-heading-anchor-permalink" href="#6.-Non-Blocking-Mode-(REPL-Development)" title="Permalink"></a></h2><p>Start the bot without blocking your REPL:</p><pre><code class="language-julia hljs">start(client; blocking=false)
+
+# Now you can interact with the client live:
+wait_until_ready(client)
+@info &quot;Bot user: $(client.state.me.username)&quot;
+
+# Send a message from the REPL
+create_message(client, Snowflake(123456789); content=&quot;Hello from the REPL!&quot;)
+
+# Inspect cached state
+@info &quot;Guilds cached: $(length(client.state.guilds))&quot;</code></pre><p>This is extremely useful during development — you get a live REPL connected to Discord.</p><h2 id="7.-Graceful-Shutdown"><a class="docs-heading-anchor" href="#7.-Graceful-Shutdown">7. Graceful Shutdown</a><a id="7.-Graceful-Shutdown-1"></a><a class="docs-heading-anchor-permalink" href="#7.-Graceful-Shutdown" title="Permalink"></a></h2><pre><code class="language-julia hljs"># Stop the client cleanly
+stop(client)</code></pre><p>In blocking mode, pressing <code>Ctrl+C</code> triggers a graceful shutdown automatically.</p><h2 id="8.-Handling-Multiple-Events"><a class="docs-heading-anchor" href="#8.-Handling-Multiple-Events">8. Handling Multiple Events</a><a id="8.-Handling-Multiple-Events-1"></a><a class="docs-heading-anchor-permalink" href="#8.-Handling-Multiple-Events" title="Permalink"></a></h2><p>You can register multiple handlers for the same event:</p><pre><code class="language-julia hljs"># Analytics handler
+on(client, MessageCreate) do c, event
+    @debug &quot;Message received&quot; channel=event.message.channel_id
+end
+
+# Command handler (both run independently)
+on(client, MessageCreate) do c, event
+    msg = event.message
+    ismissing(msg.content) &amp;&amp; return
+    msg.content == &quot;!ping&quot; &amp;&amp; create_message(c, msg.channel_id; content=&quot;Pong!&quot;)
+end
+
+# Catch-all: log every event type
+on(client, AbstractEvent) do c, event
+    @debug &quot;Event&quot; type=typeof(event)
+end</code></pre><h2 id="9.-Logging-Guild-Activity"><a class="docs-heading-anchor" href="#9.-Logging-Guild-Activity">9. Logging Guild Activity</a><a id="9.-Logging-Guild-Activity-1"></a><a class="docs-heading-anchor-permalink" href="#9.-Logging-Guild-Activity" title="Permalink"></a></h2><pre><code class="language-julia hljs">on(client, GuildCreate) do c, event
+    @info &quot;Guild available&quot; name=event.guild.name id=event.guild.id
+end
+
+on(client, GuildMemberAdd) do c, event
+    @info &quot;Member joined&quot; guild_id=event.guild_id
+    # Note: requires IntentGuildMembers (privileged)
+end</code></pre><hr/><h2 id="Complete-Example"><a class="docs-heading-anchor" href="#Complete-Example">Complete Example</a><a id="Complete-Example-1"></a><a class="docs-heading-anchor-permalink" href="#Complete-Example" title="Permalink"></a></h2><pre><code class="language-julia hljs">using Accord
+
+# Load token
+token = get(ENV, &quot;DISCORD_TOKEN&quot;, &quot;&quot;)
+isempty(token) &amp;&amp; error(&quot;Set DISCORD_TOKEN environment variable&quot;)
+
+client = Client(token;
+    intents = IntentGuilds | IntentGuildMessages | IntentMessageContent
+)
+
+on(client, ReadyEvent) do c, event
+    @info &quot;Bot online!&quot; user=event.user.username guilds=length(event.guilds)
+end
+
+on(client, MessageCreate) do c, event
+    msg = event.message
+    ismissing(msg.author) &amp;&amp; return
+    ismissing(msg.content) &amp;&amp; return
+    !ismissing(msg.author.bot) &amp;&amp; msg.author.bot == true &amp;&amp; return
+
+    if msg.content == &quot;!ping&quot;
+        t = time()
+        sent = create_message(c, msg.channel_id; content=&quot;Pinging...&quot;)
+        ms = round(Int, (time() - t) * 1000)
+        edit_message(c, msg.channel_id, sent.id;
+            content=&quot;Pong! Latency: **$(ms) ms**&quot;)
+    elseif msg.content == &quot;!info&quot;
+        e = embed(
+            title=&quot;Bot Info&quot;,
+            color=0x5865F2,
+            fields=[
+                Dict(&quot;name&quot; =&gt; &quot;Library&quot;, &quot;value&quot; =&gt; &quot;Accord.jl&quot;, &quot;inline&quot; =&gt; true),
+                Dict(&quot;name&quot; =&gt; &quot;Julia&quot;, &quot;value&quot; =&gt; string(VERSION), &quot;inline&quot; =&gt; true),
+            ]
+        )
+        create_message(c, msg.channel_id; embeds=[e])
+    end
+end
+
+on(client, GuildCreate) do c, event
+    @info &quot;Guild available&quot; name=event.guild.name id=event.guild.id
+end
+
+@info &quot;Starting bot...&quot;
+start(client)</code></pre><hr/><p><strong>Next steps:</strong> <a href="../02-messages-and-embeds/">Recipe 02 — Rich Messages</a> to learn about embeds, reactions, and file attachments.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Accord.jl Cookbook</a><a class="docs-footer-nextpage" href="../02-messages-and-embeds/">Rich Messages »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Saturday 14 February 2026 01:47">Saturday 14 February 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

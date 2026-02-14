@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Why Julia? · Accord.jl</title><meta name="title" content="Why Julia? · Accord.jl"/><meta property="og:title" content="Why Julia? · Accord.jl"/><meta property="twitter:title" content="Why Julia? · Accord.jl"/><meta name="description" content="Documentation for Accord.jl."/><meta property="og:description" content="Documentation for Accord.jl."/><meta property="twitter:description" content="Documentation for Accord.jl."/><meta property="og:url" content="https://manelsen.github.io/Accord.jl/cookbook/15-why-julia/"/><meta property="twitter:url" content="https://manelsen.github.io/Accord.jl/cookbook/15-why-julia/"/><link rel="canonical" href="https://manelsen.github.io/Accord.jl/cookbook/15-why-julia/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Accord.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Cookbook</span><ul><li><a class="tocitem" href="../">Accord.jl Cookbook</a></li><li><a class="tocitem" href="../01-basic-bot/">Your First Bot</a></li><li><a class="tocitem" href="../02-messages-and-embeds/">Rich Messages</a></li><li><a class="tocitem" href="../03-slash-commands/">Slash Commands</a></li><li><a class="tocitem" href="../04-buttons-selects-modals/">Buttons, Selects &amp; Modals</a></li><li><a class="tocitem" href="../05-voice/">Voice</a></li><li><a class="tocitem" href="../06-permissions/">Permissions</a></li><li><a class="tocitem" href="../07-caching/">Caching</a></li><li><a class="tocitem" href="../08-sharding/">Sharding</a></li><li><a class="tocitem" href="../09-automod/">Auto-Moderation</a></li><li><a class="tocitem" href="../10-polls/">Polls</a></li><li><a class="tocitem" href="../11-architectural-patterns/">Architectural Patterns</a></li><li><a class="tocitem" href="../12-performance/">Performance</a></li><li><a class="tocitem" href="../13-deploy/">Deployment</a></li><li><a class="tocitem" href="../14-troubleshooting/">Troubleshooting</a></li><li class="is-active"><a class="tocitem" href>Why Julia?</a><ul class="internal"><li><a class="tocitem" href="#1.-The-Phoenix-Moment"><span>1. The Phoenix Moment</span></a></li><li><a class="tocitem" href="#2.-Performance:-No-GIL,-Real-Parallelism"><span>2. Performance: No GIL, Real Parallelism</span></a></li><li><a class="tocitem" href="#3.-Multiple-Dispatch:-Type-Based-Event-Routing"><span>3. Multiple Dispatch: Type-Based Event Routing</span></a></li><li><a class="tocitem" href="#4.-Type-Safety"><span>4. Type Safety</span></a></li><li><a class="tocitem" href="#5.-Scientific-Computing-Integration-(The-Killer-Feature)"><span>5. Scientific Computing Integration (The Killer Feature)</span></a></li><li><a class="tocitem" href="#6.-REPL-Driven-Development"><span>6. REPL-Driven Development</span></a></li><li><a class="tocitem" href="#7.-Package-Management"><span>7. Package Management</span></a></li><li><a class="tocitem" href="#8.-Honest-Trade-Offs"><span>8. Honest Trade-Offs</span></a></li><li><a class="tocitem" href="#9.-Migration-Guide:-discord.py-Accord.jl"><span>9. Migration Guide: discord.py → Accord.jl</span></a></li><li><a class="tocitem" href="#10.-When-to-Choose-Julia"><span>10. When to Choose Julia</span></a></li></ul></li><li><a class="tocitem" href="../16-ai-agent/">AI Agent Bot</a></li></ul></li><li><a class="tocitem" href="../../api/">API Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Cookbook</a></li><li class="is-active"><a href>Why Julia?</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Why Julia?</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/manelsen/Accord.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/manelsen/Accord.jl/blob/main/docs/src/cookbook/15-why-julia.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Recipe-15-—-Why-Julia-for-Discord-Bots?"><a class="docs-heading-anchor" href="#Recipe-15-—-Why-Julia-for-Discord-Bots?">Recipe 15 — Why Julia for Discord Bots?</a><a id="Recipe-15-—-Why-Julia-for-Discord-Bots?-1"></a><a class="docs-heading-anchor-permalink" href="#Recipe-15-—-Why-Julia-for-Discord-Bots?" title="Permalink"></a></h1><p><strong>Difficulty:</strong> Conceptual <strong>What you will learn:</strong> Why Julia is a compelling alternative to Python for building Discord bots, with honest trade-offs.</p><hr/><h2 id="1.-The-Phoenix-Moment"><a class="docs-heading-anchor" href="#1.-The-Phoenix-Moment">1. The Phoenix Moment</a><a id="1.-The-Phoenix-Moment-1"></a><a class="docs-heading-anchor-permalink" href="#1.-The-Phoenix-Moment" title="Permalink"></a></h2><p>When the Elixir community built Phoenix, many PHP developers skeptically asked <em>&quot;why would I switch?&quot;</em> — then they experienced real concurrency, pattern matching, and fault tolerance. The answer became obvious.</p><p>Julia offers a similar leap for Python bot developers: not just incremental improvement, but fundamentally different capabilities.</p><h2 id="2.-Performance:-No-GIL,-Real-Parallelism"><a class="docs-heading-anchor" href="#2.-Performance:-No-GIL,-Real-Parallelism">2. Performance: No GIL, Real Parallelism</a><a id="2.-Performance:-No-GIL,-Real-Parallelism-1"></a><a class="docs-heading-anchor-permalink" href="#2.-Performance:-No-GIL,-Real-Parallelism" title="Permalink"></a></h2><p>Python&#39;s Global Interpreter Lock (GIL) means your bot is single-threaded, no matter how many cores your server has. Julia has no GIL.</p><pre><code class="language-julia hljs"># Julia: true parallel execution
+on(client, MessageCreate) do c, event
+    Threads.@spawn begin
+        # This runs on a separate thread — truly parallel
+        result = heavy_computation(event.message.content)
+        create_message(c, event.message.channel_id; content=result)
+    end
+end</code></pre><pre><code class="language-python hljs"># Python: GIL prevents true parallelism
+@bot.event
+async def on_message(message):
+    # asyncio is concurrent but NOT parallel
+    # CPU-bound work blocks the entire event loop
+    result = heavy_computation(message.content)  # blocks everything
+    await message.channel.send(result)</code></pre><p>Start Julia with <code>--threads=auto</code> and every CPU core works for your bot.</p><h3 id="Benchmark:-Fibonacci(40)"><a class="docs-heading-anchor" href="#Benchmark:-Fibonacci(40)">Benchmark: Fibonacci(40)</a><a id="Benchmark:-Fibonacci(40)-1"></a><a class="docs-heading-anchor-permalink" href="#Benchmark:-Fibonacci(40)" title="Permalink"></a></h3><table><tr><th style="text-align: right">Language</th><th style="text-align: right">Time</th><th style="text-align: right">Notes</th></tr><tr><td style="text-align: right">Python (CPython)</td><td style="text-align: right">~45s</td><td style="text-align: right">GIL prevents threading</td></tr><tr><td style="text-align: right">Python (asyncio)</td><td style="text-align: right">~45s</td><td style="text-align: right">asyncio doesn&#39;t help CPU work</td></tr><tr><td style="text-align: right">Julia</td><td style="text-align: right">~0.5s</td><td style="text-align: right">JIT-compiled, type-inferred</td></tr><tr><td style="text-align: right">Julia (4 threads)</td><td style="text-align: right">~0.15s</td><td style="text-align: right">True parallelism</td></tr></table><h2 id="3.-Multiple-Dispatch:-Type-Based-Event-Routing"><a class="docs-heading-anchor" href="#3.-Multiple-Dispatch:-Type-Based-Event-Routing">3. Multiple Dispatch: Type-Based Event Routing</a><a id="3.-Multiple-Dispatch:-Type-Based-Event-Routing-1"></a><a class="docs-heading-anchor-permalink" href="#3.-Multiple-Dispatch:-Type-Based-Event-Routing" title="Permalink"></a></h2><p>Accord.jl uses Julia&#39;s type system for event dispatch — no string matching or decorator chains:</p><pre><code class="language-julia hljs"># Julia: the type system IS the routing
+on(client, MessageCreate) do c, event
+    # Only called for MessageCreate events
+end
+
+on(client, GuildMemberAdd) do c, event
+    # Only called for GuildMemberAdd events
+end
+
+# Even cache updates use dispatch:
+update_state!(state, event::GuildCreate)    # handles guild creation
+update_state!(state, event::ChannelDelete)  # handles channel deletion
+update_state!(state, event::AbstractEvent)  # fallback</code></pre><pre><code class="language-python hljs"># Python: string-based routing with decorators
+@bot.event
+async def on_message(message):      # string &quot;on_message&quot; → function
+    pass
+
+@bot.event
+async def on_member_join(member):   # string &quot;on_member_join&quot; → function
+    pass</code></pre><p>Multiple dispatch means you can extend behavior without modifying existing code — fundamental to Julia&#39;s design.</p><h2 id="4.-Type-Safety"><a class="docs-heading-anchor" href="#4.-Type-Safety">4. Type Safety</a><a id="4.-Type-Safety-1"></a><a class="docs-heading-anchor-permalink" href="#4.-Type-Safety" title="Permalink"></a></h2><p>Accord.jl catches bugs at compile time that Python misses at runtime:</p><pre><code class="language-julia hljs"># Snowflake: can&#39;t accidentally pass a string where an ID is needed
+channel_id = Snowflake(123456789012345678)
+create_message(client, channel_id; content=&quot;typed!&quot;)
+
+# Permission flags: bitfield type prevents integer mistakes
+perms = PermSendMessages | PermEmbedLinks
+has_flag(perms, PermAdministrator)  # false — type-safe check
+
+# Optional{T}: explicit handling of missing fields
+if !ismissing(msg.content)
+    # content is guaranteed to be String here
+    process(msg.content)
+end</code></pre><h2 id="5.-Scientific-Computing-Integration-(The-Killer-Feature)"><a class="docs-heading-anchor" href="#5.-Scientific-Computing-Integration-(The-Killer-Feature)">5. Scientific Computing Integration (The Killer Feature)</a><a id="5.-Scientific-Computing-Integration-(The-Killer-Feature)-1"></a><a class="docs-heading-anchor-permalink" href="#5.-Scientific-Computing-Integration-(The-Killer-Feature)" title="Permalink"></a></h2><p>This is where Julia truly separates from Python. No FFI, no subprocess calls — first-class scientific computing in the same language as your bot:</p><h3 id="Machine-Learning-Bot"><a class="docs-heading-anchor" href="#Machine-Learning-Bot">Machine Learning Bot</a><a id="Machine-Learning-Bot-1"></a><a class="docs-heading-anchor-permalink" href="#Machine-Learning-Bot" title="Permalink"></a></h3><pre><code class="language-julia hljs">using Accord
+using Flux  # Julia&#39;s ML framework
+
+# Load a trained model
+model = Chain(Dense(784, 128, relu), Dense(128, 10), softmax)
+# ... load weights ...
+
+@slash_command client &quot;classify&quot; &quot;Classify a digit&quot; function(ctx)
+    # Get attached image, preprocess, run inference
+    # All in pure Julia — no Python subprocess needed
+    img = load_image(attachment_url)
+    prediction = Flux.onecold(model(img))
+    respond(ctx; content=&quot;I think that&#39;s a **$prediction**!&quot;)
+end</code></pre><h3 id="Chart-Bot"><a class="docs-heading-anchor" href="#Chart-Bot">Chart Bot</a><a id="Chart-Bot-1"></a><a class="docs-heading-anchor-permalink" href="#Chart-Bot" title="Permalink"></a></h3><pre><code class="language-julia hljs">using Accord
+using CairoMakie  # publication-quality plots
+
+@slash_command client &quot;chart&quot; &quot;Generate a chart&quot; function(ctx)
+    defer(ctx)
+
+    fig = Figure(size=(800, 400))
+    ax = Axis(fig[1,1], title=&quot;Server Activity&quot;)
+    barplot!(ax, 1:7, rand(7), color=:steelblue)
+
+    # Save to buffer and send
+    io = IOBuffer()
+    save(io, fig; pt_per_unit=1)
+    respond(ctx; content=&quot;Here&#39;s your chart:&quot;, files=[(&quot;chart.png&quot;, take!(io))])
+end</code></pre><h3 id="Scientific-Computing-Bot"><a class="docs-heading-anchor" href="#Scientific-Computing-Bot">Scientific Computing Bot</a><a id="Scientific-Computing-Bot-1"></a><a class="docs-heading-anchor-permalink" href="#Scientific-Computing-Bot" title="Permalink"></a></h3><pre><code class="language-julia hljs">using Accord
+using DifferentialEquations  # world-class ODE solvers
+
+options_simulate = [
+    command_option(type=ApplicationCommandOptionTypes.NUMBER, name=&quot;rate&quot;, description=&quot;Growth rate&quot;, required=true),
+]
+
+@slash_command client &quot;simulate&quot; &quot;Simulate a system&quot; options_simulate function(ctx)
+    defer(ctx)
+    rate = get_option(ctx, &quot;rate&quot;, 1.0)::Number
+
+    # Solve an ODE — in the same process as the bot
+    f(u, p, t) = rate * u
+    prob = ODEProblem(f, 1.0, (0.0, 5.0))
+    sol = solve(prob)
+
+    respond(ctx; content=&quot;Final value at t=5: **$(round(sol.u[end], digits=3))**&quot;)
+end</code></pre><p>In Python, you&#39;d need subprocess calls to Julia/R/MATLAB or complex FFI bindings. In Julia, it&#39;s all native.</p><h2 id="6.-REPL-Driven-Development"><a class="docs-heading-anchor" href="#6.-REPL-Driven-Development">6. REPL-Driven Development</a><a id="6.-REPL-Driven-Development-1"></a><a class="docs-heading-anchor-permalink" href="#6.-REPL-Driven-Development" title="Permalink"></a></h2><p>Non-blocking mode gives you a live REPL connected to Discord:</p><pre><code class="language-julia hljs">start(client; blocking=false)
+wait_until_ready(client)
+
+# Test things live:
+create_message(client, Snowflake(ch_id); content=&quot;Testing!&quot;)
+
+# Inspect state:
+client.state.me.username
+length(client.state.guilds)
+
+# Hot-reload handlers (just redefine):
+on(client, MessageCreate) do c, event
+    # This replaces the previous handler
+    @info &quot;New handler!&quot; content=event.message.content
+end</code></pre><p>No restart cycle. No waiting for reconnection. Change code and see results instantly.</p><h2 id="7.-Package-Management"><a class="docs-heading-anchor" href="#7.-Package-Management">7. Package Management</a><a id="7.-Package-Management-1"></a><a class="docs-heading-anchor-permalink" href="#7.-Package-Management" title="Permalink"></a></h2><p>Julia&#39;s built-in package manager is simple and reproducible:</p><pre><code class="language-julia hljs"># Project.toml — declares dependencies
+[deps]
+Accord = &quot;xxx-xxx&quot;
+HTTP = &quot;...&quot;
+
+# Manifest.toml — exact resolved versions (auto-generated)
+# Committed for reproducible builds</code></pre><p>No <code>virtualenv</code>, no <code>pip freeze</code>, no <code>requirements.txt</code> vs <code>setup.py</code> vs <code>pyproject.toml</code> confusion. One system, always works.</p><h2 id="8.-Honest-Trade-Offs"><a class="docs-heading-anchor" href="#8.-Honest-Trade-Offs">8. Honest Trade-Offs</a><a id="8.-Honest-Trade-Offs-1"></a><a class="docs-heading-anchor-permalink" href="#8.-Honest-Trade-Offs" title="Permalink"></a></h2><p>Julia isn&#39;t perfect for every use case. Here&#39;s what to expect:</p><h3 id="JIT-Compilation-Latency-(Time-to-First-X)"><a class="docs-heading-anchor" href="#JIT-Compilation-Latency-(Time-to-First-X)">JIT Compilation Latency (Time-to-First-X)</a><a id="JIT-Compilation-Latency-(Time-to-First-X)-1"></a><a class="docs-heading-anchor-permalink" href="#JIT-Compilation-Latency-(Time-to-First-X)" title="Permalink"></a></h3><p>First bot startup takes 10-15 seconds as Julia compiles code. Mitigations:</p><ul><li><strong>PackageCompiler.jl sysimage</strong> reduces this to ~1 second (see <a href="../13-deploy/">Recipe 13</a>)</li><li>Subsequent event handling is near-instant</li><li>In production, startup time is negligible (bot runs for weeks/months)</li></ul><h3 id="Smaller-Ecosystem"><a class="docs-heading-anchor" href="#Smaller-Ecosystem">Smaller Ecosystem</a><a id="Smaller-Ecosystem-1"></a><a class="docs-heading-anchor-permalink" href="#Smaller-Ecosystem" title="Permalink"></a></h3><table><tr><th style="text-align: right">Feature</th><th style="text-align: right">Python (discord.py)</th><th style="text-align: right">Julia (Accord.jl)</th></tr><tr><td style="text-align: right">Library maturity</td><td style="text-align: right">8+ years</td><td style="text-align: right">New</td></tr><tr><td style="text-align: right">StackOverflow answers</td><td style="text-align: right">Thousands</td><td style="text-align: right">Few</td></tr><tr><td style="text-align: right">Third-party extensions</td><td style="text-align: right">Many (cogs, utils)</td><td style="text-align: right">Build your own</td></tr><tr><td style="text-align: right">Documentation</td><td style="text-align: right">Extensive</td><td style="text-align: right">This cookbook!</td></tr></table><h3 id="Learning-Curve"><a class="docs-heading-anchor" href="#Learning-Curve">Learning Curve</a><a id="Learning-Curve-1"></a><a class="docs-heading-anchor-permalink" href="#Learning-Curve" title="Permalink"></a></h3><p>If your team only knows Python, there&#39;s a learning curve. Key differences:</p><ul><li>1-indexed arrays</li><li><code>missing</code> vs <code>nothing</code> vs <code>undef</code></li><li>Multiple dispatch instead of classes</li><li>Macros (powerful but unfamiliar)</li></ul><h2 id="9.-Migration-Guide:-discord.py-Accord.jl"><a class="docs-heading-anchor" href="#9.-Migration-Guide:-discord.py-Accord.jl">9. Migration Guide: discord.py → Accord.jl</a><a id="9.-Migration-Guide:-discord.py-Accord.jl-1"></a><a class="docs-heading-anchor-permalink" href="#9.-Migration-Guide:-discord.py-Accord.jl" title="Permalink"></a></h2><h3 id="Client-Setup"><a class="docs-heading-anchor" href="#Client-Setup">Client Setup</a><a id="Client-Setup-1"></a><a class="docs-heading-anchor-permalink" href="#Client-Setup" title="Permalink"></a></h3><pre><code class="language-python hljs"># discord.py
+import discord
+bot = discord.Bot(intents=discord.Intents.default())</code></pre><pre><code class="language-julia hljs"># Accord.jl
+using Accord
+client = Client(token; intents=IntentAllNonPrivileged)</code></pre><h3 id="Event-Handlers"><a class="docs-heading-anchor" href="#Event-Handlers">Event Handlers</a><a id="Event-Handlers-1"></a><a class="docs-heading-anchor-permalink" href="#Event-Handlers" title="Permalink"></a></h3><pre><code class="language-python hljs"># discord.py
+@bot.event
+async def on_message(message):
+    if message.content == &quot;!ping&quot;:
+        await message.channel.send(&quot;Pong!&quot;)</code></pre><pre><code class="language-julia hljs"># Accord.jl
+on(client, MessageCreate) do c, event
+    msg = event.message
+    ismissing(msg.content) &amp;&amp; return
+    msg.content == &quot;!ping&quot; &amp;&amp; create_message(c, msg.channel_id; content=&quot;Pong!&quot;)
+end</code></pre><h3 id="Slash-Commands"><a class="docs-heading-anchor" href="#Slash-Commands">Slash Commands</a><a id="Slash-Commands-1"></a><a class="docs-heading-anchor-permalink" href="#Slash-Commands" title="Permalink"></a></h3><pre><code class="language-python hljs"># discord.py
+@bot.slash_command()
+async def greet(ctx, name: str):
+    await ctx.respond(f&quot;Hello, {name}!&quot;)</code></pre><pre><code class="language-julia hljs"># Accord.jl
+tree = CommandTree()
+register_command!(tree, &quot;greet&quot;, &quot;Say hello&quot;, function(ctx)
+    name = get_option(ctx, &quot;name&quot;, &quot;World&quot;)
+    respond(ctx; content=&quot;Hello, $name!&quot;)
+end; options=[
+    command_option(type=ApplicationCommandOptionTypes.STRING, name=&quot;name&quot;, description=&quot;Name&quot;, required=true),
+])</code></pre><h3 id="Embeds"><a class="docs-heading-anchor" href="#Embeds">Embeds</a><a id="Embeds-1"></a><a class="docs-heading-anchor-permalink" href="#Embeds" title="Permalink"></a></h3><pre><code class="language-python hljs"># discord.py
+embed = discord.Embed(title=&quot;Info&quot;, color=0x5865F2)
+embed.add_field(name=&quot;Field&quot;, value=&quot;Value&quot;)
+await ctx.send(embed=embed)</code></pre><pre><code class="language-julia hljs"># Accord.jl
+e = embed(title=&quot;Info&quot;, color=0x5865F2, fields=[
+    Dict(&quot;name&quot; =&gt; &quot;Field&quot;, &quot;value&quot; =&gt; &quot;Value&quot;),
+])
+create_message(client, channel_id; embeds=[e])</code></pre><h3 id="Permissions"><a class="docs-heading-anchor" href="#Permissions">Permissions</a><a id="Permissions-1"></a><a class="docs-heading-anchor-permalink" href="#Permissions" title="Permalink"></a></h3><pre><code class="language-python hljs"># discord.py
+@bot.command()
+@commands.has_permissions(ban_members=True)
+async def ban(ctx, member):
+    await member.ban()</code></pre><pre><code class="language-julia hljs"># Accord.jl
+register_command!(tree, &quot;ban&quot;, &quot;Ban a user&quot;, function(ctx)
+    perms = get_member_permissions(ctx.client, ctx.interaction.guild_id, ctx.interaction.member.user.id)
+    has_flag(perms, PermBanMembers) || return respond(ctx; content=&quot;No permission&quot;, ephemeral=true)
+    # ... ban logic
+end)</code></pre><h2 id="10.-When-to-Choose-Julia"><a class="docs-heading-anchor" href="#10.-When-to-Choose-Julia">10. When to Choose Julia</a><a id="10.-When-to-Choose-Julia-1"></a><a class="docs-heading-anchor-permalink" href="#10.-When-to-Choose-Julia" title="Permalink"></a></h2><p><strong>Choose Julia when:</strong></p><ul><li>You need real computational power (ML, scientific computing, data processing)</li><li>You want true parallelism without the GIL</li><li>You value type safety and multiple dispatch</li><li>Your bot generates charts, runs simulations, or processes data</li><li>You&#39;re already in the Julia ecosystem</li></ul><p><strong>Stick with Python when:</strong></p><ul><li>You need maximum community support and tutorials</li><li>Your bot is purely CRUD with no computation</li><li>Your team only knows Python and learning Julia isn&#39;t feasible</li><li>You need specific discord.py extensions with no Julia equivalent</li></ul><hr/><p><strong>Next steps:</strong> <a href="../16-ai-agent/">Recipe 16 — AI Agent Bot</a> to build the ultimate showcase: an LLM-powered Discord bot in Julia.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../14-troubleshooting/">« Troubleshooting</a><a class="docs-footer-nextpage" href="../16-ai-agent/">AI Agent Bot »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Saturday 14 February 2026 01:47">Saturday 14 February 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

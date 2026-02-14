@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Slash Commands · Accord.jl</title><meta name="title" content="Slash Commands · Accord.jl"/><meta property="og:title" content="Slash Commands · Accord.jl"/><meta property="twitter:title" content="Slash Commands · Accord.jl"/><meta name="description" content="Documentation for Accord.jl."/><meta property="og:description" content="Documentation for Accord.jl."/><meta property="twitter:description" content="Documentation for Accord.jl."/><meta property="og:url" content="https://manelsen.github.io/Accord.jl/cookbook/03-slash-commands/"/><meta property="twitter:url" content="https://manelsen.github.io/Accord.jl/cookbook/03-slash-commands/"/><link rel="canonical" href="https://manelsen.github.io/Accord.jl/cookbook/03-slash-commands/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Accord.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Cookbook</span><ul><li><a class="tocitem" href="../">Accord.jl Cookbook</a></li><li><a class="tocitem" href="../01-basic-bot/">Your First Bot</a></li><li><a class="tocitem" href="../02-messages-and-embeds/">Rich Messages</a></li><li class="is-active"><a class="tocitem" href>Slash Commands</a><ul class="internal"><li><a class="tocitem" href="#1.-How-Slash-Commands-Work-in-Accord.jl"><span>1. How Slash Commands Work in Accord.jl</span></a></li><li><a class="tocitem" href="#2.-Basic-Slash-Command"><span>2. Basic Slash Command</span></a></li><li><a class="tocitem" href="#3.-Commands-with-Options"><span>3. Commands with Options</span></a></li><li><a class="tocitem" href="#4.-Static-Choices"><span>4. Static Choices</span></a></li><li><a class="tocitem" href="#5.-Autocomplete"><span>5. Autocomplete</span></a></li><li><a class="tocitem" href="#6.-Subcommands-and-Subcommand-Groups"><span>6. Subcommands and Subcommand Groups</span></a></li><li><a class="tocitem" href="#7.-Guild-vs-Global-Commands"><span>7. Guild vs Global Commands</span></a></li><li><a class="tocitem" href="#8.-Deferred-Responses"><span>8. Deferred Responses</span></a></li><li><a class="tocitem" href="#9.-Followup-Messages"><span>9. Followup Messages</span></a></li><li><a class="tocitem" href="#10.-Edit-the-Original-Response"><span>10. Edit the Original Response</span></a></li><li><a class="tocitem" href="#Complete-Example"><span>Complete Example</span></a></li></ul></li><li><a class="tocitem" href="../04-buttons-selects-modals/">Buttons, Selects &amp; Modals</a></li><li><a class="tocitem" href="../05-voice/">Voice</a></li><li><a class="tocitem" href="../06-permissions/">Permissions</a></li><li><a class="tocitem" href="../07-caching/">Caching</a></li><li><a class="tocitem" href="../08-sharding/">Sharding</a></li><li><a class="tocitem" href="../09-automod/">Auto-Moderation</a></li><li><a class="tocitem" href="../10-polls/">Polls</a></li><li><a class="tocitem" href="../11-architectural-patterns/">Architectural Patterns</a></li><li><a class="tocitem" href="../12-performance/">Performance</a></li><li><a class="tocitem" href="../13-deploy/">Deployment</a></li><li><a class="tocitem" href="../14-troubleshooting/">Troubleshooting</a></li><li><a class="tocitem" href="../15-why-julia/">Why Julia?</a></li><li><a class="tocitem" href="../16-ai-agent/">AI Agent Bot</a></li></ul></li><li><a class="tocitem" href="../../api/">API Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Cookbook</a></li><li class="is-active"><a href>Slash Commands</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Slash Commands</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/manelsen/Accord.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/manelsen/Accord.jl/blob/main/docs/src/cookbook/03-slash-commands.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Recipe-03-—-Slash-Commands"><a class="docs-heading-anchor" href="#Recipe-03-—-Slash-Commands">Recipe 03 — Slash Commands</a><a id="Recipe-03-—-Slash-Commands-1"></a><a class="docs-heading-anchor-permalink" href="#Recipe-03-—-Slash-Commands" title="Permalink"></a></h1><p><strong>Difficulty:</strong> Intermediate <strong>What you will build:</strong> Slash commands with options, autocomplete, subcommands, deferred responses, and followup messages.</p><p><strong>Prerequisites:</strong> <a href="../01-basic-bot/">Recipe 01</a></p><hr/><h2 id="1.-How-Slash-Commands-Work-in-Accord.jl"><a class="docs-heading-anchor" href="#1.-How-Slash-Commands-Work-in-Accord.jl">1. How Slash Commands Work in Accord.jl</a><a id="1.-How-Slash-Commands-Work-in-Accord.jl-1"></a><a class="docs-heading-anchor-permalink" href="#1.-How-Slash-Commands-Work-in-Accord.jl" title="Permalink"></a></h2><p>The interaction flow:</p><ol><li>You create a <code>CommandTree</code> and register commands on it</li><li>On <code>ReadyEvent</code>, call <code>sync_commands!</code> to push definitions to Discord</li><li>On <code>InteractionCreate</code>, call <code>dispatch_interaction!</code> to route to handlers</li><li>Each handler receives an <code>InteractionContext</code> with helper methods</li></ol><h2 id="2.-Basic-Slash-Command"><a class="docs-heading-anchor" href="#2.-Basic-Slash-Command">2. Basic Slash Command</a><a id="2.-Basic-Slash-Command-1"></a><a class="docs-heading-anchor-permalink" href="#2.-Basic-Slash-Command" title="Permalink"></a></h2><pre><code class="language-julia hljs">using Accord
+
+token = ENV[&quot;DISCORD_TOKEN&quot;]
+client = Client(token; intents=IntentGuilds)
+
+# Register a simple command using the macro
+@slash_command client &quot;hello&quot; &quot;Say hello!&quot; function(ctx)
+    respond(ctx; content=&quot;Hello, &lt;@$(ctx.interaction.member.user.id)&gt;!&quot;)
+end
+
+# Sync commands when ready
+on(client, ReadyEvent) do c, event
+    @info &quot;Bot ready, syncing commands...&quot;
+    sync_commands!(c, c.command_tree)
+end
+
+start(client)</code></pre><p>Note that <code>Client</code> automatically handles interaction dispatch to its internal <code>command_tree</code>.</p><h2 id="3.-Commands-with-Options"><a class="docs-heading-anchor" href="#3.-Commands-with-Options">3. Commands with Options</a><a id="3.-Commands-with-Options-1"></a><a class="docs-heading-anchor-permalink" href="#3.-Commands-with-Options" title="Permalink"></a></h2><p>Use <code>command_option()</code> to define typed parameters:</p><pre><code class="language-julia hljs">options = [
+    command_option(
+        type=ApplicationCommandOptionTypes.STRING,
+        name=&quot;name&quot;,
+        description=&quot;Who to greet&quot;,
+        required=true,
+    ),
+    command_option(
+        type=ApplicationCommandOptionTypes.INTEGER,
+        name=&quot;times&quot;,
+        description=&quot;How many times to greet&quot;,
+        required=false,
+        min_value=1,
+        max_value=5,
+    ),
+]
+
+@slash_command client &quot;greet&quot; &quot;Greet someone&quot; options function(ctx)
+    name = get_option(ctx, &quot;name&quot;, &quot;World&quot;)
+    times = get_option(ctx, &quot;times&quot;, 1)
+    greeting = join(fill(&quot;Hello, $name!&quot;, times), &quot;\n&quot;)
+    respond(ctx; content=greeting)
+end</code></pre><h3 id="Option-Type-Reference"><a class="docs-heading-anchor" href="#Option-Type-Reference">Option Type Reference</a><a id="Option-Type-Reference-1"></a><a class="docs-heading-anchor-permalink" href="#Option-Type-Reference" title="Permalink"></a></h3><table><tr><th style="text-align: right">Constant</th><th style="text-align: right">Value</th><th style="text-align: right">Julia type returned</th></tr><tr><td style="text-align: right"><code>ApplicationCommandOptionTypes.STRING</code></td><td style="text-align: right">3</td><td style="text-align: right"><code>String</code></td></tr><tr><td style="text-align: right"><code>ApplicationCommandOptionTypes.INTEGER</code></td><td style="text-align: right">4</td><td style="text-align: right"><code>Int</code></td></tr><tr><td style="text-align: right"><code>ApplicationCommandOptionTypes.BOOLEAN</code></td><td style="text-align: right">5</td><td style="text-align: right"><code>Bool</code></td></tr><tr><td style="text-align: right"><code>ApplicationCommandOptionTypes.USER</code></td><td style="text-align: right">6</td><td style="text-align: right">Snowflake string</td></tr><tr><td style="text-align: right"><code>ApplicationCommandOptionTypes.CHANNEL</code></td><td style="text-align: right">7</td><td style="text-align: right">Snowflake string</td></tr><tr><td style="text-align: right"><code>ApplicationCommandOptionTypes.ROLE</code></td><td style="text-align: right">8</td><td style="text-align: right">Snowflake string</td></tr><tr><td style="text-align: right"><code>ApplicationCommandOptionTypes.MENTIONABLE</code></td><td style="text-align: right">9</td><td style="text-align: right">Snowflake string</td></tr><tr><td style="text-align: right"><code>ApplicationCommandOptionTypes.NUMBER</code></td><td style="text-align: right">10</td><td style="text-align: right"><code>Float64</code></td></tr><tr><td style="text-align: right"><code>ApplicationCommandOptionTypes.ATTACHMENT</code></td><td style="text-align: right">11</td><td style="text-align: right">Attachment ID</td></tr></table><h2 id="4.-Static-Choices"><a class="docs-heading-anchor" href="#4.-Static-Choices">4. Static Choices</a><a id="4.-Static-Choices-1"></a><a class="docs-heading-anchor-permalink" href="#4.-Static-Choices" title="Permalink"></a></h2><pre><code class="language-julia hljs">options = [
+    command_option(
+        type=ApplicationCommandOptionTypes.STRING,
+        name=&quot;color&quot;,
+        description=&quot;Pick a color&quot;,
+        required=true,
+        choices=[
+            Dict(&quot;name&quot; =&gt; &quot;Red&quot;, &quot;value&quot; =&gt; &quot;red&quot;),
+            Dict(&quot;name&quot; =&gt; &quot;Green&quot;, &quot;value&quot; =&gt; &quot;green&quot;),
+            Dict(&quot;name&quot; =&gt; &quot;Blue&quot;, &quot;value&quot; =&gt; &quot;blue&quot;),
+        ]
+    ),
+]
+
+@slash_command client &quot;color&quot; &quot;Pick a color&quot; options function(ctx)
+    color = get_option(ctx, &quot;color&quot;, &quot;red&quot;)
+    hex = Dict(&quot;red&quot; =&gt; 0xED4245, &quot;green&quot; =&gt; 0x57F287, &quot;blue&quot; =&gt; 0x5865F2)[color]
+    e = embed(title=&quot;You picked $color!&quot;, color=hex)
+    respond(ctx; embeds=[e])
+end</code></pre><h2 id="5.-Autocomplete"><a class="docs-heading-anchor" href="#5.-Autocomplete">5. Autocomplete</a><a id="5.-Autocomplete-1"></a><a class="docs-heading-anchor-permalink" href="#5.-Autocomplete" title="Permalink"></a></h2><p>For dynamic suggestions, mark an option as <code>autocomplete=true</code> and register an autocomplete handler:</p><pre><code class="language-julia hljs">const FRUITS = [&quot;apple&quot;, &quot;apricot&quot;, &quot;avocado&quot;, &quot;banana&quot;, &quot;blueberry&quot;,
+                &quot;cherry&quot;, &quot;coconut&quot;, &quot;dragonfruit&quot;, &quot;fig&quot;, &quot;grape&quot;,
+                &quot;kiwi&quot;, &quot;lemon&quot;, &quot;mango&quot;, &quot;orange&quot;, &quot;papaya&quot;,
+                &quot;peach&quot;, &quot;pear&quot;, &quot;pineapple&quot;, &quot;raspberry&quot;, &quot;strawberry&quot;]
+
+options = [
+    command_option(
+        type=ApplicationCommandOptionTypes.STRING,
+        name=&quot;fruit&quot;,
+        description=&quot;Pick a fruit&quot;,
+        required=true,
+        autocomplete=true,
+    ),
+]
+
+@slash_command client &quot;fruit&quot; &quot;Search for a fruit&quot; options function(ctx)
+    fruit = get_option(ctx, &quot;fruit&quot;, &quot;&quot;)
+    respond(ctx; content=&quot;You picked: **$fruit**&quot;)
+end
+
+@autocomplete client &quot;fruit&quot; function(ctx)
+    query = lowercase(get_option(ctx, &quot;fruit&quot;, &quot;&quot;))
+    matches = filter(f -&gt; startswith(f, query), FRUITS)
+    choices = [Dict(&quot;name&quot; =&gt; f, &quot;value&quot; =&gt; f) for f in first(matches, 25)]
+
+    body = Dict(
+        &quot;type&quot; =&gt; InteractionCallbackTypes.APPLICATION_COMMAND_AUTOCOMPLETE_RESULT,
+        &quot;data&quot; =&gt; Dict(&quot;choices&quot; =&gt; choices)
+    )
+    create_interaction_response(ctx.client.ratelimiter, ctx.interaction.id, ctx.interaction.token;
+        token=ctx.client.token, body)
+end</code></pre><h2 id="6.-Subcommands-and-Subcommand-Groups"><a class="docs-heading-anchor" href="#6.-Subcommands-and-Subcommand-Groups">6. Subcommands and Subcommand Groups</a><a id="6.-Subcommands-and-Subcommand-Groups-1"></a><a class="docs-heading-anchor-permalink" href="#6.-Subcommands-and-Subcommand-Groups" title="Permalink"></a></h2><p>Subcommands are options of type <code>SUB_COMMAND</code>:</p><pre><code class="language-julia hljs">options = [
+    command_option(
+        type=ApplicationCommandOptionTypes.SUB_COMMAND,
+        name=&quot;add&quot;,
+        description=&quot;Add a tag&quot;,
+        options=[
+            command_option(type=ApplicationCommandOptionTypes.STRING, name=&quot;name&quot;, description=&quot;Tag name&quot;, required=true),
+            command_option(type=ApplicationCommandOptionTypes.STRING, name=&quot;content&quot;, description=&quot;Tag content&quot;, required=true),
+        ]
+    ),
+    command_option(
+        type=ApplicationCommandOptionTypes.SUB_COMMAND,
+        name=&quot;get&quot;,
+        description=&quot;Get a tag&quot;,
+        options=[
+            command_option(type=ApplicationCommandOptionTypes.STRING, name=&quot;name&quot;, description=&quot;Tag name&quot;, required=true),
+        ]
+    ),
+]
+
+# In-memory tag storage
+const tags = Dict{String, String}()
+
+@slash_command client &quot;tag&quot; &quot;Manage tags&quot; options function(ctx)
+    data = ctx.interaction.data
+    ismissing(data) &amp;&amp; return
+    ismissing(data.options) &amp;&amp; return
+
+    sub = data.options[1]
+    sub_opts = Dict{String, Any}()
+    if !ismissing(sub.options)
+        for opt in sub.options
+            !ismissing(opt.value) &amp;&amp; (sub_opts[opt.name] = opt.value)
+        end
+    end
+
+    if sub.name == &quot;add&quot;
+        tags[sub_opts[&quot;name&quot;]] = sub_opts[&quot;content&quot;]
+        respond(ctx; content=&quot;Tag **$(sub_opts[&quot;name&quot;])** created!&quot;, ephemeral=true)
+    elseif sub.name == &quot;get&quot;
+        name = sub_opts[&quot;name&quot;]
+        content = get(tags, name, nothing)
+        if isnothing(content)
+            respond(ctx; content=&quot;Tag **$name** not found.&quot;, ephemeral=true)
+        else
+            respond(ctx; content=content)
+        end
+    end
+end</code></pre><h2 id="7.-Guild-vs-Global-Commands"><a class="docs-heading-anchor" href="#7.-Guild-vs-Global-Commands">7. Guild vs Global Commands</a><a id="7.-Guild-vs-Global-Commands-1"></a><a class="docs-heading-anchor-permalink" href="#7.-Guild-vs-Global-Commands" title="Permalink"></a></h2><pre><code class="language-julia hljs"># Global commands — available everywhere, up to 1 hour to propagate
+@slash_command client &quot;ping&quot; &quot;Check latency&quot; function(ctx)
+    respond(ctx; content=&quot;Pong!&quot;)
+end
+
+# Guild command — instant, only in one server
+GUILD_ID = 123456789012345678
+@slash_command client GUILD_ID &quot;debug&quot; &quot;Debug info&quot; function(ctx)
+    respond(ctx; content=&quot;Debug mode active&quot;, ephemeral=true)
+end
+
+# Or sync everything to a specific guild for development
+on(client, ReadyEvent) do c, event
+    sync_commands!(c, c.command_tree; guild_id=Snowflake(GUILD_ID))  # instant during dev
+end</code></pre><h2 id="8.-Deferred-Responses"><a class="docs-heading-anchor" href="#8.-Deferred-Responses">8. Deferred Responses</a><a id="8.-Deferred-Responses-1"></a><a class="docs-heading-anchor-permalink" href="#8.-Deferred-Responses" title="Permalink"></a></h2><p>If your command takes more than 3 seconds, defer first:</p><pre><code class="language-julia hljs">@slash_command client &quot;slow&quot; &quot;A slow operation&quot; function(ctx)
+    defer(ctx)  # shows &quot;Bot is thinking...&quot;
+
+    # Do expensive work
+    sleep(5)
+    result = &quot;Done after 5 seconds!&quot;
+
+    # Edit the deferred response
+    respond(ctx; content=result)
+end</code></pre><h3 id="Ephemeral-Deferred-Response"><a class="docs-heading-anchor" href="#Ephemeral-Deferred-Response">Ephemeral Deferred Response</a><a id="Ephemeral-Deferred-Response-1"></a><a class="docs-heading-anchor-permalink" href="#Ephemeral-Deferred-Response" title="Permalink"></a></h3><pre><code class="language-julia hljs">@slash_command client &quot;secret&quot; &quot;Private slow operation&quot; function(ctx)
+    defer(ctx; ephemeral=true)  # only visible to the user
+
+    sleep(3)
+    respond(ctx; content=&quot;Secret result!&quot;)
+end</code></pre><h2 id="9.-Followup-Messages"><a class="docs-heading-anchor" href="#9.-Followup-Messages">9. Followup Messages</a><a id="9.-Followup-Messages-1"></a><a class="docs-heading-anchor-permalink" href="#9.-Followup-Messages" title="Permalink"></a></h2><p>Send additional messages after the initial response:</p><pre><code class="language-julia hljs">@slash_command client &quot;multi&quot; &quot;Multiple responses&quot; function(ctx)
+    respond(ctx; content=&quot;First response!&quot;)
+
+    sleep(1)
+    followup(ctx; content=&quot;Here&#39;s a followup!&quot;)
+
+    sleep(1)
+    followup(ctx; content=&quot;And another one!&quot;, ephemeral=true)
+end</code></pre><h2 id="10.-Edit-the-Original-Response"><a class="docs-heading-anchor" href="#10.-Edit-the-Original-Response">10. Edit the Original Response</a><a id="10.-Edit-the-Original-Response-1"></a><a class="docs-heading-anchor-permalink" href="#10.-Edit-the-Original-Response" title="Permalink"></a></h2><pre><code class="language-julia hljs">@slash_command client &quot;countdown&quot; &quot;Countdown timer&quot; function(ctx)
+    defer(ctx)
+
+    for i in 3:-1:1
+        edit_response(ctx; content=&quot;**$i**...&quot;)
+        sleep(1)
+    end
+
+    edit_response(ctx; content=&quot;**Go!**&quot;)
+end</code></pre><hr/><h2 id="Complete-Example"><a class="docs-heading-anchor" href="#Complete-Example">Complete Example</a><a id="Complete-Example-1"></a><a class="docs-heading-anchor-permalink" href="#Complete-Example" title="Permalink"></a></h2><pre><code class="language-julia hljs">using Accord
+
+token = ENV[&quot;DISCORD_TOKEN&quot;]
+client = Client(token; intents=IntentGuilds)
+
+# Simple command
+@slash_command client &quot;ping&quot; &quot;Check bot latency&quot; function(ctx)
+    t = time()
+    defer(ctx)
+    ms = round(Int, (time() - t) * 1000)
+    respond(ctx; content=&quot;Pong! API latency: **$(ms) ms**&quot;)
+end
+
+# Command with options
+options = [
+    command_option(type=ApplicationCommandOptionTypes.STRING, name=&quot;text&quot;, description=&quot;Text to echo&quot;, required=true),
+    command_option(type=ApplicationCommandOptionTypes.BOOLEAN, name=&quot;ephemeral&quot;, description=&quot;Only visible to you?&quot;),
+]
+
+@slash_command client &quot;echo&quot; &quot;Echo a message&quot; options function(ctx)
+    text = get_option(ctx, &quot;text&quot;, &quot;&quot;)
+    eph = get_option(ctx, &quot;ephemeral&quot;, false)
+    respond(ctx; content=text, ephemeral=eph)
+end
+
+on(client, ReadyEvent) do c, event
+    @info &quot;Syncing commands...&quot;
+    sync_commands!(c, c.command_tree)
+    @info &quot;Bot ready!&quot;
+end
+
+start(client)</code></pre><hr/><p><strong>Next steps:</strong> <a href="../04-buttons-selects-modals/">Recipe 04 — Buttons, Selects &amp; Modals</a> to add interactive components to your messages.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../02-messages-and-embeds/">« Rich Messages</a><a class="docs-footer-nextpage" href="../04-buttons-selects-modals/">Buttons, Selects &amp; Modals »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Saturday 14 February 2026 01:47">Saturday 14 February 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

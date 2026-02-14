@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Polls · Accord.jl</title><meta name="title" content="Polls · Accord.jl"/><meta property="og:title" content="Polls · Accord.jl"/><meta property="twitter:title" content="Polls · Accord.jl"/><meta name="description" content="Documentation for Accord.jl."/><meta property="og:description" content="Documentation for Accord.jl."/><meta property="twitter:description" content="Documentation for Accord.jl."/><meta property="og:url" content="https://manelsen.github.io/Accord.jl/cookbook/10-polls/"/><meta property="twitter:url" content="https://manelsen.github.io/Accord.jl/cookbook/10-polls/"/><link rel="canonical" href="https://manelsen.github.io/Accord.jl/cookbook/10-polls/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Accord.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Cookbook</span><ul><li><a class="tocitem" href="../">Accord.jl Cookbook</a></li><li><a class="tocitem" href="../01-basic-bot/">Your First Bot</a></li><li><a class="tocitem" href="../02-messages-and-embeds/">Rich Messages</a></li><li><a class="tocitem" href="../03-slash-commands/">Slash Commands</a></li><li><a class="tocitem" href="../04-buttons-selects-modals/">Buttons, Selects &amp; Modals</a></li><li><a class="tocitem" href="../05-voice/">Voice</a></li><li><a class="tocitem" href="../06-permissions/">Permissions</a></li><li><a class="tocitem" href="../07-caching/">Caching</a></li><li><a class="tocitem" href="../08-sharding/">Sharding</a></li><li><a class="tocitem" href="../09-automod/">Auto-Moderation</a></li><li class="is-active"><a class="tocitem" href>Polls</a><ul class="internal"><li><a class="tocitem" href="#1.-How-Discord-Polls-Work"><span>1. How Discord Polls Work</span></a></li><li><a class="tocitem" href="#2.-Creating-a-Poll"><span>2. Creating a Poll</span></a></li><li><a class="tocitem" href="#3.-Listening-for-Votes"><span>3. Listening for Votes</span></a></li><li><a class="tocitem" href="#4.-Getting-Poll-Results"><span>4. Getting Poll Results</span></a></li><li><a class="tocitem" href="#5.-Ending-a-Poll-Early"><span>5. Ending a Poll Early</span></a></li><li><a class="tocitem" href="#6.-Practical-Example:-Poll-Bot-with-Slash-Commands"><span>6. Practical Example: Poll Bot with Slash Commands</span></a></li></ul></li><li><a class="tocitem" href="../11-architectural-patterns/">Architectural Patterns</a></li><li><a class="tocitem" href="../12-performance/">Performance</a></li><li><a class="tocitem" href="../13-deploy/">Deployment</a></li><li><a class="tocitem" href="../14-troubleshooting/">Troubleshooting</a></li><li><a class="tocitem" href="../15-why-julia/">Why Julia?</a></li><li><a class="tocitem" href="../16-ai-agent/">AI Agent Bot</a></li></ul></li><li><a class="tocitem" href="../../api/">API Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Cookbook</a></li><li class="is-active"><a href>Polls</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Polls</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/manelsen/Accord.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/manelsen/Accord.jl/blob/main/docs/src/cookbook/10-polls.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Recipe-10-—-Polls"><a class="docs-heading-anchor" href="#Recipe-10-—-Polls">Recipe 10 — Polls</a><a id="Recipe-10-—-Polls-1"></a><a class="docs-heading-anchor-permalink" href="#Recipe-10-—-Polls" title="Permalink"></a></h1><p><strong>Difficulty:</strong> Beginner <strong>What you will build:</strong> Discord-native polls with vote tracking, result checking, and early endings.</p><p><strong>Prerequisites:</strong> <a href="../01-basic-bot/">Recipe 01</a>, <a href="../03-slash-commands/">Recipe 03</a></p><hr/><h2 id="1.-How-Discord-Polls-Work"><a class="docs-heading-anchor" href="#1.-How-Discord-Polls-Work">1. How Discord Polls Work</a><a id="1.-How-Discord-Polls-Work-1"></a><a class="docs-heading-anchor-permalink" href="#1.-How-Discord-Polls-Work" title="Permalink"></a></h2><p>Polls are sent as part of a message via the <code>poll</code> field. Users vote using Discord&#39;s native UI — no buttons needed.</p><p>Required intent for vote events:</p><pre><code class="language-julia hljs">client = Client(token;
+    intents = IntentGuilds | IntentGuildMessages | IntentGuildMessagePolls
+)</code></pre><h2 id="2.-Creating-a-Poll"><a class="docs-heading-anchor" href="#2.-Creating-a-Poll">2. Creating a Poll</a><a id="2.-Creating-a-Poll-1"></a><a class="docs-heading-anchor-permalink" href="#2.-Creating-a-Poll" title="Permalink"></a></h2><p>Polls use the <code>poll</code> body in <code>create_message</code>:</p><pre><code class="language-julia hljs">body = Dict{String, Any}(
+    &quot;poll&quot; =&gt; Dict(
+        &quot;question&quot; =&gt; Dict(&quot;text&quot; =&gt; &quot;What&#39;s your favorite language?&quot;),
+        &quot;answers&quot; =&gt; [
+            Dict(&quot;answer_id&quot; =&gt; 1, &quot;poll_media&quot; =&gt; Dict(&quot;text&quot; =&gt; &quot;Julia&quot;)),
+            Dict(&quot;answer_id&quot; =&gt; 2, &quot;poll_media&quot; =&gt; Dict(&quot;text&quot; =&gt; &quot;Python&quot;)),
+            Dict(&quot;answer_id&quot; =&gt; 3, &quot;poll_media&quot; =&gt; Dict(&quot;text&quot; =&gt; &quot;Rust&quot;)),
+            Dict(&quot;answer_id&quot; =&gt; 4, &quot;poll_media&quot; =&gt; Dict(&quot;text&quot; =&gt; &quot;Other&quot;)),
+        ],
+        &quot;duration&quot; =&gt; 24,            # hours (1-336, max 14 days)
+        &quot;allow_multiselect&quot; =&gt; false, # single choice
+        &quot;layout_type&quot; =&gt; 1,           # DEFAULT layout
+    )
+)
+
+# Must call the REST endpoint directly for poll body
+discord_post(client.ratelimiter, &quot;/channels/$(channel_id)/messages&quot;;
+    token=client.token, body=body)</code></pre><h3 id="Poll-with-Emoji"><a class="docs-heading-anchor" href="#Poll-with-Emoji">Poll with Emoji</a><a id="Poll-with-Emoji-1"></a><a class="docs-heading-anchor-permalink" href="#Poll-with-Emoji" title="Permalink"></a></h3><pre><code class="language-julia hljs">Dict(
+    &quot;poll&quot; =&gt; Dict(
+        &quot;question&quot; =&gt; Dict(&quot;text&quot; =&gt; &quot;Pick a fruit&quot;),
+        &quot;answers&quot; =&gt; [
+            Dict(&quot;answer_id&quot; =&gt; 1, &quot;poll_media&quot; =&gt; Dict(&quot;text&quot; =&gt; &quot;Apple&quot;, &quot;emoji&quot; =&gt; Dict(&quot;name&quot; =&gt; &quot;🍎&quot;))),
+            Dict(&quot;answer_id&quot; =&gt; 2, &quot;poll_media&quot; =&gt; Dict(&quot;text&quot; =&gt; &quot;Banana&quot;, &quot;emoji&quot; =&gt; Dict(&quot;name&quot; =&gt; &quot;🍌&quot;))),
+            Dict(&quot;answer_id&quot; =&gt; 3, &quot;poll_media&quot; =&gt; Dict(&quot;text&quot; =&gt; &quot;Cherry&quot;, &quot;emoji&quot; =&gt; Dict(&quot;name&quot; =&gt; &quot;🍒&quot;))),
+        ],
+        &quot;duration&quot; =&gt; 1,
+        &quot;allow_multiselect&quot; =&gt; true,
+    )
+)</code></pre><h2 id="3.-Listening-for-Votes"><a class="docs-heading-anchor" href="#3.-Listening-for-Votes">3. Listening for Votes</a><a id="3.-Listening-for-Votes-1"></a><a class="docs-heading-anchor-permalink" href="#3.-Listening-for-Votes" title="Permalink"></a></h2><pre><code class="language-julia hljs">on(client, MessagePollVoteAdd) do c, event
+    @info &quot;Vote added&quot; user=event.user_id message=event.message_id answer=event.answer_id
+end
+
+on(client, MessagePollVoteRemove) do c, event
+    @info &quot;Vote removed&quot; user=event.user_id message=event.message_id answer=event.answer_id
+end</code></pre><h3 id="Track-Votes-in-Real-Time"><a class="docs-heading-anchor" href="#Track-Votes-in-Real-Time">Track Votes in Real Time</a><a id="Track-Votes-in-Real-Time-1"></a><a class="docs-heading-anchor-permalink" href="#Track-Votes-in-Real-Time" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Simple in-memory vote tracker
+const vote_counts = Dict{Snowflake, Dict{Int, Int}}()  # message_id → answer_id → count
+
+on(client, MessagePollVoteAdd) do c, event
+    msg_votes = get!(vote_counts, event.message_id, Dict{Int, Int}())
+    msg_votes[event.answer_id] = get(msg_votes, event.answer_id, 0) + 1
+end
+
+on(client, MessagePollVoteRemove) do c, event
+    msg_votes = get!(vote_counts, event.message_id, Dict{Int, Int}())
+    msg_votes[event.answer_id] = max(0, get(msg_votes, event.answer_id, 0) - 1)
+end</code></pre><h2 id="4.-Getting-Poll-Results"><a class="docs-heading-anchor" href="#4.-Getting-Poll-Results">4. Getting Poll Results</a><a id="4.-Getting-Poll-Results-1"></a><a class="docs-heading-anchor-permalink" href="#4.-Getting-Poll-Results" title="Permalink"></a></h2><pre><code class="language-julia hljs"># Get voters for a specific answer
+voters = get_answer_voters(client.ratelimiter, channel_id, message_id, 1;
+    token=client.token, limit=100)
+
+# voters is a Dict with &quot;users&quot; key
+for user_data in voters[&quot;users&quot;]
+    @info &quot;Voter&quot; id=user_data[&quot;id&quot;] username=user_data[&quot;username&quot;]
+end</code></pre><h2 id="5.-Ending-a-Poll-Early"><a class="docs-heading-anchor" href="#5.-Ending-a-Poll-Early">5. Ending a Poll Early</a><a id="5.-Ending-a-Poll-Early-1"></a><a class="docs-heading-anchor-permalink" href="#5.-Ending-a-Poll-Early" title="Permalink"></a></h2><pre><code class="language-julia hljs"># End the poll and finalize results
+result_msg = end_poll(client.ratelimiter, channel_id, message_id;
+    token=client.token)
+@info &quot;Poll ended&quot; message_id=result_msg.id</code></pre><h2 id="6.-Practical-Example:-Poll-Bot-with-Slash-Commands"><a class="docs-heading-anchor" href="#6.-Practical-Example:-Poll-Bot-with-Slash-Commands">6. Practical Example: Poll Bot with Slash Commands</a><a id="6.-Practical-Example:-Poll-Bot-with-Slash-Commands-1"></a><a class="docs-heading-anchor-permalink" href="#6.-Practical-Example:-Poll-Bot-with-Slash-Commands" title="Permalink"></a></h2><pre><code class="language-julia hljs">using Accord
+
+token = ENV[&quot;DISCORD_TOKEN&quot;]
+client = Client(token;
+    intents = IntentGuilds | IntentGuildMessages | IntentGuildMessagePolls
+)
+
+# /poll &quot;Question?&quot; &quot;Option A&quot; &quot;Option B&quot; [&quot;Option C&quot;] [&quot;Option D&quot;]
+options_poll = [
+    command_option(type=ApplicationCommandOptionTypes.STRING, name=&quot;question&quot;, description=&quot;Poll question&quot;, required=true),
+    command_option(type=ApplicationCommandOptionTypes.STRING, name=&quot;option1&quot;, description=&quot;First option&quot;, required=true),
+    command_option(type=ApplicationCommandOptionTypes.STRING, name=&quot;option2&quot;, description=&quot;Second option&quot;, required=true),
+    command_option(type=ApplicationCommandOptionTypes.STRING, name=&quot;option3&quot;, description=&quot;Third option&quot;),
+    command_option(type=ApplicationCommandOptionTypes.STRING, name=&quot;option4&quot;, description=&quot;Fourth option&quot;),
+    command_option(type=ApplicationCommandOptionTypes.INTEGER, name=&quot;hours&quot;, description=&quot;Duration in hours (default: 24)&quot;, min_value=1, max_value=336),
+    command_option(type=ApplicationCommandOptionTypes.BOOLEAN, name=&quot;multiselect&quot;, description=&quot;Allow multiple votes?&quot;),
+]
+
+@slash_command client &quot;poll&quot; &quot;Create a poll&quot; options_poll function(ctx)
+    question = get_option(ctx, &quot;question&quot;, &quot;&quot;)
+    opt1 = get_option(ctx, &quot;option1&quot;, &quot;&quot;)
+    opt2 = get_option(ctx, &quot;option2&quot;, &quot;&quot;)
+    opt3 = get_option(ctx, &quot;option3&quot;, nothing)
+    opt4 = get_option(ctx, &quot;option4&quot;, nothing)
+    hours = get_option(ctx, &quot;hours&quot;, 24)
+    multi = get_option(ctx, &quot;multiselect&quot;, false)
+
+    answers = [
+        Dict(&quot;answer_id&quot; =&gt; 1, &quot;poll_media&quot; =&gt; Dict(&quot;text&quot; =&gt; opt1)),
+        Dict(&quot;answer_id&quot; =&gt; 2, &quot;poll_media&quot; =&gt; Dict(&quot;text&quot; =&gt; opt2)),
+    ]
+    !isnothing(opt3) &amp;&amp; push!(answers, Dict(&quot;answer_id&quot; =&gt; 3, &quot;poll_media&quot; =&gt; Dict(&quot;text&quot; =&gt; opt3)))
+    !isnothing(opt4) &amp;&amp; push!(answers, Dict(&quot;answer_id&quot; =&gt; 4, &quot;poll_media&quot; =&gt; Dict(&quot;text&quot; =&gt; opt4)))
+
+    # Create the poll in the channel
+    channel_id = ctx.interaction.channel_id
+    body = Dict{String, Any}(
+        &quot;poll&quot; =&gt; Dict(
+            &quot;question&quot; =&gt; Dict(&quot;text&quot; =&gt; question),
+            &quot;answers&quot; =&gt; answers,
+            &quot;duration&quot; =&gt; hours,
+            &quot;allow_multiselect&quot; =&gt; multi,
+            &quot;layout_type&quot; =&gt; 1,
+        )
+    )
+
+    defer(ctx)
+    discord_post(ctx.client.ratelimiter, &quot;/channels/$(channel_id)/messages&quot;;
+        token=ctx.client.token, body=body)
+    respond(ctx; content=&quot;Poll created!&quot;, ephemeral=true)
+end
+
+# /endpoll &lt;message_id&gt;
+options_end = [
+    command_option(type=ApplicationCommandOptionTypes.STRING, name=&quot;message_id&quot;, description=&quot;Message ID of the poll&quot;, required=true),
+]
+
+@slash_command client &quot;endpoll&quot; &quot;End a poll early&quot; options_end function(ctx)
+    msg_id = Snowflake(get_option(ctx, &quot;message_id&quot;, &quot;&quot;))
+    channel_id = ctx.interaction.channel_id
+
+    end_poll(ctx.client.ratelimiter, channel_id, msg_id; token=ctx.client.token)
+    respond(ctx; content=&quot;Poll ended!&quot;, ephemeral=true)
+end
+
+# Vote tracking
+on(client, MessagePollVoteAdd) do c, event
+    @info &quot;Vote&quot; user=event.user_id answer=event.answer_id message=event.message_id
+end
+
+on(client, ReadyEvent) do c, event
+    sync_commands!(c, c.command_tree)
+    @info &quot;Poll bot ready!&quot;
+end
+
+start(client)</code></pre><hr/><p><strong>Next steps:</strong> <a href="../11-architectural-patterns/">Recipe 11 — Architectural Patterns</a> for structuring a production bot.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../09-automod/">« Auto-Moderation</a><a class="docs-footer-nextpage" href="../11-architectural-patterns/">Architectural Patterns »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Saturday 14 February 2026 01:47">Saturday 14 February 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

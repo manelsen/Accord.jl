@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Rich Messages · Accord.jl</title><meta name="title" content="Rich Messages · Accord.jl"/><meta property="og:title" content="Rich Messages · Accord.jl"/><meta property="twitter:title" content="Rich Messages · Accord.jl"/><meta name="description" content="Documentation for Accord.jl."/><meta property="og:description" content="Documentation for Accord.jl."/><meta property="twitter:description" content="Documentation for Accord.jl."/><meta property="og:url" content="https://manelsen.github.io/Accord.jl/cookbook/02-messages-and-embeds/"/><meta property="twitter:url" content="https://manelsen.github.io/Accord.jl/cookbook/02-messages-and-embeds/"/><link rel="canonical" href="https://manelsen.github.io/Accord.jl/cookbook/02-messages-and-embeds/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Accord.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Cookbook</span><ul><li><a class="tocitem" href="../">Accord.jl Cookbook</a></li><li><a class="tocitem" href="../01-basic-bot/">Your First Bot</a></li><li class="is-active"><a class="tocitem" href>Rich Messages</a><ul class="internal"><li><a class="tocitem" href="#1.-Simple-Messages"><span>1. Simple Messages</span></a></li><li><a class="tocitem" href="#2.-Building-Embeds"><span>2. Building Embeds</span></a></li><li><a class="tocitem" href="#3.-Multiple-Embeds"><span>3. Multiple Embeds</span></a></li><li><a class="tocitem" href="#4.-Reactions"><span>4. Reactions</span></a></li><li><a class="tocitem" href="#5.-Editing-and-Deleting-Messages"><span>5. Editing and Deleting Messages</span></a></li><li><a class="tocitem" href="#6.-File-Attachments"><span>6. File Attachments</span></a></li><li><a class="tocitem" href="#7.-Embed-with-Attached-Image"><span>7. Embed with Attached Image</span></a></li><li><a class="tocitem" href="#8.-Practical-Example:-Info-Command"><span>8. Practical Example: Info Command</span></a></li></ul></li><li><a class="tocitem" href="../03-slash-commands/">Slash Commands</a></li><li><a class="tocitem" href="../04-buttons-selects-modals/">Buttons, Selects &amp; Modals</a></li><li><a class="tocitem" href="../05-voice/">Voice</a></li><li><a class="tocitem" href="../06-permissions/">Permissions</a></li><li><a class="tocitem" href="../07-caching/">Caching</a></li><li><a class="tocitem" href="../08-sharding/">Sharding</a></li><li><a class="tocitem" href="../09-automod/">Auto-Moderation</a></li><li><a class="tocitem" href="../10-polls/">Polls</a></li><li><a class="tocitem" href="../11-architectural-patterns/">Architectural Patterns</a></li><li><a class="tocitem" href="../12-performance/">Performance</a></li><li><a class="tocitem" href="../13-deploy/">Deployment</a></li><li><a class="tocitem" href="../14-troubleshooting/">Troubleshooting</a></li><li><a class="tocitem" href="../15-why-julia/">Why Julia?</a></li><li><a class="tocitem" href="../16-ai-agent/">AI Agent Bot</a></li></ul></li><li><a class="tocitem" href="../../api/">API Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Cookbook</a></li><li class="is-active"><a href>Rich Messages</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Rich Messages</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/manelsen/Accord.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/manelsen/Accord.jl/blob/main/docs/src/cookbook/02-messages-and-embeds.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Recipe-02-—-Rich-Messages"><a class="docs-heading-anchor" href="#Recipe-02-—-Rich-Messages">Recipe 02 — Rich Messages</a><a id="Recipe-02-—-Rich-Messages-1"></a><a class="docs-heading-anchor-permalink" href="#Recipe-02-—-Rich-Messages" title="Permalink"></a></h1><p><strong>Difficulty:</strong> Beginner <strong>What you will build:</strong> Embeds with all fields, reactions, file attachments, message editing/deletion, and a reaction-role system.</p><p><strong>Prerequisites:</strong> <a href="../01-basic-bot/">Recipe 01</a></p><hr/><h2 id="1.-Simple-Messages"><a class="docs-heading-anchor" href="#1.-Simple-Messages">1. Simple Messages</a><a id="1.-Simple-Messages-1"></a><a class="docs-heading-anchor-permalink" href="#1.-Simple-Messages" title="Permalink"></a></h2><pre><code class="language-julia hljs"># Plain text
+create_message(client, channel_id; content=&quot;Hello, world!&quot;)
+
+# With a reply reference
+create_message(client, channel_id;
+    content=&quot;Replying to you!&quot;,
+    message_reference=Dict(
+        &quot;message_id&quot; =&gt; string(original_message_id)
+    )
+)</code></pre><h2 id="2.-Building-Embeds"><a class="docs-heading-anchor" href="#2.-Building-Embeds">2. Building Embeds</a><a id="2.-Building-Embeds-1"></a><a class="docs-heading-anchor-permalink" href="#2.-Building-Embeds" title="Permalink"></a></h2><p>The <code>embed()</code> helper returns a <code>Dict</code> ready for the API:</p><pre><code class="language-julia hljs">e = embed(
+    title=&quot;My Embed&quot;,
+    description=&quot;A rich embed with all the trimmings.&quot;,
+    url=&quot;https://github.com/your-org/Accord.jl&quot;,
+    color=0x5865F2,  # Discord blurple
+    timestamp=string(Dates.now()) * &quot;Z&quot;,
+    footer=Dict(&quot;text&quot; =&gt; &quot;Footer text&quot;, &quot;icon_url&quot; =&gt; &quot;https://example.com/icon.png&quot;),
+    thumbnail=Dict(&quot;url&quot; =&gt; &quot;https://example.com/thumb.png&quot;),
+    image=Dict(&quot;url&quot; =&gt; &quot;https://example.com/image.png&quot;),
+    author=Dict(
+        &quot;name&quot; =&gt; &quot;Bot Author&quot;,
+        &quot;url&quot; =&gt; &quot;https://example.com&quot;,
+        &quot;icon_url&quot; =&gt; &quot;https://example.com/avatar.png&quot;
+    ),
+    fields=[
+        Dict(&quot;name&quot; =&gt; &quot;Field 1&quot;, &quot;value&quot; =&gt; &quot;Value 1&quot;, &quot;inline&quot; =&gt; true),
+        Dict(&quot;name&quot; =&gt; &quot;Field 2&quot;, &quot;value&quot; =&gt; &quot;Value 2&quot;, &quot;inline&quot; =&gt; true),
+        Dict(&quot;name&quot; =&gt; &quot;Wide Field&quot;, &quot;value&quot; =&gt; &quot;This spans the full width.&quot;),
+    ]
+)
+
+create_message(client, channel_id; embeds=[e])</code></pre><h3 id="Color-Reference"><a class="docs-heading-anchor" href="#Color-Reference">Color Reference</a><a id="Color-Reference-1"></a><a class="docs-heading-anchor-permalink" href="#Color-Reference" title="Permalink"></a></h3><pre><code class="language-julia hljs">const COLORS = Dict(
+    :blurple =&gt; 0x5865F2,
+    :green   =&gt; 0x57F287,
+    :yellow  =&gt; 0xFEE75C,
+    :fuchsia =&gt; 0xEB459E,
+    :red     =&gt; 0xED4245,
+    :white   =&gt; 0xFFFFFF,
+    :black   =&gt; 0x23272A,
+)</code></pre><h2 id="3.-Multiple-Embeds"><a class="docs-heading-anchor" href="#3.-Multiple-Embeds">3. Multiple Embeds</a><a id="3.-Multiple-Embeds-1"></a><a class="docs-heading-anchor-permalink" href="#3.-Multiple-Embeds" title="Permalink"></a></h2><p>Send up to 10 embeds per message:</p><pre><code class="language-julia hljs">embeds = [
+    embed(title=&quot;Embed 1&quot;, description=&quot;First&quot;, color=0xED4245),
+    embed(title=&quot;Embed 2&quot;, description=&quot;Second&quot;, color=0x57F287),
+    embed(title=&quot;Embed 3&quot;, description=&quot;Third&quot;, color=0x5865F2),
+]
+
+create_message(client, channel_id; embeds=embeds)</code></pre><h2 id="4.-Reactions"><a class="docs-heading-anchor" href="#4.-Reactions">4. Reactions</a><a id="4.-Reactions-1"></a><a class="docs-heading-anchor-permalink" href="#4.-Reactions" title="Permalink"></a></h2><pre><code class="language-julia hljs"># Unicode emoji
+create_reaction(client, channel_id, message_id, &quot;👍&quot;)
+
+# Custom emoji — use format name:id
+create_reaction(client, channel_id, message_id, &quot;custom_emoji:123456789012345678&quot;)</code></pre><h3 id="Reaction-Role-System"><a class="docs-heading-anchor" href="#Reaction-Role-System">Reaction-Role System</a><a id="Reaction-Role-System-1"></a><a class="docs-heading-anchor-permalink" href="#Reaction-Role-System" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Map emoji to role IDs
+const REACTION_ROLES = Dict(
+    &quot;🎮&quot; =&gt; Snowflake(111111111111111111),  # Gamer role
+    &quot;🎨&quot; =&gt; Snowflake(222222222222222222),  # Artist role
+    &quot;🎵&quot; =&gt; Snowflake(333333333333333333),  # Music role
+)
+
+const ROLE_MESSAGE_ID = Snowflake(444444444444444444)  # the message to watch
+
+on(client, MessageReactionAdd) do c, event
+    event.message_id != ROLE_MESSAGE_ID &amp;&amp; return
+    ismissing(event.member) &amp;&amp; return
+
+    # Get emoji name
+    emoji_name = event.emoji.name
+    ismissing(emoji_name) &amp;&amp; return
+
+    role_id = get(REACTION_ROLES, emoji_name, nothing)
+    isnothing(role_id) &amp;&amp; return
+    ismissing(event.guild_id) &amp;&amp; return
+
+    add_guild_member_role(c.ratelimiter, event.guild_id, event.member.user.id, role_id;
+        token=c.token)
+    @info &quot;Added role&quot; role=role_id user=event.member.user.id
+end
+
+on(client, MessageReactionRemove) do c, event
+    event.message_id != ROLE_MESSAGE_ID &amp;&amp; return
+
+    emoji_name = event.emoji.name
+    ismissing(emoji_name) &amp;&amp; return
+
+    role_id = get(REACTION_ROLES, emoji_name, nothing)
+    isnothing(role_id) &amp;&amp; return
+    ismissing(event.guild_id) &amp;&amp; return
+
+    remove_guild_member_role(c.ratelimiter, event.guild_id, event.user_id, role_id;
+        token=c.token)
+    @info &quot;Removed role&quot; role=role_id user=event.user_id
+end</code></pre><h2 id="5.-Editing-and-Deleting-Messages"><a class="docs-heading-anchor" href="#5.-Editing-and-Deleting-Messages">5. Editing and Deleting Messages</a><a id="5.-Editing-and-Deleting-Messages-1"></a><a class="docs-heading-anchor-permalink" href="#5.-Editing-and-Deleting-Messages" title="Permalink"></a></h2><pre><code class="language-julia hljs"># Edit a message
+edit_message(client, channel_id, message_id;
+    content=&quot;Updated content!&quot;,
+    embeds=[embed(title=&quot;Updated&quot;, color=0x57F287)]
+)
+
+# Delete a single message
+delete_message(client, channel_id, message_id)
+
+# Bulk delete messages (2-100 messages, &lt; 14 days old)
+message_ids = [Snowflake(id1), Snowflake(id2), Snowflake(id3)]
+bulk_delete_messages(client.ratelimiter, channel_id;
+    token=client.token, message_ids=message_ids)</code></pre><h2 id="6.-File-Attachments"><a class="docs-heading-anchor" href="#6.-File-Attachments">6. File Attachments</a><a id="6.-File-Attachments-1"></a><a class="docs-heading-anchor-permalink" href="#6.-File-Attachments" title="Permalink"></a></h2><p>Send files using the <code>files</code> parameter as a vector of <code>(filename, data)</code> tuples:</p><pre><code class="language-julia hljs"># Send a text file
+create_message(client, channel_id;
+    content=&quot;Here&#39;s a log file:&quot;,
+    files=[(&quot;log.txt&quot;, Vector{UInt8}(codeunits(&quot;Line 1\nLine 2\nLine 3&quot;)))]
+)
+
+# Send an image from disk
+img_data = read(&quot;chart.png&quot;)
+create_message(client, channel_id;
+    content=&quot;Today&#39;s chart:&quot;,
+    files=[(&quot;chart.png&quot;, img_data)]
+)
+
+# Multiple files
+create_message(client, channel_id;
+    content=&quot;Multiple attachments:&quot;,
+    files=[
+        (&quot;data.csv&quot;, Vector{UInt8}(codeunits(&quot;a,b,c\n1,2,3&quot;))),
+        (&quot;readme.txt&quot;, Vector{UInt8}(codeunits(&quot;See attached data.&quot;))),
+    ]
+)</code></pre><h2 id="7.-Embed-with-Attached-Image"><a class="docs-heading-anchor" href="#7.-Embed-with-Attached-Image">7. Embed with Attached Image</a><a id="7.-Embed-with-Attached-Image-1"></a><a class="docs-heading-anchor-permalink" href="#7.-Embed-with-Attached-Image" title="Permalink"></a></h2><p>Reference an attached image inside an embed using <code>attachment://filename</code>:</p><pre><code class="language-julia hljs">img_data = read(&quot;banner.png&quot;)
+e = embed(
+    title=&quot;Welcome!&quot;,
+    image=Dict(&quot;url&quot; =&gt; &quot;attachment://banner.png&quot;),
+    color=0x5865F2,
+)
+create_message(client, channel_id;
+    embeds=[e],
+    files=[(&quot;banner.png&quot;, img_data)]
+)</code></pre><h2 id="8.-Practical-Example:-Info-Command"><a class="docs-heading-anchor" href="#8.-Practical-Example:-Info-Command">8. Practical Example: Info Command</a><a id="8.-Practical-Example:-Info-Command-1"></a><a class="docs-heading-anchor-permalink" href="#8.-Practical-Example:-Info-Command" title="Permalink"></a></h2><pre><code class="language-julia hljs">using Dates
+
+on(client, MessageCreate) do c, event
+    msg = event.message
+    ismissing(msg.author) &amp;&amp; return
+    ismissing(msg.content) &amp;&amp; return
+    !ismissing(msg.author.bot) &amp;&amp; msg.author.bot == true &amp;&amp; return
+
+    if msg.content == &quot;!serverinfo&quot;
+        ismissing(msg.guild_id) &amp;&amp; return
+
+        guild = get_guild(c, msg.guild_id)
+        member_count = ismissing(guild.approximate_member_count) ? &quot;N/A&quot; : string(guild.approximate_member_count)
+
+        e = embed(
+            title=guild.name,
+            description=&quot;Server information&quot;,
+            color=0x5865F2,
+            thumbnail=isnothing(guild.icon) ? nothing : Dict(
+                &quot;url&quot; =&gt; &quot;https://cdn.discordapp.com/icons/$(guild.id)/$(guild.icon).png&quot;
+            ),
+            fields=[
+                Dict(&quot;name&quot; =&gt; &quot;Owner&quot;, &quot;value&quot; =&gt; &quot;&lt;@$(guild.owner_id)&gt;&quot;, &quot;inline&quot; =&gt; true),
+                Dict(&quot;name&quot; =&gt; &quot;ID&quot;, &quot;value&quot; =&gt; string(guild.id), &quot;inline&quot; =&gt; true),
+                Dict(&quot;name&quot; =&gt; &quot;Created&quot;, &quot;value&quot; =&gt; string(timestamp(guild.id)), &quot;inline&quot; =&gt; true),
+                Dict(&quot;name&quot; =&gt; &quot;Verification&quot;, &quot;value&quot; =&gt; string(guild.verification_level), &quot;inline&quot; =&gt; true),
+            ],
+            footer=Dict(&quot;text&quot; =&gt; &quot;Requested at $(Dates.format(now(), &quot;HH:MM:SS&quot;))&quot;),
+        )
+        create_message(c, msg.channel_id; embeds=[e])
+    end
+end</code></pre><hr/><p><strong>Next steps:</strong> <a href="../03-slash-commands/">Recipe 03 — Slash Commands</a> to replace prefix commands with Discord&#39;s native slash commands.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../01-basic-bot/">« Your First Bot</a><a class="docs-footer-nextpage" href="../03-slash-commands/">Slash Commands »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Saturday 14 February 2026 01:47">Saturday 14 February 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

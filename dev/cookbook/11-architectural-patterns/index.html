@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Architectural Patterns · Accord.jl</title><meta name="title" content="Architectural Patterns · Accord.jl"/><meta property="og:title" content="Architectural Patterns · Accord.jl"/><meta property="twitter:title" content="Architectural Patterns · Accord.jl"/><meta name="description" content="Documentation for Accord.jl."/><meta property="og:description" content="Documentation for Accord.jl."/><meta property="twitter:description" content="Documentation for Accord.jl."/><meta property="og:url" content="https://manelsen.github.io/Accord.jl/cookbook/11-architectural-patterns/"/><meta property="twitter:url" content="https://manelsen.github.io/Accord.jl/cookbook/11-architectural-patterns/"/><link rel="canonical" href="https://manelsen.github.io/Accord.jl/cookbook/11-architectural-patterns/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Accord.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Cookbook</span><ul><li><a class="tocitem" href="../">Accord.jl Cookbook</a></li><li><a class="tocitem" href="../01-basic-bot/">Your First Bot</a></li><li><a class="tocitem" href="../02-messages-and-embeds/">Rich Messages</a></li><li><a class="tocitem" href="../03-slash-commands/">Slash Commands</a></li><li><a class="tocitem" href="../04-buttons-selects-modals/">Buttons, Selects &amp; Modals</a></li><li><a class="tocitem" href="../05-voice/">Voice</a></li><li><a class="tocitem" href="../06-permissions/">Permissions</a></li><li><a class="tocitem" href="../07-caching/">Caching</a></li><li><a class="tocitem" href="../08-sharding/">Sharding</a></li><li><a class="tocitem" href="../09-automod/">Auto-Moderation</a></li><li><a class="tocitem" href="../10-polls/">Polls</a></li><li class="is-active"><a class="tocitem" href>Architectural Patterns</a><ul class="internal"><li><a class="tocitem" href="#1.-Production-Project-Structure"><span>1. Production Project Structure</span></a></li><li><a class="tocitem" href="#2.-Main-Module-Pattern"><span>2. Main Module Pattern</span></a></li><li><a class="tocitem" href="#3.-Modular-Command-Registration"><span>3. Modular Command Registration</span></a></li><li><a class="tocitem" href="#4.-Error-Handling"><span>4. Error Handling</span></a></li><li><a class="tocitem" href="#5.-Middleware"><span>5. Middleware</span></a></li><li><a class="tocitem" href="#6.-Configuration-with-TOML"><span>6. Configuration with TOML</span></a></li><li><a class="tocitem" href="#7.-Entry-Point"><span>7. Entry Point</span></a></li><li><a class="tocitem" href="#8.-Database-Integration-Pattern"><span>8. Database Integration Pattern</span></a></li><li><a class="tocitem" href="#9.-Idiomatic-Julia-Patterns"><span>9. Idiomatic Julia Patterns</span></a></li></ul></li><li><a class="tocitem" href="../12-performance/">Performance</a></li><li><a class="tocitem" href="../13-deploy/">Deployment</a></li><li><a class="tocitem" href="../14-troubleshooting/">Troubleshooting</a></li><li><a class="tocitem" href="../15-why-julia/">Why Julia?</a></li><li><a class="tocitem" href="../16-ai-agent/">AI Agent Bot</a></li></ul></li><li><a class="tocitem" href="../../api/">API Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Cookbook</a></li><li class="is-active"><a href>Architectural Patterns</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Architectural Patterns</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/manelsen/Accord.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/manelsen/Accord.jl/blob/main/docs/src/cookbook/11-architectural-patterns.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Recipe-11-—-Architectural-Patterns"><a class="docs-heading-anchor" href="#Recipe-11-—-Architectural-Patterns">Recipe 11 — Architectural Patterns</a><a id="Recipe-11-—-Architectural-Patterns-1"></a><a class="docs-heading-anchor-permalink" href="#Recipe-11-—-Architectural-Patterns" title="Permalink"></a></h1><p><strong>Difficulty:</strong> Intermediate <strong>What you will build:</strong> Production project structure with modular commands, middleware, error handling, config management, and database integration.</p><p><strong>Prerequisites:</strong> <a href="../03-slash-commands/">Recipe 03</a>, <a href="../04-buttons-selects-modals/">Recipe 04</a></p><hr/><h2 id="1.-Production-Project-Structure"><a class="docs-heading-anchor" href="#1.-Production-Project-Structure">1. Production Project Structure</a><a id="1.-Production-Project-Structure-1"></a><a class="docs-heading-anchor-permalink" href="#1.-Production-Project-Structure" title="Permalink"></a></h2><pre><code class="language-text hljs">MyBot/
+├── Project.toml
+├── Manifest.toml
+├── .env                    # tokens (never commit)
+├── .gitignore
+├── config.toml             # bot configuration
+├── src/
+│   ├── MyBot.jl            # main module
+│   ├── commands/
+│   │   ├── general.jl      # /ping, /help, /info
+│   │   ├── moderation.jl   # /ban, /kick, /warn
+│   │   └── fun.jl          # /poll, /roll, /quote
+│   ├── handlers/
+│   │   ├── messages.jl     # MessageCreate handlers
+│   │   └── members.jl      # GuildMemberAdd/Remove handlers
+│   ├── services/
+│   │   ├── database.jl     # database access layer
+│   │   └── api.jl          # external API clients
+│   └── utils/
+│       ├── config.jl       # config loading
+│       ├── embeds.jl       # embed templates
+│       └── checks.jl       # permission checks
+├── bin/
+│   └── run.jl              # entry point
+└── test/
+    └── runtests.jl</code></pre><h2 id="2.-Main-Module-Pattern"><a class="docs-heading-anchor" href="#2.-Main-Module-Pattern">2. Main Module Pattern</a><a id="2.-Main-Module-Pattern-1"></a><a class="docs-heading-anchor-permalink" href="#2.-Main-Module-Pattern" title="Permalink"></a></h2><pre><code class="language-julia hljs"># src/MyBot.jl
+module MyBot
+
+using Accord
+using Dates
+
+# Configuration
+include(&quot;utils/config.jl&quot;)
+
+# Utilities
+include(&quot;utils/embeds.jl&quot;)
+include(&quot;utils/checks.jl&quot;)
+
+# Services
+include(&quot;services/database.jl&quot;)
+
+# Commands
+include(&quot;commands/general.jl&quot;)
+include(&quot;commands/moderation.jl&quot;)
+include(&quot;commands/fun.jl&quot;)
+
+# Event handlers
+include(&quot;handlers/messages.jl&quot;)
+include(&quot;handlers/members.jl&quot;)
+
+# Bot setup
+function create_bot(config)
+    client = Client(config[&quot;token&quot;];
+        intents = IntentGuilds | IntentGuildMessages | IntentMessageContent | IntentGuildMembers,
+        user_strategy = CacheLRU(config[&quot;cache&quot;][&quot;max_users&quot;]),
+    )
+
+    # Register all commands (macros will register them to client.command_tree)
+    register_general_commands!(client, config)
+    register_moderation_commands!(client, config)
+    register_fun_commands!(client, config)
+
+    # Register event handlers
+    register_message_handlers!(client, config)
+    register_member_handlers!(client, config)
+
+    # Sync commands on ready
+    on(client, ReadyEvent) do c, event
+        sync_commands!(c, c.command_tree; guild_id=get(config, &quot;dev_guild_id&quot;, nothing))
+        @info &quot;Bot ready!&quot; user=event.user.username
+    end
+
+    # Note: Client automatically routes interactions to c.command_tree
+
+    return client
+end
+
+end # module</code></pre><h2 id="3.-Modular-Command-Registration"><a class="docs-heading-anchor" href="#3.-Modular-Command-Registration">3. Modular Command Registration</a><a id="3.-Modular-Command-Registration-1"></a><a class="docs-heading-anchor-permalink" href="#3.-Modular-Command-Registration" title="Permalink"></a></h2><pre><code class="language-julia hljs"># src/commands/general.jl
+
+function register_general_commands!(client, config)
+
+    @slash_command client &quot;ping&quot; &quot;Check bot latency&quot; function(ctx)
+        t = time()
+        defer(ctx)
+        ms = round(Int, (time() - t) * 1000)
+        e = embed(title=&quot;Pong!&quot;, description=&quot;Latency: **$(ms) ms**&quot;, color=0x57F287)
+        respond(ctx; embeds=[e])
+    end
+
+    @slash_command client &quot;info&quot; &quot;Bot information&quot; function(ctx)
+        guilds = length(ctx.client.state.guilds)
+        e = embed(
+            title=&quot;Bot Info&quot;,
+            color=0x5865F2,
+            fields=[
+                Dict(&quot;name&quot; =&gt; &quot;Guilds&quot;, &quot;value&quot; =&gt; string(guilds), &quot;inline&quot; =&gt; true),
+                Dict(&quot;name&quot; =&gt; &quot;Julia&quot;, &quot;value&quot; =&gt; string(VERSION), &quot;inline&quot; =&gt; true),
+                Dict(&quot;name&quot; =&gt; &quot;Accord.jl&quot;, &quot;value&quot; =&gt; string(Accord.ACCORD_VERSION), &quot;inline&quot; =&gt; true),
+            ]
+        )
+        respond(ctx; embeds=[e])
+    end
+
+end</code></pre><pre><code class="language-julia hljs"># src/commands/moderation.jl
+
+function register_moderation_commands!(client, config)
+
+    options = [
+        command_option(type=ApplicationCommandOptionTypes.USER, name=&quot;user&quot;, description=&quot;User to kick&quot;, required=true),
+        command_option(type=ApplicationCommandOptionTypes.STRING, name=&quot;reason&quot;, description=&quot;Reason for kick&quot;),
+    ]
+
+    # Clean: guards are declared outside the handler
+    @check has_permissions(:KICK_MEMBERS)
+    @slash_command client &quot;kick&quot; &quot;Kick a member&quot; options function(ctx)
+        target = Snowflake(get_option(ctx, &quot;user&quot;, &quot;&quot;))
+        reason = get_option(ctx, &quot;reason&quot;, &quot;No reason&quot;)
+
+        remove_guild_member(ctx.client.ratelimiter, ctx.interaction.guild_id, target;
+            token=ctx.client.token, reason=reason)
+
+        respond(ctx; content=&quot;Kicked &lt;@$(target)&gt;. Reason: $reason&quot;)
+    end
+
+end</code></pre><h2 id="4.-Error-Handling"><a class="docs-heading-anchor" href="#4.-Error-Handling">4. Error Handling</a><a id="4.-Error-Handling-1"></a><a class="docs-heading-anchor-permalink" href="#4.-Error-Handling" title="Permalink"></a></h2><h3 id="Global-Error-Handler"><a class="docs-heading-anchor" href="#Global-Error-Handler">Global Error Handler</a><a id="Global-Error-Handler-1"></a><a class="docs-heading-anchor-permalink" href="#Global-Error-Handler" title="Permalink"></a></h3><pre><code class="language-julia hljs">on_error(client) do c, event, error
+    # Log the error with full context
+    @error &quot;Handler error&quot; event_type=typeof(event) exception=(error, catch_backtrace())
+
+    # Optionally notify a channel
+    ERROR_CHANNEL = Snowflake(config[&quot;error_channel_id&quot;])
+    try
+        e = embed(
+            title=&quot;Bot Error&quot;,
+            description=&quot;```\n$(sprint(showerror, error))\n```&quot;,
+            color=0xED4245,
+            fields=[
+                Dict(&quot;name&quot; =&gt; &quot;Event&quot;, &quot;value&quot; =&gt; string(typeof(event))),
+            ],
+            footer=Dict(&quot;text&quot; =&gt; string(now())),
+        )
+        create_message(c, ERROR_CHANNEL; embeds=[e])
+    catch
+        # Don&#39;t let error reporting errors crash the bot
+    end
+end</code></pre><h3 id="Per-Handler-Try-Catch"><a class="docs-heading-anchor" href="#Per-Handler-Try-Catch">Per-Handler Try-Catch</a><a id="Per-Handler-Try-Catch-1"></a><a class="docs-heading-anchor-permalink" href="#Per-Handler-Try-Catch" title="Permalink"></a></h3><pre><code class="language-julia hljs">@slash_command client &quot;risky&quot; &quot;A command that might fail&quot; function(ctx)
+    try
+        result = some_external_api_call()
+        respond(ctx; content=&quot;Result: $result&quot;)
+    catch e
+        @error &quot;Command failed&quot; exception=e
+        respond(ctx; content=&quot;Something went wrong. Please try again later.&quot;, ephemeral=true)
+    end
+end</code></pre><h3 id="Structured-Logging"><a class="docs-heading-anchor" href="#Structured-Logging">Structured Logging</a><a id="Structured-Logging-1"></a><a class="docs-heading-anchor-permalink" href="#Structured-Logging" title="Permalink"></a></h3><pre><code class="language-julia hljs">using Logging
+
+# Set up logging with timestamps
+logger = ConsoleLogger(stderr, Logging.Info)
+global_logger(logger)
+
+# Enable debug logging for Accord
+ENV[&quot;JULIA_DEBUG&quot;] = &quot;Accord&quot;</code></pre><h2 id="5.-Middleware"><a class="docs-heading-anchor" href="#5.-Middleware">5. Middleware</a><a id="5.-Middleware-1"></a><a class="docs-heading-anchor-permalink" href="#5.-Middleware" title="Permalink"></a></h2><p>Middleware runs before every event handler. Return the event to continue, <code>nothing</code> to cancel.</p><pre><code class="language-julia hljs"># Logging middleware
+register_middleware!(client.event_handler) do client, event
+    @debug &quot;Event received&quot; type=typeof(event)
+    return event  # pass through
+end
+
+# Ignore list middleware
+const IGNORED_USERS = Set{Snowflake}()
+
+register_middleware!(client.event_handler) do client, event
+    if event isa MessageCreate
+        user_id = ismissing(event.message.author) ? nothing : event.message.author.id
+        if !isnothing(user_id) &amp;&amp; user_id in IGNORED_USERS
+            return nothing  # cancel event
+        end
+    end
+    return event
+end
+
+# Rate limiting middleware
+const user_cooldowns = Dict{Snowflake, Float64}()
+const COOLDOWN_SECONDS = 2.0
+
+register_middleware!(client.event_handler) do client, event
+    if event isa InteractionCreate
+        user_id = event.interaction.member.user.id
+        last_use = get(user_cooldowns, user_id, 0.0)
+        if time() - last_use &lt; COOLDOWN_SECONDS
+            return nothing  # too fast, ignore
+        end
+        user_cooldowns[user_id] = time()
+    end
+    return event
+end</code></pre><h2 id="6.-Configuration-with-TOML"><a class="docs-heading-anchor" href="#6.-Configuration-with-TOML">6. Configuration with TOML</a><a id="6.-Configuration-with-TOML-1"></a><a class="docs-heading-anchor-permalink" href="#6.-Configuration-with-TOML" title="Permalink"></a></h2><pre><code class="language-toml hljs"># config.toml
+[bot]
+prefix = &quot;!&quot;
+dev_guild_id = &quot;123456789012345678&quot;
+error_channel_id = &quot;987654321098765432&quot;
+
+[cache]
+max_users = 50000
+max_members = 50000
+
+[features]
+enable_logging = true
+enable_moderation = true
+enable_fun = true</code></pre><pre><code class="language-julia hljs"># src/utils/config.jl
+import TOML
+
+function load_config(path=&quot;config.toml&quot;)
+    config = TOML.parsefile(path)
+
+    # Merge with env vars (env takes precedence)
+    config[&quot;token&quot;] = ENV[&quot;DISCORD_TOKEN&quot;]
+
+    return config
+end</code></pre><h2 id="7.-Entry-Point"><a class="docs-heading-anchor" href="#7.-Entry-Point">7. Entry Point</a><a id="7.-Entry-Point-1"></a><a class="docs-heading-anchor-permalink" href="#7.-Entry-Point" title="Permalink"></a></h2><pre><code class="language-julia hljs"># bin/run.jl
+using Pkg
+Pkg.activate(joinpath(@__DIR__, &quot;..&quot;))
+
+# Load .env
+for line in eachline(&quot;.env&quot;)
+    stripped = strip(line)
+    (isempty(stripped) || startswith(stripped, &#39;#&#39;)) &amp;&amp; continue
+    key, value = split(stripped, &#39;=&#39;; limit=2)
+    ENV[strip(key)] = strip(value)
+end
+
+using MyBot
+
+config = MyBot.load_config()
+client = MyBot.create_bot(config)
+
+@info &quot;Starting bot...&quot;
+start(client)</code></pre><h2 id="8.-Database-Integration-Pattern"><a class="docs-heading-anchor" href="#8.-Database-Integration-Pattern">8. Database Integration Pattern</a><a id="8.-Database-Integration-Pattern-1"></a><a class="docs-heading-anchor-permalink" href="#8.-Database-Integration-Pattern" title="Permalink"></a></h2><pre><code class="language-julia hljs"># src/services/database.jl
+import SQLite
+
+const db = Ref{SQLite.DB}()
+
+function init_db(path=&quot;bot.db&quot;)
+    db[] = SQLite.DB(path)
+
+    SQLite.execute(db[], &quot;&quot;&quot;
+        CREATE TABLE IF NOT EXISTS warnings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            guild_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            moderator_id TEXT NOT NULL,
+            reason TEXT NOT NULL,
+            created_at TEXT NOT NULL
+        )
+    &quot;&quot;&quot;)
+end
+
+function add_warning(guild_id, user_id, moderator_id, reason)
+    SQLite.execute(db[], &quot;&quot;&quot;
+        INSERT INTO warnings (guild_id, user_id, moderator_id, reason, created_at)
+        VALUES (?, ?, ?, ?, ?)
+    &quot;&quot;&quot;, [string(guild_id), string(user_id), string(moderator_id), reason, string(now())])
+end
+
+function get_warnings(guild_id, user_id)
+    SQLite.DBInterface.execute(db[], &quot;&quot;&quot;
+        SELECT * FROM warnings WHERE guild_id = ? AND user_id = ? ORDER BY created_at DESC
+    &quot;&quot;&quot;, [string(guild_id), string(user_id)]) |&gt; collect
+end</code></pre><h2 id="9.-Idiomatic-Julia-Patterns"><a class="docs-heading-anchor" href="#9.-Idiomatic-Julia-Patterns">9. Idiomatic Julia Patterns</a><a id="9.-Idiomatic-Julia-Patterns-1"></a><a class="docs-heading-anchor-permalink" href="#9.-Idiomatic-Julia-Patterns" title="Permalink"></a></h2><h3 id="Multiple-Dispatch-for-Event-Routing"><a class="docs-heading-anchor" href="#Multiple-Dispatch-for-Event-Routing">Multiple Dispatch for Event Routing</a><a id="Multiple-Dispatch-for-Event-Routing-1"></a><a class="docs-heading-anchor-permalink" href="#Multiple-Dispatch-for-Event-Routing" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Julia&#39;s type system naturally routes events
+function handle_event(client, event::GuildMemberAdd)
+    @info &quot;Welcome!&quot; user=event.member.user.username
+end
+
+function handle_event(client, event::GuildMemberRemove)
+    @info &quot;Goodbye!&quot; user=event.user.username
+end
+
+function handle_event(client, event::AbstractEvent)
+    # fallback — nothing
+end</code></pre><h3 id="Type-Stable-Option-Extraction"><a class="docs-heading-anchor" href="#Type-Stable-Option-Extraction">Type-Stable Option Extraction</a><a id="Type-Stable-Option-Extraction-1"></a><a class="docs-heading-anchor-permalink" href="#Type-Stable-Option-Extraction" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Annotate types when extracting options
+function handle_greet(ctx)
+    name = get_option(ctx, &quot;name&quot;, &quot;World&quot;)::String
+    times = get_option(ctx, &quot;times&quot;, 1)::Int
+    respond(ctx; content=join(fill(&quot;Hello, $name!&quot;, times), &quot;\n&quot;))
+end</code></pre><h3 id="Avoid-Global-Mutable-State"><a class="docs-heading-anchor" href="#Avoid-Global-Mutable-State">Avoid Global Mutable State</a><a id="Avoid-Global-Mutable-State-1"></a><a class="docs-heading-anchor-permalink" href="#Avoid-Global-Mutable-State" title="Permalink"></a></h3><pre><code class="language-julia hljs"># ✅ Preferred: inject state via Client&#39;s state parameter
+struct BotState
+    warnings::Dict{Snowflake, Vector{String}}
+    config::Dict{String, Any}
+    db::Any
+end
+
+# State is accessible from handlers via ctx.state
+bot_state = BotState(Dict(), config, db_conn)
+client = Client(token; state=bot_state)
+
+function register_commands!(client)
+    @slash_command client &quot;warn&quot; &quot;Warn a user&quot; function(ctx)
+        # ctx.state is the BotState struct — no globals!
+        warns = get!(ctx.state.warnings, ctx.interaction.guild_id, String[])
+        push!(warns, &quot;warning&quot;)
+        respond(ctx; content=&quot;Warning recorded ($(length(warns)) total)&quot;)
+    end
+
+    # Access database cleanly
+    @slash_command client &quot;stats&quot; &quot;Show stats&quot; function(ctx)
+        count = query_count(ctx.state.db, ctx.guild_id)
+        respond(ctx; content=&quot;Total: $count&quot;)
+    end
+end</code></pre><hr/><p><strong>Next steps:</strong> <a href="../12-performance/">Recipe 12 — Performance</a> for Julia-specific optimizations.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../10-polls/">« Polls</a><a class="docs-footer-nextpage" href="../12-performance/">Performance »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Saturday 14 February 2026 01:47">Saturday 14 February 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

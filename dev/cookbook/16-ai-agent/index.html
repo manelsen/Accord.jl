@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>AI Agent Bot · Accord.jl</title><meta name="title" content="AI Agent Bot · Accord.jl"/><meta property="og:title" content="AI Agent Bot · Accord.jl"/><meta property="twitter:title" content="AI Agent Bot · Accord.jl"/><meta name="description" content="Documentation for Accord.jl."/><meta property="og:description" content="Documentation for Accord.jl."/><meta property="twitter:description" content="Documentation for Accord.jl."/><meta property="og:url" content="https://manelsen.github.io/Accord.jl/cookbook/16-ai-agent/"/><meta property="twitter:url" content="https://manelsen.github.io/Accord.jl/cookbook/16-ai-agent/"/><link rel="canonical" href="https://manelsen.github.io/Accord.jl/cookbook/16-ai-agent/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Accord.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Cookbook</span><ul><li><a class="tocitem" href="../">Accord.jl Cookbook</a></li><li><a class="tocitem" href="../01-basic-bot/">Your First Bot</a></li><li><a class="tocitem" href="../02-messages-and-embeds/">Rich Messages</a></li><li><a class="tocitem" href="../03-slash-commands/">Slash Commands</a></li><li><a class="tocitem" href="../04-buttons-selects-modals/">Buttons, Selects &amp; Modals</a></li><li><a class="tocitem" href="../05-voice/">Voice</a></li><li><a class="tocitem" href="../06-permissions/">Permissions</a></li><li><a class="tocitem" href="../07-caching/">Caching</a></li><li><a class="tocitem" href="../08-sharding/">Sharding</a></li><li><a class="tocitem" href="../09-automod/">Auto-Moderation</a></li><li><a class="tocitem" href="../10-polls/">Polls</a></li><li><a class="tocitem" href="../11-architectural-patterns/">Architectural Patterns</a></li><li><a class="tocitem" href="../12-performance/">Performance</a></li><li><a class="tocitem" href="../13-deploy/">Deployment</a></li><li><a class="tocitem" href="../14-troubleshooting/">Troubleshooting</a></li><li><a class="tocitem" href="../15-why-julia/">Why Julia?</a></li><li class="is-active"><a class="tocitem" href>AI Agent Bot</a><ul class="internal"><li><a class="tocitem" href="#1.-Architecture"><span>1. Architecture</span></a></li><li><a class="tocitem" href="#2.-Calling-LLM-APIs-from-Julia"><span>2. Calling LLM APIs from Julia</span></a></li><li><a class="tocitem" href="#3.-Streaming-Responses"><span>3. Streaming Responses</span></a></li><li><a class="tocitem" href="#4.-Tool-Use-/-Function-Calling"><span>4. Tool Use / Function Calling</span></a></li><li><a class="tocitem" href="#5.-Conversation-Memory"><span>5. Conversation Memory</span></a></li><li><a class="tocitem" href="#6.-Per-User-Rate-Limiting"><span>6. Per-User Rate Limiting</span></a></li><li><a class="tocitem" href="#7.-Complete-Working-Bot"><span>7. Complete Working Bot</span></a></li><li><a class="tocitem" href="#8.-Advanced:-Voice-Commanded-AI-Agent"><span>8. Advanced: Voice-Commanded AI Agent</span></a></li><li><a class="tocitem" href="#9.-Choosing-an-LLM-Provider"><span>9. Choosing an LLM Provider</span></a></li></ul></li></ul></li><li><a class="tocitem" href="../../api/">API Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Cookbook</a></li><li class="is-active"><a href>AI Agent Bot</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>AI Agent Bot</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/manelsen/Accord.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/manelsen/Accord.jl/blob/main/docs/src/cookbook/16-ai-agent.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Recipe-16-—-AI-Agent-Bot"><a class="docs-heading-anchor" href="#Recipe-16-—-AI-Agent-Bot">Recipe 16 — AI Agent Bot</a><a id="Recipe-16-—-AI-Agent-Bot-1"></a><a class="docs-heading-anchor-permalink" href="#Recipe-16-—-AI-Agent-Bot" title="Permalink"></a></h1><p><strong>Difficulty:</strong> Advanced <strong>What you will build:</strong> A Discord bot that connects to LLM APIs (OpenAI, Anthropic Claude, Ollama) with streaming responses, tool use, conversation memory, and rate limiting.</p><p><strong>Prerequisites:</strong> <a href="../03-slash-commands/">Recipe 03</a>, <a href="../04-buttons-selects-modals/">Recipe 04</a></p><hr/><h2 id="1.-Architecture"><a class="docs-heading-anchor" href="#1.-Architecture">1. Architecture</a><a id="1.-Architecture-1"></a><a class="docs-heading-anchor-permalink" href="#1.-Architecture" title="Permalink"></a></h2><pre><code class="language-text hljs">User message → Discord → Accord.jl → LLM API → Discord
+                             ↑                    ↓
+                      Conversation memory    Streaming edits
+                      Tool execution         Followup messages</code></pre><h2 id="2.-Calling-LLM-APIs-from-Julia"><a class="docs-heading-anchor" href="#2.-Calling-LLM-APIs-from-Julia">2. Calling LLM APIs from Julia</a><a id="2.-Calling-LLM-APIs-from-Julia-1"></a><a class="docs-heading-anchor-permalink" href="#2.-Calling-LLM-APIs-from-Julia" title="Permalink"></a></h2><p>All three major providers work via HTTP.jl.</p><h3 id="OpenAI"><a class="docs-heading-anchor" href="#OpenAI">OpenAI</a><a id="OpenAI-1"></a><a class="docs-heading-anchor-permalink" href="#OpenAI" title="Permalink"></a></h3><pre><code class="language-julia hljs">import HTTP
+import JSON3
+
+function openai_chat(messages::Vector{Dict}; model=&quot;gpt-4o&quot;, api_key=ENV[&quot;OPENAI_API_KEY&quot;])
+    body = Dict(
+        &quot;model&quot; =&gt; model,
+        &quot;messages&quot; =&gt; messages,
+        &quot;max_tokens&quot; =&gt; 1024,
+    )
+
+    resp = HTTP.post(
+        &quot;https://api.openai.com/v1/chat/completions&quot;,
+        [&quot;Authorization&quot; =&gt; &quot;Bearer $api_key&quot;, &quot;Content-Type&quot; =&gt; &quot;application/json&quot;],
+        JSON3.write(body)
+    )
+
+    data = JSON3.read(resp.body)
+    return data[&quot;choices&quot;][1][&quot;message&quot;][&quot;content&quot;]
+end</code></pre><h3 id="Anthropic-Claude"><a class="docs-heading-anchor" href="#Anthropic-Claude">Anthropic Claude</a><a id="Anthropic-Claude-1"></a><a class="docs-heading-anchor-permalink" href="#Anthropic-Claude" title="Permalink"></a></h3><pre><code class="language-julia hljs">function claude_chat(messages::Vector{Dict}; model=&quot;claude-sonnet-4-5-20250929&quot;, api_key=ENV[&quot;ANTHROPIC_API_KEY&quot;])
+    body = Dict(
+        &quot;model&quot; =&gt; model,
+        &quot;max_tokens&quot; =&gt; 1024,
+        &quot;messages&quot; =&gt; messages,
+    )
+
+    resp = HTTP.post(
+        &quot;https://api.anthropic.com/v1/messages&quot;,
+        [
+            &quot;x-api-key&quot; =&gt; api_key,
+            &quot;anthropic-version&quot; =&gt; &quot;2023-06-01&quot;,
+            &quot;Content-Type&quot; =&gt; &quot;application/json&quot;,
+        ],
+        JSON3.write(body)
+    )
+
+    data = JSON3.read(resp.body)
+    return data[&quot;content&quot;][1][&quot;text&quot;]
+end</code></pre><h3 id="Local-Ollama"><a class="docs-heading-anchor" href="#Local-Ollama">Local Ollama</a><a id="Local-Ollama-1"></a><a class="docs-heading-anchor-permalink" href="#Local-Ollama" title="Permalink"></a></h3><pre><code class="language-julia hljs">function ollama_chat(messages::Vector{Dict}; model=&quot;llama3.1&quot;, base_url=&quot;http://localhost:11434&quot;)
+    body = Dict(
+        &quot;model&quot; =&gt; model,
+        &quot;messages&quot; =&gt; messages,
+        &quot;stream&quot; =&gt; false,
+    )
+
+    resp = HTTP.post(
+        &quot;$base_url/api/chat&quot;,
+        [&quot;Content-Type&quot; =&gt; &quot;application/json&quot;],
+        JSON3.write(body)
+    )
+
+    data = JSON3.read(resp.body)
+    return data[&quot;message&quot;][&quot;content&quot;]
+end</code></pre><h2 id="3.-Streaming-Responses"><a class="docs-heading-anchor" href="#3.-Streaming-Responses">3. Streaming Responses</a><a id="3.-Streaming-Responses-1"></a><a class="docs-heading-anchor-permalink" href="#3.-Streaming-Responses" title="Permalink"></a></h2><p>Show the LLM&#39;s response progressively by editing the message:</p><pre><code class="language-julia hljs">function openai_chat_stream(messages::Vector{Dict}, update_fn::Function;
+        model=&quot;gpt-4o&quot;, api_key=ENV[&quot;OPENAI_API_KEY&quot;])
+    body = Dict(
+        &quot;model&quot; =&gt; model,
+        &quot;messages&quot; =&gt; messages,
+        &quot;max_tokens&quot; =&gt; 1024,
+        &quot;stream&quot; =&gt; true,
+    )
+
+    buffer = IOBuffer()
+    last_edit = Ref(0.0)
+    full_text = Ref(&quot;&quot;)
+
+    HTTP.open(&quot;POST&quot;, &quot;https://api.openai.com/v1/chat/completions&quot;,
+        [&quot;Authorization&quot; =&gt; &quot;Bearer $api_key&quot;, &quot;Content-Type&quot; =&gt; &quot;application/json&quot;],
+    ) do io
+        write(io, JSON3.write(body))
+        HTTP.closewrite(io)
+
+        while !eof(io)
+            line = readline(io)
+            startswith(line, &quot;data: &quot;) || continue
+            data_str = line[7:end]
+            data_str == &quot;[DONE]&quot; &amp;&amp; break
+
+            try
+                chunk = JSON3.read(data_str)
+                delta = get(chunk[&quot;choices&quot;][1][&quot;delta&quot;], &quot;content&quot;, nothing)
+                if !isnothing(delta)
+                    full_text[] *= delta
+
+                    # Throttle edits to 1 per second
+                    if time() - last_edit[] &gt;= 1.0
+                        update_fn(full_text[])
+                        last_edit[] = time()
+                    end
+                end
+            catch
+                continue
+            end
+        end
+    end
+
+    # Final update
+    update_fn(full_text[])
+    return full_text[]
+end</code></pre><h3 id="Using-with-Discord"><a class="docs-heading-anchor" href="#Using-with-Discord">Using with Discord</a><a id="Using-with-Discord-1"></a><a class="docs-heading-anchor-permalink" href="#Using-with-Discord" title="Permalink"></a></h3><pre><code class="language-julia hljs">options_chat = [
+    command_option(type=ApplicationCommandOptionTypes.STRING, name=&quot;message&quot;, description=&quot;Your message&quot;, required=true),
+]
+
+@slash_command client &quot;chat&quot; &quot;Chat with AI&quot; options_chat function(ctx)
+    user_msg = get_option(ctx, &quot;message&quot;, &quot;&quot;)
+    defer(ctx)
+
+    messages = [
+        Dict(&quot;role&quot; =&gt; &quot;system&quot;, &quot;content&quot; =&gt; &quot;You are a helpful assistant in a Discord server. Keep responses under 2000 characters.&quot;),
+        Dict(&quot;role&quot; =&gt; &quot;user&quot;, &quot;content&quot; =&gt; user_msg),
+    ]
+
+    openai_chat_stream(messages, text -&gt; begin
+        try
+            truncated = length(text) &gt; 1990 ? text[1:1990] * &quot;...&quot; : text
+            edit_response(ctx; content=truncated)
+        catch e
+            @warn &quot;Edit failed&quot; exception=e
+        end
+    end)
+end</code></pre><h2 id="4.-Tool-Use-/-Function-Calling"><a class="docs-heading-anchor" href="#4.-Tool-Use-/-Function-Calling">4. Tool Use / Function Calling</a><a id="4.-Tool-Use-/-Function-Calling-1"></a><a class="docs-heading-anchor-permalink" href="#4.-Tool-Use-/-Function-Calling" title="Permalink"></a></h2><p>Let the LLM call functions your bot defines:</p><pre><code class="language-julia hljs"># Define available tools
+const TOOLS = [
+    Dict(
+        &quot;type&quot; =&gt; &quot;function&quot;,
+        &quot;function&quot; =&gt; Dict(
+            &quot;name&quot; =&gt; &quot;get_weather&quot;,
+            &quot;description&quot; =&gt; &quot;Get current weather for a city&quot;,
+            &quot;parameters&quot; =&gt; Dict(
+                &quot;type&quot; =&gt; &quot;object&quot;,
+                &quot;properties&quot; =&gt; Dict(
+                    &quot;city&quot; =&gt; Dict(&quot;type&quot; =&gt; &quot;string&quot;, &quot;description&quot; =&gt; &quot;City name&quot;),
+                ),
+                &quot;required&quot; =&gt; [&quot;city&quot;],
+            ),
+        ),
+    ),
+    Dict(
+        &quot;type&quot; =&gt; &quot;function&quot;,
+        &quot;function&quot; =&gt; Dict(
+            &quot;name&quot; =&gt; &quot;roll_dice&quot;,
+            &quot;description&quot; =&gt; &quot;Roll dice in NdM format&quot;,
+            &quot;parameters&quot; =&gt; Dict(
+                &quot;type&quot; =&gt; &quot;object&quot;,
+                &quot;properties&quot; =&gt; Dict(
+                    &quot;notation&quot; =&gt; Dict(&quot;type&quot; =&gt; &quot;string&quot;, &quot;description&quot; =&gt; &quot;Dice notation like 2d6&quot;),
+                ),
+                &quot;required&quot; =&gt; [&quot;notation&quot;],
+            ),
+        ),
+    ),
+]
+
+# Tool implementations
+function execute_tool(name::String, args::Dict)
+    if name == &quot;get_weather&quot;
+        city = args[&quot;city&quot;]
+        # Simulated — replace with real API
+        return &quot;&quot;&quot;{&quot;city&quot;: &quot;$city&quot;, &quot;temp&quot;: &quot;22°C&quot;, &quot;condition&quot;: &quot;Sunny&quot;}&quot;&quot;&quot;
+    elseif name == &quot;roll_dice&quot;
+        notation = args[&quot;notation&quot;]
+        m = match(r&quot;(\d+)d(\d+)&quot;, notation)
+        isnothing(m) &amp;&amp; return &quot;&quot;&quot;{&quot;error&quot;: &quot;Invalid notation&quot;}&quot;&quot;&quot;
+        n, sides = parse(Int, m[1]), parse(Int, m[2])
+        rolls = [rand(1:sides) for _ in 1:n]
+        return &quot;&quot;&quot;{&quot;rolls&quot;: $rolls, &quot;total&quot;: $(sum(rolls))}&quot;&quot;&quot;
+    end
+    return &quot;&quot;&quot;{&quot;error&quot;: &quot;Unknown tool&quot;}&quot;&quot;&quot;
+end</code></pre><h3 id="Agent-Loop"><a class="docs-heading-anchor" href="#Agent-Loop">Agent Loop</a><a id="Agent-Loop-1"></a><a class="docs-heading-anchor-permalink" href="#Agent-Loop" title="Permalink"></a></h3><pre><code class="language-julia hljs">function agent_chat(messages::Vector{Dict}; model=&quot;gpt-4o&quot;, api_key=ENV[&quot;OPENAI_API_KEY&quot;], max_iterations=5)
+    for _ in 1:max_iterations
+        body = Dict(
+            &quot;model&quot; =&gt; model,
+            &quot;messages&quot; =&gt; messages,
+            &quot;tools&quot; =&gt; TOOLS,
+            &quot;max_tokens&quot; =&gt; 1024,
+        )
+
+        resp = HTTP.post(
+            &quot;https://api.openai.com/v1/chat/completions&quot;,
+            [&quot;Authorization&quot; =&gt; &quot;Bearer $api_key&quot;, &quot;Content-Type&quot; =&gt; &quot;application/json&quot;],
+            JSON3.write(body)
+        )
+
+        data = JSON3.read(resp.body)
+        choice = data[&quot;choices&quot;][1]
+        msg = choice[&quot;message&quot;]
+
+        # Add assistant message to history
+        push!(messages, Dict(pairs(msg)))
+
+        # Check for tool calls
+        if choice[&quot;finish_reason&quot;] == &quot;tool_calls&quot; &amp;&amp; haskey(msg, &quot;tool_calls&quot;)
+            for tool_call in msg[&quot;tool_calls&quot;]
+                func = tool_call[&quot;function&quot;]
+                name = func[&quot;name&quot;]
+                args = JSON3.read(func[&quot;arguments&quot;], Dict{String, Any})
+
+                @info &quot;Tool call&quot; name=name args=args
+                result = execute_tool(name, args)
+
+                push!(messages, Dict(
+                    &quot;role&quot; =&gt; &quot;tool&quot;,
+                    &quot;tool_call_id&quot; =&gt; tool_call[&quot;id&quot;],
+                    &quot;content&quot; =&gt; result,
+                ))
+            end
+            continue  # Loop back for LLM to process results
+        end
+
+        # No tool calls — return the response
+        return get(msg, &quot;content&quot;, &quot;&quot;)
+    end
+
+    return &quot;I ran out of steps trying to answer that.&quot;
+end</code></pre><h2 id="5.-Conversation-Memory"><a class="docs-heading-anchor" href="#5.-Conversation-Memory">5. Conversation Memory</a><a id="5.-Conversation-Memory-1"></a><a class="docs-heading-anchor-permalink" href="#5.-Conversation-Memory" title="Permalink"></a></h2><p>Per-channel conversation history with a sliding window:</p><pre><code class="language-julia hljs">const MAX_HISTORY = 20
+const conversations = Dict{Snowflake, Vector{Dict{String,String}}}()
+
+function get_history(channel_id::Snowflake)
+    get!(conversations, channel_id) do
+        Dict{String,String}[]
+    end
+end
+
+function add_message!(channel_id::Snowflake, role::String, content::String)
+    history = get_history(channel_id)
+    push!(history, Dict(&quot;role&quot; =&gt; role, &quot;content&quot; =&gt; content))
+
+    # Sliding window: keep last MAX_HISTORY messages
+    while length(history) &gt; MAX_HISTORY
+        popfirst!(history)
+    end
+end
+
+function clear_history!(channel_id::Snowflake)
+    conversations[channel_id] = Dict{String,String}[]
+end</code></pre><h2 id="6.-Per-User-Rate-Limiting"><a class="docs-heading-anchor" href="#6.-Per-User-Rate-Limiting">6. Per-User Rate Limiting</a><a id="6.-Per-User-Rate-Limiting-1"></a><a class="docs-heading-anchor-permalink" href="#6.-Per-User-Rate-Limiting" title="Permalink"></a></h2><p>Token bucket pattern to prevent API abuse:</p><pre><code class="language-julia hljs">mutable struct TokenBucket
+    tokens::Float64
+    max_tokens::Float64
+    refill_rate::Float64  # tokens per second
+    last_refill::Float64
+end
+
+TokenBucket(max_tokens, refill_rate) = TokenBucket(max_tokens, max_tokens, refill_rate, time())
+
+function try_consume!(bucket::TokenBucket, n::Float64=1.0)
+    now_t = time()
+    elapsed = now_t - bucket.last_refill
+    bucket.tokens = min(bucket.max_tokens, bucket.tokens + elapsed * bucket.refill_rate)
+    bucket.last_refill = now_t
+
+    if bucket.tokens &gt;= n
+        bucket.tokens -= n
+        return true
+    end
+    return false
+end
+
+# Per-user rate limits: 5 requests, refill 1 per 10 seconds
+const user_buckets = Dict{Snowflake, TokenBucket}()
+
+function check_rate_limit(user_id::Snowflake)
+    bucket = get!(user_buckets, user_id) do
+        TokenBucket(5.0, 0.1)  # 5 requests max, 1 every 10 seconds
+    end
+    return try_consume!(bucket)
+end</code></pre><h2 id="7.-Complete-Working-Bot"><a class="docs-heading-anchor" href="#7.-Complete-Working-Bot">7. Complete Working Bot</a><a id="7.-Complete-Working-Bot-1"></a><a class="docs-heading-anchor-permalink" href="#7.-Complete-Working-Bot" title="Permalink"></a></h2><pre><code class="language-julia hljs">using Accord
+import HTTP
+import JSON3
+
+token = ENV[&quot;DISCORD_TOKEN&quot;]
+client = Client(token; intents=IntentGuilds)
+tree = CommandTree()
+
+# --- Configuration ---
+const SYSTEM_PROMPT = &quot;&quot;&quot;You are a helpful AI assistant in a Discord server.
+Keep responses concise (under 1800 characters).
+You can use markdown formatting.
+If asked to do something you can&#39;t, explain why.&quot;&quot;&quot;
+
+const MAX_HISTORY = 20
+const conversations = Dict{Snowflake, Vector{Dict{String,String}}}()
+const user_buckets = Dict{Snowflake, TokenBucket}()
+
+# --- Helpers ---
+function get_history(channel_id)
+    get!(conversations, channel_id, Dict{String,String}[])
+end
+
+function add_to_history!(channel_id, role, content)
+    history = get_history(channel_id)
+    push!(history, Dict(&quot;role&quot; =&gt; role, &quot;content&quot; =&gt; content))
+    while length(history) &gt; MAX_HISTORY
+        popfirst!(history)
+    end
+end
+
+mutable struct TokenBucket
+    tokens::Float64
+    max_tokens::Float64
+    refill_rate::Float64
+    last_refill::Float64
+end
+TokenBucket(max_t, rate) = TokenBucket(max_t, max_t, rate, time())
+
+function try_consume!(b::TokenBucket)
+    elapsed = time() - b.last_refill
+    b.tokens = min(b.max_tokens, b.tokens + elapsed * b.refill_rate)
+    b.last_refill = time()
+    b.tokens &gt;= 1.0 || return false
+    b.tokens -= 1.0
+    return true
+end
+
+function check_rate_limit(user_id)
+    bucket = get!(user_buckets, user_id) do; TokenBucket(5.0, 0.1) end
+    try_consume!(bucket)
+end
+
+# --- API Call ---
+function call_llm(messages; api_key=ENV[&quot;OPENAI_API_KEY&quot;])
+    body = Dict(
+        &quot;model&quot; =&gt; &quot;gpt-4o&quot;,
+        &quot;messages&quot; =&gt; messages,
+        &quot;max_tokens&quot; =&gt; 1024,
+        &quot;stream&quot; =&gt; false,
+    )
+    resp = HTTP.post(
+        &quot;https://api.openai.com/v1/chat/completions&quot;,
+        [&quot;Authorization&quot; =&gt; &quot;Bearer $api_key&quot;, &quot;Content-Type&quot; =&gt; &quot;application/json&quot;],
+        JSON3.write(body)
+    )
+    data = JSON3.read(resp.body)
+    return data[&quot;choices&quot;][1][&quot;message&quot;][&quot;content&quot;]
+end
+
+# --- Commands ---
+
+# /chat &lt;message&gt;
+options_chat = [
+    command_option(type=ApplicationCommandOptionTypes.STRING, name=&quot;message&quot;, description=&quot;Your message&quot;, required=true),
+]
+
+@slash_command client &quot;chat&quot; &quot;Chat with the AI&quot; options_chat function(ctx)
+    user_id = ctx.interaction.member.user.id
+    channel_id = ctx.interaction.channel_id
+
+    # Rate limit check
+    if !check_rate_limit(user_id)
+        respond(ctx; content=&quot;You&#39;re sending messages too fast. Please wait a moment.&quot;, ephemeral=true)
+        return
+    end
+
+    user_msg = get_option(ctx, &quot;message&quot;, &quot;&quot;)::String
+    defer(ctx)
+
+    # Build messages with history
+    add_to_history!(channel_id, &quot;user&quot;, user_msg)
+    messages = vcat(
+        [Dict(&quot;role&quot; =&gt; &quot;system&quot;, &quot;content&quot; =&gt; SYSTEM_PROMPT)],
+        get_history(channel_id)
+    )
+
+    try
+        response = call_llm(messages)
+
+        # Truncate if needed
+        if length(response) &gt; 1990
+            response = response[1:1990] * &quot;...&quot;
+        end
+
+        add_to_history!(channel_id, &quot;assistant&quot;, response)
+        respond(ctx; content=response)
+    catch e
+        @error &quot;LLM call failed&quot; exception=e
+        respond(ctx; content=&quot;Sorry, I couldn&#39;t process that request. Please try again.&quot;)
+    end
+end
+
+# /clear-history
+@slash_command client &quot;clear-history&quot; &quot;Clear conversation history&quot; function(ctx)
+    channel_id = ctx.interaction.channel_id
+    conversations[channel_id] = Dict{String,String}[]
+    respond(ctx; content=&quot;Conversation history cleared.&quot;, ephemeral=true)
+end
+
+# /model-info
+@slash_command client &quot;model-info&quot; &quot;Show AI model info&quot; function(ctx)
+    channel_id = ctx.interaction.channel_id
+    history_len = length(get_history(channel_id))
+
+    e = embed(
+        title=&quot;AI Assistant Info&quot;,
+        color=0x5865F2,
+        fields=[
+            Dict(&quot;name&quot; =&gt; &quot;Model&quot;, &quot;value&quot; =&gt; &quot;GPT-4o&quot;, &quot;inline&quot; =&gt; true),
+            Dict(&quot;name&quot; =&gt; &quot;History&quot;, &quot;value&quot; =&gt; &quot;$history_len / $MAX_HISTORY messages&quot;, &quot;inline&quot; =&gt; true),
+            Dict(&quot;name&quot; =&gt; &quot;Rate Limit&quot;, &quot;value&quot; =&gt; &quot;5 requests / 50 seconds&quot;, &quot;inline&quot; =&gt; true),
+        ]
+    )
+    respond(ctx; embeds=[e], ephemeral=true)
+end
+
+# --- Wiring ---
+on(client, InteractionCreate) do c, event
+    dispatch_interaction!(tree, c, event.interaction)
+end
+
+on(client, ReadyEvent) do c, event
+    sync_commands!(c, tree)
+    @info &quot;AI Agent bot ready!&quot; user=event.user.username
+end
+
+start(client)</code></pre><h2 id="8.-Advanced:-Voice-Commanded-AI-Agent"><a class="docs-heading-anchor" href="#8.-Advanced:-Voice-Commanded-AI-Agent">8. Advanced: Voice-Commanded AI Agent</a><a id="8.-Advanced:-Voice-Commanded-AI-Agent-1"></a><a class="docs-heading-anchor-permalink" href="#8.-Advanced:-Voice-Commanded-AI-Agent" title="Permalink"></a></h2><p>Combine <a href="../05-voice/">Recipe 05 (Voice)</a> with this recipe for a voice-commanded agent:</p><pre><code class="language-julia hljs"># Architecture:
+# 1. User speaks in voice channel
+# 2. Capture audio → PCM buffer
+# 3. Detect silence → trim audio
+# 4. pcm_to_wav() → WAV bytes
+# 5. Whisper API → transcript text
+# 6. Send transcript to LLM
+# 7. LLM response → text channel (or TTS → voice playback)
+
+# The voice capture code from Recipe 05 feeds into:
+function handle_voice_transcript(client, channel_id, transcript)
+    # Add to conversation and get AI response
+    add_to_history!(channel_id, &quot;user&quot;, &quot;[Voice] $transcript&quot;)
+
+    messages = vcat(
+        [Dict(&quot;role&quot; =&gt; &quot;system&quot;, &quot;content&quot; =&gt; SYSTEM_PROMPT)],
+        get_history(channel_id)
+    )
+
+    response = call_llm(messages)
+    add_to_history!(channel_id, &quot;assistant&quot;, response)
+
+    create_message(client, channel_id; content=response)
+end</code></pre><h2 id="9.-Choosing-an-LLM-Provider"><a class="docs-heading-anchor" href="#9.-Choosing-an-LLM-Provider">9. Choosing an LLM Provider</a><a id="9.-Choosing-an-LLM-Provider-1"></a><a class="docs-heading-anchor-permalink" href="#9.-Choosing-an-LLM-Provider" title="Permalink"></a></h2><table><tr><th style="text-align: right">Provider</th><th style="text-align: right">Strengths</th><th style="text-align: right">Cost</th><th style="text-align: right">Local?</th></tr><tr><td style="text-align: right">OpenAI GPT-4o</td><td style="text-align: right">Tool calling, streaming, function calling</td><td style="text-align: right">$<span>$</span></td><td style="text-align: right">No</td></tr><tr><td style="text-align: right">Anthropic Claude</td><td style="text-align: right">Long context, careful reasoning</td><td style="text-align: right">$<span>$</span></td><td style="text-align: right">No</td></tr><tr><td style="text-align: right">Ollama (Llama 3)</td><td style="text-align: right">Free, private, no rate limits</td><td style="text-align: right">Free</td><td style="text-align: right">Yes</td></tr><tr><td style="text-align: right">Ollama (Mistral)</td><td style="text-align: right">Fast, good quality/speed ratio</td><td style="text-align: right">Free</td><td style="text-align: right">Yes</td></tr></table><p>For development, start with Ollama (free, no API key needed). For production, choose based on your quality/cost requirements.</p><hr/><p>This recipe brings together everything in the cookbook: slash commands, embeds, async patterns, and external API integration. You now have all the tools to build production Discord bots in Julia.</p><p><strong>Back to:</strong> <a href="../">Cookbook Index</a></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../15-why-julia/">« Why Julia?</a><a class="docs-footer-nextpage" href="../../api/">API Reference »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Saturday 14 February 2026 01:47">Saturday 14 February 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
