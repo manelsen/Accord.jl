@@ -45,12 +45,12 @@ jobs:
             ])
             using LocalCoverage, Coverage
             cols = LCOV.readfile("lcov.info")
-            summary = get_summary(cols)
+            relevant, covered = get_summary(cols)
             println("----------------------------------------------")
             println("Coverage Summary:")
-            println("Relevant lines: ", summary.relevant)
-            println("Covered lines:  ", summary.covered)
-            println("Total Coverage: ", round(summary.covered / summary.relevant * 100, digits=2), "%")
+            println("Relevant lines: ", relevant)
+            println("Covered lines:  ", covered)
+            println("Total Coverage: ", round(covered / relevant * 100, digits=2), "%")
             println("----------------------------------------------")
           '
       - name: Generate HTML report
