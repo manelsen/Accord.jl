@@ -7,6 +7,7 @@ makedocs(;
     format = Documenter.HTML(;
         prettyurls = get(ENV, "CI", nothing) == "true",
         canonical = "https://manelsen.github.io/Accord.jl",
+        size_threshold = 1024 * 1024, # 1MB
     ),
     pages = [
         "Home" => "index.md",
