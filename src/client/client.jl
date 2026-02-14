@@ -373,7 +373,7 @@ end
 # --- Convenience REST methods on Client ---
 
 """Send a message to a channel."""
-function create_message(client::Client, channel_id::Snowflake; content::String="", embeds::Vector{Dict}=Dict[], components::Vector{Dict}=Dict[], files=nothing, tts::Bool=false, message_reference=nothing)
+function create_message(client::Client, channel_id::Snowflake; content::String="", embeds::Vector=[], components::Vector=[], files=nothing, tts::Bool=false, message_reference=nothing)
     body = Dict{String, Any}()
     !isempty(content) && (body["content"] = content)
     !isempty(embeds) && (body["embeds"] = embeds)
@@ -395,7 +395,7 @@ on(client, MessageCreate) do c, event
 end
 ```
 """
-function reply(client::Client, message::Message; content::String="", embeds::Vector{Dict}=Dict[], components::Vector{Dict}=Dict[], files=nothing, tts::Bool=false)
+function reply(client::Client, message::Message; content::String="", embeds::Vector=[], components::Vector=[], files=nothing, tts::Bool=false)
     ref = Dict{String, Any}("message_id" => string(message.id))
     create_message(client, message.channel_id;
         content, embeds, components, files, tts,
@@ -460,7 +460,7 @@ function update_voice_state(client::Client, guild_id::Snowflake; channel_id=noth
 end
 
 """Send a gateway command to update the bot's presence/status."""
-function update_presence(client::Client; status::String="online", activities::Vector{Dict}=Dict[], afk::Bool=false, since=nothing)
+function update_presence(client::Client; status::String="online", activities::Vector=[], afk::Bool=false, since=nothing)
     for shard in client.shards
         cmd = GatewayCommand(GatewayOpcodes.PRESENCE_UPDATE, Dict(
             "since" => since,

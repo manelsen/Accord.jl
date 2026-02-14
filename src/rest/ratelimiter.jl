@@ -108,11 +108,16 @@ function _process_job(rl::RateLimiter, job::RestJob)
 
         # Execute request
         try
+            kwargs = Dict{Symbol,Any}(
+                :status_exception => false,
+                :retry => false,
+            )
+            if !isnothing(job.body)
+                kwargs[:body] = job.body
+            end
             resp = HTTP.request(
                 job.method, job.url, job.headers;
-                body=job.body,
-                status_exception=false,
-                retry=false,
+                kwargs...,
             )
 
             # Update rate limit state from headers

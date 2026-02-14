@@ -25,7 +25,7 @@ end
     creator_id::Snowflake
     event_type::Int
     trigger_type::Int
-    trigger_metadata::AutoModTriggerMetadata
+    trigger_metadata::Optional{AutoModTriggerMetadata}
     actions::Vector{AutoModAction}
     enabled::Bool
     exempt_roles::Vector{Snowflake}

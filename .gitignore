@@ -19,3 +19,6 @@ docs/site/
 Thumbs.db
 bot.log
 KANBAN.md
+
+# Integration test fixtures (contain real Discord payloads)
+test/integration/fixtures/

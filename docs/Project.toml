@@ -1,0 +1,6 @@
+[deps]
+Accord = "e32180e5-4c2f-49c0-8021-11dfb7fed3fc"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+
+[compat]
+Documenter = "1"

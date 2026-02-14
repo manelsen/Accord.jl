@@ -5,7 +5,7 @@ end
 
 @discord_struct PollAnswer begin
     answer_id::Int
-    poll_media::PollMedia
+    poll_media::Optional{PollMedia}
 end
 
 @discord_struct PollAnswerCount begin
@@ -20,7 +20,7 @@ end
 end
 
 @discord_struct Poll begin
-    question::PollMedia
+    question::Optional{PollMedia}
     answers::Vector{PollAnswer}
     expiry::Optional{String}
     allow_multiselect::Bool

@@ -61,5 +61,5 @@ end
     guild_id::Optional{Snowflake}
     status::String
     activities::Vector{Activity}
-    client_status::ClientStatus
+    client_status::Optional{ClientStatus}
 end

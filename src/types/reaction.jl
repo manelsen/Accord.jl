@@ -5,9 +5,9 @@ end
 
 @discord_struct Reaction begin
     count::Int
-    count_details::ReactionCountDetails
+    count_details::Optional{ReactionCountDetails}
     me::Bool
     me_burst::Bool
-    emoji::Emoji
+    emoji::Optional{Emoji}
     burst_colors::Vector{String}
 end

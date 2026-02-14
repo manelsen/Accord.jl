@@ -13,7 +13,7 @@ end
 @discord_struct MessageInteractionMetadata begin
     id::Snowflake
     type::Int
-    user::User
+    user::Optional{User}
     authorizing_integration_owners::Optional{Any}
     original_response_message_id::Optional{Snowflake}
     target_user::Optional{User}
