@@ -194,7 +194,7 @@ Tests are all unit tests — no Discord token or network required. The test suit
 
 ### CI
 
-GitHub Actions (`.github/workflows/ci.yml`) runs on push/PR to `main`:
+GitHub Actions (`.github/workflows/ci.yml`) runs on push/PR to `master`:
 - Matrix: Julia 1.10 and latest stable
 - OS: ubuntu-latest
 - Steps: checkout → setup Julia → cache → build → test

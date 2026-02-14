@@ -36,6 +36,6 @@ makedocs(;
 
 deploydocs(;
     repo = "github.com/manelsen/Accord.jl.git",
-    devbranch = "main",
+    devbranch = "master",
     push_preview = true,
 )
