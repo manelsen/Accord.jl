@@ -15,6 +15,23 @@ end
     unavailable::Optional{Bool}
 end
 
+"""
+    Guild
+
+Represents a Discord guild (server).
+
+# Fields
+- `id`: The guild's snowflake ID.
+- `name`: Guild name (2-100 characters, excluding trailing/leading whitespace).
+- `icon`: Icon hash.
+- `owner_id`: ID of the guild owner.
+- `permissions`: Total permissions for the user in the guild (excludes overwrites).
+- `roles`: Roles in the guild.
+- `emojis`: Custom guild emojis.
+- `features`: Enabled guild features.
+- `approximate_member_count`: Approximate number of members in this guild.
+- `approximate_presence_count`: Approximate number of online members in this guild.
+"""
 @discord_struct Guild begin
     id::Snowflake
     name::String

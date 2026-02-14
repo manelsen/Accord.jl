@@ -13,10 +13,12 @@ using Accord: has_flag, JSON3, StructTypes, BucketState, url,
     include("unit/test_permissions.jl")
     include("unit/test_ratelimiter.jl")
     include("unit/test_components.jl")
-    include("unit/test_macros.jl")
-    include("unit/test_checks_waitfor.jl")
-
-    # Integration tests — run with: julia --project=. -e 'using Pkg; Pkg.test()' -- integration
+        include("unit/test_macros.jl")
+        include("unit/test_checks_waitfor.jl")
+            include("unit/test_parsing.jl")
+        
+            # Integration tests - run with: julia --project=. -e 'using Pkg; Pkg.test()' -- integration
+        
     # Or set ACCORD_INTEGRATION_TESTS=1
     if "integration" in ARGS || get(ENV, "ACCORD_INTEGRATION_TESTS", "") == "1"
         @testset "Integration" begin

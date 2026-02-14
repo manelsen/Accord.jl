@@ -40,7 +40,11 @@ function Base.getproperty(ctx::InteractionContext, name::Symbol)
     end
 end
 
-"""Get the interaction data options as a Dict."""
+"""
+    get_options(ctx::InteractionContext) -> Dict{String, Any}
+
+Get all interaction data options as a dictionary mapping option names to values.
+"""
 function get_options(ctx::InteractionContext)
     data = ctx.interaction.data
     ismissing(data) && return Dict{String, Any}()
@@ -55,13 +59,21 @@ function get_options(ctx::InteractionContext)
     return result
 end
 
-"""Get a specific option value by name."""
+"""
+    get_option(ctx, name, default=nothing)
+
+Get a specific option value by name from the interaction data.
+"""
 function get_option(ctx::InteractionContext, name::String, default=nothing)
     opts = get_options(ctx)
     get(opts, name, default)
 end
 
-"""Get the custom_id for component interactions."""
+"""
+    custom_id(ctx) -> String
+
+Get the `custom_id` for component interactions (buttons, selects) or modal submissions.
+"""
 function custom_id(ctx::InteractionContext)
     data = ctx.interaction.data
     ismissing(data) && return nothing
@@ -69,7 +81,11 @@ function custom_id(ctx::InteractionContext)
     return data.custom_id
 end
 
-"""Get the selected values for select menu interactions."""
+"""
+    selected_values(ctx) -> Vector{String}
+
+Get the selected values for a select menu interaction.
+"""
 function selected_values(ctx::InteractionContext)
     data = ctx.interaction.data
     ismissing(data) && return String[]
@@ -77,7 +93,11 @@ function selected_values(ctx::InteractionContext)
     return data.values
 end
 
-"""Get modal component values as a Dict{String, String}."""
+"""
+    modal_values(ctx) -> Dict{String, String}
+
+Get modal component values as a dictionary mapping `custom_id` to the input value.
+"""
 function modal_values(ctx::InteractionContext)
     data = ctx.interaction.data
     ismissing(data) && return Dict{String, String}()
@@ -136,9 +156,12 @@ function target(ctx::InteractionContext)
 end
 
 """
-    respond(ctx; kwargs...)
+    respond(ctx; content="", embeds=[], components=[], ephemeral=false, tts=false, files=nothing)
 
-Send an interaction response. Automatically chooses the right response type.
+Send an interaction response. Automatically chooses between creating a new response 
+or editing a deferred one.
+
+Must be called within 3 seconds of receiving the interaction, unless `defer` was called.
 """
 function respond(ctx::InteractionContext;
     content::String = "",
@@ -181,7 +204,8 @@ end
 """
     defer(ctx; ephemeral=false)
 
-Acknowledge the interaction and defer the response (shows "thinking...").
+Acknowledge the interaction and defer the response (shows a "thinking..." indicator).
+This gives you 15 minutes to call `respond` or `edit_response`.
 """
 function defer(ctx::InteractionContext; ephemeral::Bool=false)
     response_type = ctx.interaction.type == InteractionTypes.MESSAGE_COMPONENT ?
@@ -205,7 +229,7 @@ function defer(ctx::InteractionContext; ephemeral::Bool=false)
 end
 
 """
-    edit_response(ctx; kwargs...)
+    edit_response(ctx; content=nothing, embeds=nothing, components=nothing, files=nothing)
 
 Edit the original interaction response.
 """
@@ -227,9 +251,9 @@ function edit_response(ctx::InteractionContext;
 end
 
 """
-    followup(ctx; kwargs...)
+    followup(ctx; content="", embeds=[], components=[], ephemeral=false, files=nothing)
 
-Send a followup message to an interaction.
+Send a followup message to an interaction after the initial response.
 """
 function followup(ctx::InteractionContext;
     content::String = "",
@@ -251,7 +275,7 @@ function followup(ctx::InteractionContext;
 end
 
 """
-    show_modal(ctx; title, custom_id, components)
+    show_modal(ctx; title::String, custom_id::String, components::Vector)
 
 Show a modal dialog to the user.
 """
