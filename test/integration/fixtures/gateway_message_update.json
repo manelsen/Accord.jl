@@ -1,0 +1,168 @@
+[
+    {
+        "t": "MESSAGE_UPDATE",
+        "op": 0,
+        "s": 7,
+        "d": {
+            "member": {
+                "pending": false,
+                "banner": null,
+                "mute": false,
+                "flags": 0,
+                "communication_disabled_until": null,
+                "roles": [
+                    "1292918902988345414"
+                ],
+                "premium_since": null,
+                "nick": null,
+                "joined_at": "2024-02-27T19:50:51.701000+00:00",
+                "deaf": false,
+                "avatar": null
+            },
+            "channel_type": 0,
+            "guild_id": "1212124712629440612",
+            "edited_timestamp": null,
+            "author": {
+                "collectibles": null,
+                "username": "voiddragon",
+                "display_name_styles": null,
+                "global_name": "Void Dragon",
+                "primary_guild": {
+                    "identity_guild_id": "1346756824233148527",
+                    "tag": "Z.ai",
+                    "badge": "7f968d34689b032120d7a0f2a3d69b83",
+                    "identity_enabled": true
+                },
+                "id": "383221796700291082",
+                "clan": {
+                    "identity_guild_id": "1346756824233148527",
+                    "tag": "Z.ai",
+                    "badge": "7f968d34689b032120d7a0f2a3d69b83",
+                    "identity_enabled": true
+                },
+                "public_flags": 0,
+                "discriminator": "0",
+                "avatar_decoration_data": {
+                    "expires_at": null,
+                    "asset": "a_94febf08c37b21ee5ed92c49ef98bf00",
+                    "sku_id": "1366494385583165630"
+                },
+                "avatar": "904d256347c060ddb0071fa23a13c6ec"
+            },
+            "pinned": false,
+            "id": "1471995906302935183",
+            "channel_id": "1212124713271304246",
+            "content": "É isso aí, companheiro\nA terra é um campo de brasa\nOnde o homem sem dinheiro\nÉ um passarinho sem asa",
+            "embeds": [
+            ],
+            "mentions": [
+            ],
+            "components": [
+            ],
+            "flags": 32,
+            "mention_everyone": false,
+            "tts": false,
+            "mention_roles": [
+            ],
+            "attachments": [
+            ],
+            "timestamp": "2026-02-13T22:26:12.424000+00:00",
+            "type": 0
+        }
+    },
+    {
+        "t": "MESSAGE_UPDATE",
+        "op": 0,
+        "s": 13,
+        "d": {
+            "member": {
+                "pending": false,
+                "banner": null,
+                "mute": false,
+                "flags": 0,
+                "communication_disabled_until": null,
+                "roles": [
+                    "1292918902988345414"
+                ],
+                "premium_since": null,
+                "nick": null,
+                "joined_at": "2024-02-27T19:50:51.701000+00:00",
+                "deaf": false,
+                "avatar": null
+            },
+            "channel_type": 0,
+            "guild_id": "1212124712629440612",
+            "edited_timestamp": null,
+            "author": {
+                "collectibles": null,
+                "username": "voiddragon",
+                "display_name_styles": null,
+                "global_name": "Void Dragon",
+                "primary_guild": {
+                    "identity_guild_id": "1346756824233148527",
+                    "tag": "Z.ai",
+                    "badge": "7f968d34689b032120d7a0f2a3d69b83",
+                    "identity_enabled": true
+                },
+                "id": "383221796700291082",
+                "clan": {
+                    "identity_guild_id": "1346756824233148527",
+                    "tag": "Z.ai",
+                    "badge": "7f968d34689b032120d7a0f2a3d69b83",
+                    "identity_enabled": true
+                },
+                "public_flags": 0,
+                "discriminator": "0",
+                "avatar_decoration_data": {
+                    "expires_at": null,
+                    "asset": "a_94febf08c37b21ee5ed92c49ef98bf00",
+                    "sku_id": "1366494385583165630"
+                },
+                "avatar": "904d256347c060ddb0071fa23a13c6ec"
+            },
+            "pinned": false,
+            "id": "1471995906302935183",
+            "channel_id": "1212124713271304246",
+            "content": "É isso aí, companheiro\nA terra é um campo de brasa\nOnde o homem sem dinheiro\nÉ um passarinho sem asa",
+            "embeds": [
+            ],
+            "mentions": [
+            ],
+            "components": [
+            ],
+            "flags": 0,
+            "mention_everyone": false,
+            "tts": false,
+            "mention_roles": [
+            ],
+            "thread": {
+                "member_ids_preview": [
+                    "383221796700291082"
+                ],
+                "guild_id": "1212124712629440612",
+                "parent_id": "1212124713271304246",
+                "total_message_sent": 1,
+                "message_count": 1,
+                "owner_id": "383221796700291082",
+                "name": "É isso aí, companheiro",
+                "last_message_id": "1472054086127059025",
+                "id": "1471995906302935183",
+                "thread_metadata": {
+                    "locked": false,
+                    "archived": false,
+                    "create_timestamp": "2026-02-14T02:17:22.812000+00:00",
+                    "archive_timestamp": "2026-02-14T02:17:22.812000+00:00",
+                    "auto_archive_duration": 4320
+                },
+                "member_count": 1,
+                "rate_limit_per_user": 0,
+                "flags": 0,
+                "type": 11
+            },
+            "timestamp": "2026-02-13T22:26:12.424000+00:00",
+            "type": 0,
+            "attachments": [
+            ]
+        }
+    }
+]
