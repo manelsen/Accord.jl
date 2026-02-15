@@ -15,7 +15,7 @@ Mocking.activate()
     
     @testset "Get Current User (@me)" begin
         fixture_path = joinpath(@__DIR__, "fixtures", "rest_get_me.json")
-        fixture_data = read(fixture_path, Vector{UInt8})
+        fixture_data = read(fixture_path)
         
         # Mock HTTP.request directly
         mock_resp = HTTP.Response(200, fixture_data)
@@ -30,13 +30,13 @@ Mocking.activate()
 
     @testset "Create Message" begin
         fixture_path = joinpath(@__DIR__, "fixtures", "rest_create_message.json")
-        fixture_data = read(fixture_path, Vector{UInt8})
+        fixture_data = read(fixture_path)
         
         mock_resp = HTTP.Response(200, fixture_data)
         patch = @patch HTTP.request(args...; kwargs...) = mock_resp
         
         apply(patch) do
-            msg = create_message(client, Snowflake(12345); content="Hello Mock!")
+            msg = create_message(client, Snowflake(123456789); content="Hello Mock!")
             @test msg isa Message
             @test msg.content != ""
         end
