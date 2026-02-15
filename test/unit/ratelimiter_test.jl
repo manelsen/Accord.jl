@@ -1,4 +1,4 @@
-@testitem "Rate Limiter" tags=[:fast] begin
+@testitem "Rate Limiter" tags=[:unit] begin
     using Accord
     using Accord: BucketState, url
 

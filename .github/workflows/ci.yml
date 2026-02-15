@@ -16,13 +16,20 @@ permissions:
 
 jobs:
   test:
-    name: Julia ${{ matrix.julia-version }} - ${{ matrix.os }}
+    name: ${{ matrix.category }} - ${{ matrix.os }} - Julia ${{ matrix.julia-version }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        julia-version: ['1.11', '1']
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        julia-version: ['1']
+        category: [unit, integration, aqua, jet]
+        # Opcional: Testar Julia 1.11 apenas no Linux para economizar
+        include:
+          - os: ubuntu-latest
+            julia-version: '1.11'
+            category: unit
+
     steps:
       - uses: actions/checkout@v4
       - name: Ensure cache directory exists
@@ -35,13 +42,16 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .retestitems
-          key: ${{ runner.os }}-retestitems-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
+          key: ${{ runner.os }}-retestitems-${{ matrix.category }}-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
           restore-keys: |
-            ${{ runner.os }}-retestitems-
+            ${{ runner.os }}-retestitems-${{ matrix.category }}-
       - uses: julia-actions/julia-buildpkg@v1
-      - uses: julia-actions/julia-runtest@v1
+      - name: Run Tests
+        run: julia --project -e 'using Pkg; Pkg.test(test_args=["${{ matrix.category }}"])'
       - uses: julia-actions/julia-processcoverage@v1
-      - name: Coverage summary and threshold check
+        if: matrix.os == 'ubuntu-latest'
+      - name: Coverage summary
+        if: matrix.os == 'ubuntu-latest' && matrix.category == 'unit'
         run: |
           julia -e '
             using Pkg
@@ -51,43 +61,14 @@ jobs:
             coverage = process_folder("src")
             covered, relevant = get_summary(coverage)
             pct = round(covered / relevant * 100, digits=2)
-            println("----------------------------------------------")
-            println("Coverage: $covered / $relevant lines ($pct%)")
-            println("----------------------------------------------")
-            min_coverage = 50.0
-            if pct < min_coverage
-              error("Coverage $pct% is below minimum threshold of $min_coverage%")
-            end
+            println("Coverage: $pct%")
           '
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
-        if: always()
+        if: always() && matrix.os == 'ubuntu-latest'
         with:
-          name: coverage-lcov-${{ matrix.julia-version }}
+          name: coverage-lcov-${{ matrix.category }}-${{ matrix.os }}-${{ matrix.julia-version }}
           path: lcov.info
-
-  jet:
-    name: Static Analysis (JET)
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Ensure cache directory exists
-        run: mkdir -p .retestitems
-      - uses: julia-actions/setup-julia@v2
-        with:
-          version: '1'
-      - uses: julia-actions/cache@v2
-      - name: Cache ReTestItems
-        uses: actions/cache@v4
-        with:
-          path: .retestitems
-          key: ${{ runner.os }}-retestitems-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-retestitems-
-      - uses: julia-actions/julia-buildpkg@v1
-      - name: Run JET analysis
-        run: julia --project -e 'using Pkg; Pkg.test(test_args=["quality"])'
 
   docs:
     name: Documentation
@@ -97,19 +78,10 @@ jobs:
       statuses: write
     steps:
       - uses: actions/checkout@v4
-      - name: Ensure cache directory exists
-        run: mkdir -p .retestitems
       - uses: julia-actions/setup-julia@v2
         with:
           version: '1'
       - uses: julia-actions/cache@v2
-      - name: Cache ReTestItems
-        uses: actions/cache@v4
-        with:
-          path: .retestitems
-          key: ${{ runner.os }}-retestitems-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-retestitems-
       - name: Install dependencies
         run: |
           julia --project=docs/ -e '

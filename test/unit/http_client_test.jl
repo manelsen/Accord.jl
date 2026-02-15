@@ -1,4 +1,4 @@
-@testitem "HTTP Client" tags=[:fast] begin
+@testitem "HTTP Client" tags=[:unit] begin
     using Accord, HTTP, JSON3
     using Accord: discord_request, parse_response, parse_response_array, RateLimiter, Route,
         start_ratelimiter!, stop_ratelimiter!, USER_AGENT, RestJob

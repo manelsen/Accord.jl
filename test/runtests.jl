@@ -1,30 +1,40 @@
 using ReTestItems
 using Accord
 
-# ── Accord.jl Test Suite ───────────────────────────────────────────────────
+# ── Accord.jl Granular Test Runner ─────────────────────────────────────────
 
-# wants_all: Default to true in CI, false locally
-wants_all = get(ENV, "CI", "") == "true" || "all" in ARGS
-wants_quality = any(arg -> arg in ("quality", "jet", "aqua"), ARGS)
-
-# Filtragem de itens
-function ti_filter(ti)
-    if wants_quality
-        return :quality in ti.tags
-    elseif wants_all
-        return true
+function run_accord_tests()
+    # Se passarmos um argumento, tratamos como a tag da categoria (unit, integration, aqua, jet)
+    # Se não passar nada ou for "all", roda tudo (exceto jet/aqua por padrão local)
+    
+    category = !isempty(ARGS) ? ARGS[1] : "default"
+    
+    if category == "unit"
+        selected_tags = [:unit]
+    elseif category == "integration"
+        selected_tags = [:integration]
+    elseif category == "aqua"
+        selected_tags = [:aqua]
+    elseif category == "jet"
+        selected_tags = [:jet]
+    elseif category == "quality"
+        selected_tags = [:aqua, :jet]
+    elseif category == "all"
+        selected_tags = nothing # Tudo
     else
-        # Local default: skip quality
-        return !(:quality in ti.tags)
+        # Local default: Unit + Integration
+        selected_tags = ti_tags -> !(:aqua in ti_tags || :jet in ti_tags)
     end
+
+    println("▶ Accord.jl Runner | Category: $category")
+
+    ReTestItems.runtests(
+        Accord;
+        tags = selected_tags,
+        nworkers = 0, # Processo principal para melhor aproveitamento de cache/cobertura
+        report = true,
+        verbose_results = true
+    )
 end
 
-# Execução
-# nworkers=0 é essencial para cobertura e velocidade no REPL.
-ReTestItems.runtests(
-    ti_filter,
-    Accord;
-    nworkers = 0,
-    report = true,
-    verbose_results = true
-)
+run_accord_tests()

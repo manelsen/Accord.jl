@@ -1,4 +1,4 @@
-@testitem "Permissions" tags=[:fast] begin
+@testitem "Permissions" tags=[:unit] begin
     using Accord
     using Accord: compute_base_permissions
 

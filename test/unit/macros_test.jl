@@ -1,4 +1,4 @@
-@testitem "Macros" tags=[:fast] begin
+@testitem "Macros" tags=[:unit] begin
     using Accord, JSON3, StructTypes, Dates
     using Accord: has_flag, @discord_flags, @discord_struct, @_flags_structtypes_int, drain_pending_checks!, _CHECKS_LOCK, _PENDING_CHECKS, CommandTree
 

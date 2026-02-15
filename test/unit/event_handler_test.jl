@@ -1,4 +1,4 @@
-@testitem "Event Handler" tags=[:fast] begin
+@testitem "Event Handler" tags=[:unit] begin
     using Accord
     using Accord: EventHandler, register_handler!, register_middleware!, dispatch_event!,
         AbstractEvent, MessageCreate, Message, User, Snowflake

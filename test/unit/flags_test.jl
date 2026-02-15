@@ -1,4 +1,4 @@
-@testitem "Flags" tags=[:fast] begin
+@testitem "Flags" tags=[:unit] begin
     using Accord, JSON3
     using Accord: has_flag
 
