@@ -14,7 +14,7 @@ end
 Holds state for a single gateway WebSocket session.
 """
 mutable struct GatewaySession
-    ws::Any  # WebSocket connection
+    ws::Nullable{HTTP.WebSockets.WebSocket}
     session_id::Nullable{String}
     resume_gateway_url::Nullable{String}
     seq::Nullable{Int}
@@ -22,14 +22,13 @@ mutable struct GatewaySession
     heartbeat_task::Nullable{Task}
     heartbeat_state::Nullable{HeartbeatState}
     zlib_buffer::IOBuffer
-    zlib_stream::Any  # TranscodingStream
     stop_event::Base.Event
     connected::Bool
 end
 
 function GatewaySession()
     GatewaySession(nothing, nothing, nothing, nothing, Ref{Union{Int,Nothing}}(nothing),
-                   nothing, nothing, IOBuffer(), nothing, Base.Event(), false)
+                   nothing, nothing, IOBuffer(), Base.Event(), false)
 end
 
 """

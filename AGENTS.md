@@ -195,9 +195,10 @@ Tests are all unit tests — no Discord token or network required. The test suit
 ### CI
 
 GitHub Actions (`.github/workflows/ci.yml`) runs on push/PR to `master`:
-- Matrix: Julia 1.10 and latest stable
+- Matrix: Julia 1.11 and latest stable
 - OS: ubuntu-latest
-- Steps: checkout → setup Julia → cache → build → test
+- Steps: checkout → setup Julia → cache → build → test → coverage summary (threshold: 50%) → upload lcov.info artifact
+- JET static analysis runs on PRs only
 
 ---
 
@@ -299,6 +300,12 @@ On `__init__()` (module load), Accord.jl runs:
 
 1. `init_sodium()` — initializes libsodium for voice encryption
 2. `_init_perm_map!()` — populates the permission symbol-to-constant map used by `has_permissions(:MANAGE_GUILD)` style checks
+
+---
+
+## Authorship
+
+- **The repository owner is the sole author of all commits.** Never add `Co-Authored-By`, `Signed-off-by`, or any trailer that attributes authorship to an AI agent. This is non-negotiable.
 
 ---
 
