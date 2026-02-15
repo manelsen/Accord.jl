@@ -115,7 +115,7 @@ function _process_job(rl::RateLimiter, job::RestJob)
             if !isnothing(job.body)
                 kwargs[:body] = job.body
             end
-            resp = HTTP.request(
+            resp = @mock HTTP.request(
                 job.method, job.url, job.headers;
                 kwargs...,
             )
