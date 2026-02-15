@@ -6,7 +6,7 @@
 State for a voice gateway WebSocket connection.
 """
 mutable struct VoiceGatewaySession
-    ws::Any
+    ws::Nullable{HTTP.WebSockets.WebSocket}
     guild_id::Snowflake
     channel_id::Snowflake
     user_id::Snowflake
