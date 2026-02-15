@@ -1,11 +1,9 @@
-using Test
-using Accord
-using JSON3
+@testitem "Offline Parsing (Fixtures)" tags=[:fast] begin
+    using Accord, JSON3
 
-# Helper to convert JSON3 object to Dict{String, Any} for parse_event
-to_dict(obj) = JSON3.read(JSON3.write(obj), Dict{String, Any})
+    # Helper to convert JSON3 object to Dict{String, Any} for parse_event
+    to_dict(obj) = JSON3.read(JSON3.write(obj), Dict{String, Any})
 
-@testset "Offline Parsing (Fixtures)" begin
     fixtures_dir = joinpath(dirname(@__DIR__), "integration", "fixtures")
     
     @testset "Gateway Payloads" begin

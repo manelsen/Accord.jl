@@ -1,4 +1,7 @@
-@testset "Permissions" begin
+@testitem "Permissions" tags=[:fast] begin
+    using Accord
+    using Accord: compute_base_permissions
+
     @testset "compute_base_permissions" begin
         # Create test roles
         everyone_role = Role(

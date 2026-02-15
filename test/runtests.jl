@@ -1,35 +1,37 @@
-using Test
-using Dates
+using ReTestItems
 using Accord
-using Accord: has_flag, JSON3, StructTypes, BucketState, url,
-    compute_base_permissions, compute_channel_permissions,
-    @discord_struct, @discord_flags, @_flags_structtypes_int,
-    CommandTree, register_command!, register_component!, register_modal!, register_autocomplete!
 
-@testset "Accord.jl" begin
-    include("unit/test_aqua.jl")
-    include("unit/test_snowflake.jl")
-    include("unit/test_flags.jl")
-    include("unit/test_types.jl")
-    include("unit/test_permissions.jl")
-    include("unit/test_ratelimiter.jl")
-    include("unit/test_components.jl")
-    include("unit/test_macros.jl")
-    include("unit/test_checks_waitfor.jl")
-    include("unit/test_parsing.jl")
+# ── Accord.jl Test Suite ───────────────────────────────────────────────────
 
-    # Integration tests - run with: julia --project=. -e 'using Pkg; Pkg.test()' -- integration
-    if "integration" in ARGS || get(ENV, "ACCORD_INTEGRATION_TESTS", "") == "1"
-        @testset "Integration" begin
-            include("integration/test_fixtures.jl")
-            include("integration/test_rest_mock.jl")
+function run_accord_tests()
+    # Se o primeiro argumento não for uma tag conhecida, tratamos como filtro de nome
+    target_name = !isempty(ARGS) && !(ARGS[1] in ("all", "quality", "jet", "aqua")) ? ARGS[1] : nothing
+    
+    wants_all = "all" in ARGS
+    wants_quality = any(arg -> arg in ("quality", "jet", "aqua"), ARGS)
+    
+    function ti_filter(ti)
+        # Se houver um nome alvo, roda APENAS ele (feedback instantâneo)
+        if !isnothing(target_name)
+            return contains(ti.name, target_name)
+        end
+
+        if wants_quality
+            return :quality in ti.tags
+        elseif wants_all
+            return true
+        else
+            return !(:quality in ti.tags)
         end
     end
 
-    # Static analysis - run with: ACCORD_JET=1 julia --project=. -e 'using Pkg; Pkg.test()'
-    if get(ENV, "ACCORD_JET", "") == "1"
-        @testset "Static Analysis" begin
-            include("unit/test_jet.jl")
-        end
-    end
+    ReTestItems.runtests(
+        ti_filter,
+        Accord;
+        nworkers = get(ENV, "CI", "") == "true" ? 4 : 0, 
+        report = true,
+        verbose_results = !isnothing(target_name) # Se for focado, mostre detalhes
+    )
 end
+
+run_accord_tests()

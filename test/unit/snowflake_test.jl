@@ -1,4 +1,6 @@
-@testset "Snowflake" begin
+@testitem "Snowflake" tags=[:fast] begin
+    using Accord, Dates, JSON3
+
     @testset "Construction" begin
         s1 = Snowflake(123456789)
         @test s1.value == 123456789

@@ -42,14 +42,14 @@ function discord_request(
     if !isnothing(files) && !isempty(files)
         # Multipart form upload
         parts = HTTP.Forms.Form[]
-        form_data = []
+        form_data = Vector{Pair{Symbol, Any}}()
 
         if !isnothing(body)
             push!(form_data, :payload_json => JSON3.write(body))
         end
 
         for (i, (filename, data, content_type)) in enumerate(files)
-            push!(form_data, Symbol("files[$i]") => HTTP.Forms.File(data, filename, content_type))
+            push!(form_data, Symbol("files[$i]") => HTTP.Forms.Multipart(filename, IOBuffer(data), content_type))
         end
 
         request_body = HTTP.Forms.Form(form_data)

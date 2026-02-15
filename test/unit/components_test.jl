@@ -1,4 +1,6 @@
-@testset "Component Builders" begin
+@testitem "Component Builders" tags=[:fast] begin
+    using Accord
+
     @testset "button" begin
         btn = button(label="Click me", custom_id="btn_1", style=ButtonStyles.PRIMARY)
         @test btn["type"] == ComponentTypes.BUTTON

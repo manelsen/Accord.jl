@@ -1,21 +1,24 @@
-@testset "Checks & Guards" begin
+@testitem "Checks & Guards" tags=[:fast] begin
+    using Accord
+    using Accord: _init_perm_map!, _resolve_perm, _resolve_perms, _cooldown_key, drain_pending_checks!, _PENDING_CHECKS, _CHECKS_LOCK, EventWaiter, CommandTree, register_command!
+
     # Initialize permission map
-    Accord._init_perm_map!()
+    _init_perm_map!()
 
     @testset "Permission symbol resolution" begin
         # Known symbols should resolve
-        @test Accord._resolve_perm(:MANAGE_GUILD) == PermManageGuild
-        @test Accord._resolve_perm(:BAN_MEMBERS) == PermBanMembers
-        @test Accord._resolve_perm(:ADMINISTRATOR) == PermAdministrator
+        @test _resolve_perm(:MANAGE_GUILD) == PermManageGuild
+        @test _resolve_perm(:BAN_MEMBERS) == PermBanMembers
+        @test _resolve_perm(:ADMINISTRATOR) == PermAdministrator
 
         # Direct Permissions values pass through
-        @test Accord._resolve_perm(PermManageGuild) == PermManageGuild
+        @test _resolve_perm(PermManageGuild) == PermManageGuild
 
         # Unknown symbol should error
-        @test_throws ErrorException Accord._resolve_perm(:NONEXISTENT_PERM)
+        @test_throws ErrorException _resolve_perm(:NONEXISTENT_PERM)
 
         # Multiple permissions resolve and combine
-        combined = Accord._resolve_perms(:MANAGE_GUILD, :BAN_MEMBERS)
+        combined = _resolve_perms(:MANAGE_GUILD, :BAN_MEMBERS)
         @test combined == (PermManageGuild | PermBanMembers)
     end
 
@@ -47,31 +50,31 @@
 
     @testset "cooldown bucket key" begin
         # :global always returns 0
-        @test Accord._cooldown_key(nothing, :global) == UInt64(0)
+        @test _cooldown_key(nothing, :global) == UInt64(0)
 
         # Invalid bucket type should error
-        @test_throws ErrorException Accord._cooldown_key(nothing, :invalid)
+        @test_throws ErrorException _cooldown_key(nothing, :invalid)
     end
 
     @testset "Pending checks accumulation and drain" begin
         # Start clean
-        Accord.drain_pending_checks!()
-        @test isempty(Accord._PENDING_CHECKS)
+        drain_pending_checks!()
+        @test isempty(_PENDING_CHECKS)
 
         # Push some checks
-        lock(Accord._CHECKS_LOCK) do
-            push!(Accord._PENDING_CHECKS, is_owner())
-            push!(Accord._PENDING_CHECKS, is_in_guild())
+        lock(_CHECKS_LOCK) do
+            push!(_PENDING_CHECKS, is_owner())
+            push!(_PENDING_CHECKS, is_in_guild())
         end
-        @test length(Accord._PENDING_CHECKS) == 2
+        @test length(_PENDING_CHECKS) == 2
 
         # Drain should return all and empty the accumulator
-        drained = Accord.drain_pending_checks!()
+        drained = drain_pending_checks!()
         @test length(drained) == 2
-        @test isempty(Accord._PENDING_CHECKS)
+        @test isempty(_PENDING_CHECKS)
 
         # Drain again should return empty
-        drained2 = Accord.drain_pending_checks!()
+        drained2 = drain_pending_checks!()
         @test isempty(drained2)
     end
 
@@ -120,22 +123,22 @@
         # Actually let me simplify:
         @test results[end] == false  # last result was failure
     end
-end
 
-@testset "wait_for" begin
-    @testset "EventWaiter struct" begin
-        ch = Channel{Any}(1)
-        waiter = Accord.EventWaiter(MessageCreate, evt -> true, ch)
-        @test waiter.event_type == MessageCreate
-        @test isopen(waiter.channel)
-        close(ch)
+    @testset "wait_for" begin
+        @testset "EventWaiter struct" begin
+            ch = Channel{Any}(1)
+            waiter = EventWaiter(MessageCreate, evt -> true, ch)
+            @test waiter.event_type == MessageCreate
+            @test isopen(waiter.channel)
+            close(ch)
+        end
     end
-end
 
-@testset "State injection" begin
-    @testset "Client accepts state kwarg" begin
-        # We can't create a full Client without a gateway, but we can
-        # verify the struct has the field
-        @test hasfield(Client, :state_data)
+    @testset "State injection" begin
+        @testset "Client accepts state kwarg" begin
+            # We can't create a full Client without a gateway, but we can
+            # verify the struct has the field
+            @test hasfield(Client, :state_data)
+        end
     end
 end

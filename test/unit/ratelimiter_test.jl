@@ -1,4 +1,7 @@
-@testset "Rate Limiter" begin
+@testitem "Rate Limiter" tags=[:fast] begin
+    using Accord
+    using Accord: BucketState, url
+
     @testset "Route bucket key" begin
         r1 = Route("GET", "/channels/123/messages", "channel_id" => "123")
         r2 = Route("GET", "/channels/456/messages", "channel_id" => "456")
@@ -17,11 +20,11 @@
 
     @testset "Route URL" begin
         r = Route("GET", "/channels/123/messages", "channel_id" => "123")
-        @test Accord.url(r) == "https://discord.com/api/v10/channels/123/messages"
+        @test url(r) == "https://discord.com/api/v10/channels/123/messages"
     end
 
     @testset "BucketState" begin
-        bs = Accord.BucketState()
+        bs = BucketState()
         @test bs.remaining == 1
         @test bs.reset_at == 0.0
     end

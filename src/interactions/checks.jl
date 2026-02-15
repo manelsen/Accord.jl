@@ -204,6 +204,10 @@ message with the remaining time and blocks execution.
 ```
 """
 function cooldown(seconds::Real; per::Symbol=:user)
+    if !(per in (:user, :guild, :channel, :global))
+        throw(ErrorException("Unknown cooldown bucket type :$per. Use :user, :guild, :channel, or :global."))
+    end
+
     timestamps = Dict{UInt64, Float64}()
     lk = ReentrantLock()
 
@@ -265,7 +269,7 @@ Run all check functions against a context. Returns `true` if all pass.
 If a check fails and the interaction hasn't been responded to, sends
 a default ephemeral error message.
 """
-function run_checks(checks::Vector{Function}, ctx)
+function run_checks(checks::AbstractVector, ctx)
     for check_fn in checks
         try
             result = check_fn(ctx)
