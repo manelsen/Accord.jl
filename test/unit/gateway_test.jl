@@ -1,4 +1,4 @@
-@testitem "Gateway Logic" tags=[:fast] begin
+@testitem "Gateway Logic" tags=[:unit] begin
     using Accord, HTTP, JSON3
     using Accord: GatewaySession, HeartbeatState, start_heartbeat, stop_heartbeat!,
         heartbeat_ack!, heartbeat_latency, _gateway_loop, GatewayOpcodes,

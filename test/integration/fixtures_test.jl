@@ -1,4 +1,4 @@
-@testitem "Fixtures Integration" tags=[:fast, :integration] begin
+@testitem "Fixtures Integration" tags=[:integration] begin
     using Accord, JSON3
     using Accord: parse_event, AbstractEvent, UnknownEvent,
         GatewaySession, ReadyEvent, GuildCreate, MessageCreate,

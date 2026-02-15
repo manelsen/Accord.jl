@@ -1,4 +1,4 @@
-@testitem "Snowflake" tags=[:fast] begin
+@testitem "Snowflake" tags=[:unit] begin
     using Accord, Dates, JSON3
 
     @testset "Construction" begin

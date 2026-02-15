@@ -1,4 +1,4 @@
-@testitem "Types JSON round-trip" tags=[:fast] begin
+@testitem "Types JSON round-trip" tags=[:unit] begin
     using Accord, JSON3
 
     @testset "User" begin

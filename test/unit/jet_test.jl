@@ -1,4 +1,4 @@
-@testitem "JET" tags=[:quality] begin
+@testitem "JET" tags=[:jet] begin
     using JET, Accord
 
     #   2 reports: take!(::Compiler.Future) union split in gateway loop — JET artifact

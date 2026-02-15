@@ -1,4 +1,4 @@
-@testitem "Component Builders" tags=[:fast] begin
+@testitem "Component Builders" tags=[:unit] begin
     using Accord
 
     @testset "button" begin

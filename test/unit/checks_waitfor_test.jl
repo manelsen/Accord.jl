@@ -1,4 +1,4 @@
-@testitem "Checks & Guards" tags=[:fast] begin
+@testitem "Checks & Guards" tags=[:unit] begin
     using Accord
     using Accord: _init_perm_map!, _resolve_perm, _resolve_perms, _cooldown_key, drain_pending_checks!, _PENDING_CHECKS, _CHECKS_LOCK, EventWaiter, CommandTree, register_command!
 

@@ -1,4 +1,4 @@
-@testitem "Offline Parsing (Fixtures)" tags=[:fast] begin
+@testitem "Offline Parsing (Fixtures)" tags=[:unit] begin
     using Accord, JSON3
 
     # Helper to convert JSON3 object to Dict{String, Any} for parse_event

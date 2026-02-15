@@ -1,4 +1,4 @@
-@testitem "CommandTree" tags=[:fast] begin
+@testitem "CommandTree" tags=[:unit] begin
     using Accord, Logging, HTTP
     using Accord: CommandTree, CommandDefinition, register_command!, register_component!,
         register_modal!, register_autocomplete!, dispatch_interaction!, sync_commands!,

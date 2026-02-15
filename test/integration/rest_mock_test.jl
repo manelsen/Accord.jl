@@ -1,4 +1,4 @@
-@testitem "REST Mock Integration" tags=[:fast, :integration] begin
+@testitem "REST Mock Integration" tags=[:integration] begin
     using Accord, HTTP, JSON3
     using Accord: parse_response, parse_response_array, discord_get, discord_post,
         discord_put, discord_patch, discord_delete, discord_request,

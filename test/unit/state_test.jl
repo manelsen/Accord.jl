@@ -1,4 +1,4 @@
-@testitem "State & Cache" tags=[:fast] begin
+@testitem "State & Cache" tags=[:unit] begin
     using Accord
     using Accord: State, Store, CacheForever, CacheNever, CacheLRU, CacheTTL,
         update_state!, GuildCreate, GuildDelete, GuildMemberAdd, GuildMemberRemove,
