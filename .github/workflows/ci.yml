@@ -16,19 +16,16 @@ permissions:
 
 jobs:
   test:
-    name: ${{ matrix.category }} - ${{ matrix.os }} - Julia ${{ matrix.julia-version }}
+    name: Tests - ${{ matrix.os }} - Julia ${{ matrix.julia-version }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
-      max-parallel: 5 # Evita sobrecarregar o servidor de pacotes
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         julia-version: ['1']
-        category: [unit, integration, aqua, jet]
         include:
           - os: ubuntu-latest
             julia-version: '1.11'
-            category: unit
 
     steps:
       - uses: actions/checkout@v4
@@ -42,34 +39,47 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .retestitems
-          key: ${{ runner.os }}-retestitems-${{ matrix.category }}-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
+          key: ${{ runner.os }}-retestitems-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
           restore-keys: |
-            ${{ runner.os }}-retestitems-${{ matrix.category }}-
-      - name: Run Tests
+            ${{ runner.os }}-retestitems-
+      
+      # Rodamos Unit + Integration + Aqua em um único comando Pkg.test.
+      # Isso paga o imposto de compilação apenas UMA VEZ por OS.
+      - name: Run Tests (Unit, Integration, Aqua)
         env:
-          JULIA_PKG_SERVER: "" # Força o uso de Git para o registro em caso de falha no PkgServer
-        run: julia --project -e 'using Pkg; Pkg.test(test_args=["${{ matrix.category }}"])'
+          JULIA_PKG_SERVER: "" # Segurança contra soluços do PkgServer
+        run: julia --project -e 'using Pkg; Pkg.test(test_args=["default"])'
+      
       - uses: julia-actions/julia-processcoverage@v1
         if: matrix.os == 'ubuntu-latest'
-      - name: Coverage summary
-        if: matrix.os == 'ubuntu-latest' && matrix.category == 'unit'
-        run: |
-          julia -e '
-            using Pkg
-            Pkg.activate(temp=true)
-            Pkg.add("Coverage")
-            using Coverage
-            coverage = process_folder("src")
-            covered, relevant = get_summary(coverage)
-            pct = round(covered / relevant * 100, digits=2)
-            println("Coverage: $pct%")
-          '
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         if: always() && matrix.os == 'ubuntu-latest'
         with:
-          name: coverage-lcov-${{ matrix.category }}-${{ matrix.os }}-${{ matrix.julia-version }}
+          name: coverage-lcov-${{ matrix.os }}-${{ matrix.julia-version }}
           path: lcov.info
+
+  jet:
+    name: Static Analysis (JET)
+    # JET é pesado, rodamos apenas em Linux e apenas em PRs ou master push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure cache directory exists
+        run: mkdir -p .retestitems
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: '1'
+      - uses: julia-actions/cache@v2
+      - name: Cache ReTestItems
+        uses: actions/cache@v4
+        with:
+          path: .retestitems
+          key: ${{ runner.os }}-retestitems-jet-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
+      - name: Run JET analysis
+        env:
+          JULIA_PKG_SERVER: ""
+        run: julia --project -e 'using Pkg; Pkg.test(test_args=["jet"])'
 
   docs:
     name: Documentation
