@@ -13,12 +13,13 @@ Mocking.activate()
     # Start rate limiter to avoid deadlocks
     Accord.start_ratelimiter!(client.ratelimiter)
     
-    # Pre-read fixtures to avoid IO inside mock scope
-    me_fixture = read(joinpath(@__DIR__, "fixtures", "rest_get_me.json"))
-    msg_fixture = read(joinpath(@__DIR__, "fixtures", "rest_create_message.json"))
-
-    @testset "Get Current User (@me)" begin
-        mock_resp = HTTP.Response(200, me_fixture)
+    @testset "Get Current User" begin
+        fixture_path = joinpath(@__DIR__, "fixtures", "rest_get_me.json")
+        # Read as string to be absolutely safe
+        fixture_data = read(fixture_path, String)
+        
+        # Mock HTTP.request directly
+        mock_resp = HTTP.Response(200, fixture_data)
         patch = @patch HTTP.request(args...; kwargs...) = mock_resp
         
         apply(patch) do
@@ -29,7 +30,10 @@ Mocking.activate()
     end
 
     @testset "Create Message" begin
-        mock_resp = HTTP.Response(200, msg_fixture)
+        fixture_path = joinpath(@__DIR__, "fixtures", "rest_create_message.json")
+        fixture_data = read(fixture_path, String)
+        
+        mock_resp = HTTP.Response(200, fixture_data)
         patch = @patch HTTP.request(args...; kwargs...) = mock_resp
         
         apply(patch) do
