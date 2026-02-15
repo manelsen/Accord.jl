@@ -20,18 +20,21 @@ end
     Store{T}
 
 A cache store for a specific resource type, keyed by Snowflake.
+Uses LRUCache.LRU for O(1) LRU eviction, plain Dict for other strategies.
 """
 mutable struct Store{T}
     strategy::CacheStrategy
-    data::Dict{Snowflake, T}
-    access_order::Vector{Snowflake}  # for LRU
-    timestamps::Dict{Snowflake, Float64}  # for TTL
-    maxsize::Int
+    data::Union{Dict{Snowflake, T}, LRU{Snowflake, T}}
+    timestamps::Dict{Snowflake, Float64}  # for TTL only
 end
 
 function Store{T}(strategy::CacheStrategy=CacheForever()) where T
-    maxsize = strategy isa CacheLRU ? strategy.maxsize : typemax(Int)
-    Store{T}(strategy, Dict{Snowflake, T}(), Snowflake[], Dict{Snowflake, Float64}(), maxsize)
+    data = if strategy isa CacheLRU
+        LRU{Snowflake, T}(maxsize=strategy.maxsize)
+    else
+        Dict{Snowflake, T}()
+    end
+    Store{T}(strategy, data, Dict{Snowflake, Float64}())
 end
 
 function Base.get(store::Store{T}, id::Snowflake, default=nothing) where T
@@ -46,12 +49,6 @@ function Base.get(store::Store{T}, id::Snowflake, default=nothing) where T
             end
         end
 
-        # Update LRU order
-        if store.strategy isa CacheLRU
-            filter!(x -> x != id, store.access_order)
-            push!(store.access_order, id)
-        end
-
         return store.data[id]
     end
     return default
@@ -61,18 +58,9 @@ function Base.setindex!(store::Store{T}, value::T, id::Snowflake) where T
     store.strategy isa CacheNever && return value
 
     store.data[id] = value
-    store.timestamps[id] = time()
 
-    if store.strategy isa CacheLRU
-        filter!(x -> x != id, store.access_order)
-        push!(store.access_order, id)
-
-        # Evict if over capacity
-        while length(store.data) > store.maxsize && !isempty(store.access_order)
-            evict_id = popfirst!(store.access_order)
-            delete!(store.data, evict_id)
-            delete!(store.timestamps, evict_id)
-        end
+    if store.strategy isa CacheTTL
+        store.timestamps[id] = time()
     end
 
     return value
@@ -81,10 +69,10 @@ end
 function Base.delete!(store::Store, id::Snowflake)
     delete!(store.data, id)
     delete!(store.timestamps, id)
-    filter!(x -> x != id, store.access_order)
 end
 
 Base.haskey(store::Store, id::Snowflake) = haskey(store.data, id)
+Base.empty!(store::Store) = (empty!(store.data); empty!(store.timestamps); store)
 Base.values(store::Store) = values(store.data)
 Base.length(store::Store) = length(store.data)
 Base.keys(store::Store) = keys(store.data)
@@ -263,7 +251,7 @@ end
 function update_state!(state::State, event::GuildEmojisUpdate)
     store = get!(state.emojis, event.guild_id, Store{Emoji}())
     # Replace all emojis for this guild
-    empty!(store.data)
+    empty!(store)
     for emoji in event.emojis
         eid = emoji.id
         !isnothing(eid) && (store[eid] = emoji)
