@@ -1,48 +1,48 @@
 using Accord
-using Mocking
 using Test
 using JSON3
 using HTTP
 
-# Enable mocking
-Mocking.activate()
-
-@testset "REST Mocking Integration" begin
+@testset "REST Mocking Integration (Manual)" begin
     client = Client("mock_token")
     
-    # Start rate limiter to avoid deadlocks
-    Accord.start_ratelimiter!(client.ratelimiter)
-    
+    # Pre-read fixtures
+    me_fixture = read(joinpath(@__DIR__, "fixtures", "rest_get_me.json"), String)
+    msg_fixture = read(joinpath(@__DIR__, "fixtures", "rest_create_message.json"), String)
+
     @testset "Get Current User" begin
-        fixture_path = joinpath(@__DIR__, "fixtures", "rest_get_me.json")
-        # Read as string to be absolutely safe
-        fixture_data = read(fixture_path, String)
-        
-        # Mock HTTP.request directly
-        mock_resp = HTTP.Response(200, fixture_data)
-        patch = @patch HTTP.request(args...; kwargs...) = mock_resp
-        
-        apply(patch) do
-            me = Accord.get_current_user(client.ratelimiter; token=client.token)
-            @test me isa User
-            @test me.username != ""
+        # Inject mock handler directly into the ratelimiter
+        client.ratelimiter.request_handler = (m, u, h, b) -> begin
+            @test m == "GET"
+            @test occursin("/users/@me", u)
+            return HTTP.Response(200, me_fixture)
         end
+        
+        # Start rate limiter to process the job
+        Accord.start_ratelimiter!(client.ratelimiter)
+        
+        me = Accord.get_current_user(client.ratelimiter; token=client.token)
+        @test me isa User
+        @test me.username != ""
+        
+        Accord.stop_ratelimiter!(client.ratelimiter)
     end
 
     @testset "Create Message" begin
-        fixture_path = joinpath(@__DIR__, "fixtures", "rest_create_message.json")
-        fixture_data = read(fixture_path, String)
-        
-        mock_resp = HTTP.Response(200, fixture_data)
-        patch = @patch HTTP.request(args...; kwargs...) = mock_resp
-        
-        apply(patch) do
-            msg = create_message(client, Snowflake(123456789); content="Hello Mock!")
-            @test msg isa Message
-            @test msg.content != ""
+        # Re-initialize or reset ratelimiter for clean state
+        client.ratelimiter = RateLimiter()
+        client.ratelimiter.request_handler = (m, u, h, b) -> begin
+            @test m == "POST"
+            @test occursin("/messages", u)
+            return HTTP.Response(200, msg_fixture)
         end
+        
+        Accord.start_ratelimiter!(client.ratelimiter)
+        
+        msg = create_message(client, Snowflake(123456789); content="Hello Mock!")
+        @test msg isa Message
+        @test msg.content != ""
+        
+        Accord.stop_ratelimiter!(client.ratelimiter)
     end
-
-    # Stop rate limiter
-    Accord.stop_ratelimiter!(client.ratelimiter)
 end
