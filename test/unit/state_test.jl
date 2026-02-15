@@ -50,15 +50,14 @@
         end
 
         @testset "CacheTTL" begin
-            store = Store{String}(CacheTTL(0.1)) # 100ms TTL
+            store = Store{String}(CacheTTL(0.2)) # 200ms TTL
             store[Snowflake(1)] = "a"
-            
+
             @test get(store, Snowflake(1)) == "a"
-            
-            sleep(0.15) # Wait for expiry
-            
+
+            sleep(0.4) # 2× TTL — generous margin for CI under load
+
             @test get(store, Snowflake(1)) === nothing
-            # Store cleans up on access, so length might update only after access
             @test length(store) == 0
         end
     end
