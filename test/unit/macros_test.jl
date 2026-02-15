@@ -1,158 +1,159 @@
-# Flags macro types need to be defined at module/top-level scope because they
-# generate `const` declarations that are not allowed inside local scopes.
-# We define them here and test them in the @testset blocks below.
+@testitem "Macros" tags=[:fast] begin
+    using Accord, JSON3, StructTypes, Dates
+    using Accord: has_flag, @discord_flags, @discord_struct, @_flags_structtypes_int, drain_pending_checks!, _CHECKS_LOCK, _PENDING_CHECKS, CommandTree
 
-# --- @discord_flags test types (top-level) ---
-@discord_flags TestFlags begin
-    FLAG_A = 1 << 0
-    FLAG_B = 1 << 1
-    FLAG_C = 1 << 2
-end
+    # Flags macro types need to be defined at module/top-level scope because they
+    # generate `const` declarations that are not allowed inside local scopes.
+    # We define them here and test them in the @testset blocks below.
 
-@discord_flags TestFlagsZero begin
-    TF_X = 1
-end
+    # --- @discord_flags test types (top-level) ---
+    @discord_flags TestFlags begin
+        FLAG_A = 1 << 0
+        FLAG_B = 1 << 1
+        FLAG_C = 1 << 2
+    end
 
-@discord_flags TestFlagsOr begin
-    TFO_A = 1 << 0
-    TFO_B = 1 << 1
-end
+    @discord_flags TestFlagsZero begin
+        TF_X = 1
+    end
 
-@discord_flags TestFlagsAnd begin
-    TFA_A = 1 << 0
-    TFA_B = 1 << 1
-    TFA_C = 1 << 2
-end
+    @discord_flags TestFlagsOr begin
+        TFO_A = 1 << 0
+        TFO_B = 1 << 1
+    end
 
-@discord_flags TestFlagsXor begin
-    TFX_A = 1 << 0
-    TFX_B = 1 << 1
-end
+    @discord_flags TestFlagsAnd begin
+        TFA_A = 1 << 0
+        TFA_B = 1 << 1
+        TFA_C = 1 << 2
+    end
 
-@discord_flags TestFlagsNot begin
-    TFN_A = 1 << 0
-end
+    @discord_flags TestFlagsXor begin
+        TFX_A = 1 << 0
+        TFX_B = 1 << 1
+    end
 
-@discord_flags TestFlagsEq begin
-    TFE_A = 1
-    TFE_B = 2
-end
+    @discord_flags TestFlagsNot begin
+        TFN_A = 1 << 0
+    end
 
-@discord_flags TestFlagsShow begin
-    TFS_X = 42
-end
+    @discord_flags TestFlagsEq begin
+        TFE_A = 1
+        TFE_B = 2
+    end
 
-@discord_flags TestFlagsInt begin
-    TFI_A = 1
-end
+    @discord_flags TestFlagsShow begin
+        TFS_X = 42
+    end
 
-@discord_flags TestFlagsLarge begin
-    TFL_HIGH = UInt64(1) << 63
-end
+    @discord_flags TestFlagsInt begin
+        TFI_A = 1
+    end
 
-@discord_flags TestFlagsSingle begin
-    SINGLE = 1
-end
+    @discord_flags TestFlagsLarge begin
+        TFL_HIGH = UInt64(1) << 63
+    end
 
-@discord_flags TestFlagsHasZero begin
-    TFHZ_A = 1
-end
+    @discord_flags TestFlagsSingle begin
+        SINGLE = 1
+    end
 
-# --- @_flags_structtypes_int test types (top-level) ---
-@discord_flags TestSTFlags begin
-    TST_A = 1
-    TST_B = 2
-end
-@_flags_structtypes_int TestSTFlags
+    @discord_flags TestFlagsHasZero begin
+        TFHZ_A = 1
+    end
 
-# --- @discord_struct test types (top-level) ---
-# These also generate struct definitions which must be at top-level
+    # --- @_flags_structtypes_int test types (top-level) ---
+    @discord_flags TestSTFlags begin
+        TST_A = 1
+        TST_B = 2
+    end
+    @_flags_structtypes_int TestSTFlags
 
-@discord_struct TestBasicStruct begin
-    name::String
-    value::Int
-end
+    # --- @discord_struct test types (top-level) ---
+    # These also generate struct definitions which must be at top-level
 
-@discord_struct TestOptionalStruct begin
-    name::String
-    tag::Optional{String}
-end
+    @discord_struct TestBasicStruct begin
+        name::String
+        value::Int
+    end
 
-@discord_struct TestNullableStruct begin
-    id::Int
-    avatar::Nullable{String}
-end
+    @discord_struct TestOptionalStruct begin
+        name::String
+        tag::Optional{String}
+    end
 
-@discord_struct TestVectorStruct begin
-    items::Vector{String}
-end
+    @discord_struct TestNullableStruct begin
+        id::Int
+        avatar::Nullable{String}
+    end
 
-@discord_struct TestDefaultStruct begin
-    count::Int = 42
-    label::String = "default"
-end
+    @discord_struct TestVectorStruct begin
+        items::Vector{String}
+    end
 
-@discord_struct TestBoolFloatStruct begin
-    active::Bool
-    score::Float64
-end
+    @discord_struct TestDefaultStruct begin
+        count::Int = 42
+        label::String = "default"
+    end
 
-@discord_struct TestSnowflakeStruct begin
-    id::Snowflake
-end
+    @discord_struct TestBoolFloatStruct begin
+        active::Bool
+        score::Float64
+    end
 
-@discord_struct TestAnyStruct begin
-    data::Any
-end
+    @discord_struct TestSnowflakeStruct begin
+        id::Snowflake
+    end
 
-@discord_struct TestMutableCheck begin
-    x::Int
-end
+    @discord_struct TestAnyStruct begin
+        data::Any
+    end
 
-@discord_struct TestStructTypesCheck begin
-    x::Int
-end
+    @discord_struct TestMutableCheck begin
+        x::Int
+    end
 
-@discord_struct TestMixedStruct begin
-    id::Snowflake
-    name::String
-    nick::Optional{String}
-    avatar::Nullable{String}
-    roles::Vector{Int}
-    active::Bool
-    score::Float64
-end
+    @discord_struct TestStructTypesCheck begin
+        x::Int
+    end
 
-@discord_struct TestKWStruct begin
-    name::String
-    value::Int
-    tag::Optional{String}
-end
+    @discord_struct TestMixedStruct begin
+        id::Snowflake
+        name::String
+        nick::Optional{String}
+        avatar::Nullable{String}
+        roles::Vector{Int}
+        active::Bool
+        score::Float64
+    end
 
-struct CustomInner
-    v::Int
-end
+    @discord_struct TestKWStruct begin
+        name::String
+        value::Int
+        tag::Optional{String}
+    end
 
-@discord_struct TestUnknownTypeStruct begin
-    custom::CustomInner = CustomInner(0)
-end
+    struct CustomInner
+        v::Int
+    end
 
-@discord_struct TestJSONStruct begin
-    name::String
-    count::Int
-    active::Bool
-    tag::Optional{String}
-end
+    @discord_struct TestUnknownTypeStruct begin
+        custom::CustomInner = CustomInner(0)
+    end
 
-@discord_struct TestSmallNumStruct begin
-    x::Float32
-    y::Int32
-end
+    @discord_struct TestJSONStruct begin
+        name::String
+        count::Int
+        active::Bool
+        tag::Optional{String}
+    end
+
+    @discord_struct TestSmallNumStruct begin
+        x::Float32
+        y::Int32
+    end
 
 
-@testset "Macros" begin
-
-    # ─── @discord_struct ───────────────────────────────────────────────
     @testset "@discord_struct" begin
 
         @testset "basic struct generation" begin
@@ -243,8 +244,8 @@ end
 
         @testset "JSON round-trip with @discord_struct" begin
             s = TestJSONStruct(name="hello", count=5, active=true)
-            json_str = Accord.JSON3.write(s)
-            s2 = Accord.JSON3.read(json_str, TestJSONStruct)
+            json_str = JSON3.write(s)
+            s2 = JSON3.read(json_str, TestJSONStruct)
             @test s2.name == "hello"
             @test s2.count == 5
             @test s2.active == true
@@ -258,7 +259,6 @@ end
         end
     end
 
-    # ─── @discord_flags ────────────────────────────────────────────────
     @testset "@discord_flags" begin
 
         @testset "basic flag creation" begin
@@ -336,7 +336,6 @@ end
         end
     end
 
-    # ─── @_flags_structtypes_int ───────────────────────────────────────
     @testset "@_flags_structtypes_int" begin
         @test StructTypes.StructType(TestSTFlags) == StructTypes.CustomStruct()
 
@@ -354,7 +353,6 @@ end
         end
     end
 
-    # ─── @option ───────────────────────────────────────────────────────
     @testset "@option" begin
 
         @testset "all valid types" begin
@@ -409,7 +407,6 @@ end
         end
     end
 
-    # ─── @slash_command ────────────────────────────────────────────────
     @testset "@slash_command" begin
 
         @testset "3-arg form (name, desc, handler)" begin
@@ -447,7 +444,6 @@ end
         end
     end
 
-    # ─── @button_handler ───────────────────────────────────────────────
     @testset "@button_handler" begin
         tree = CommandTree()
         mock_client = (; command_tree=tree)
@@ -464,7 +460,6 @@ end
         end
     end
 
-    # ─── @select_handler ───────────────────────────────────────────────
     @testset "@select_handler" begin
         tree = CommandTree()
         mock_client = (; command_tree=tree)
@@ -473,7 +468,6 @@ end
         @test haskey(tree.component_handlers, "sel_1")
     end
 
-    # ─── @modal_handler ────────────────────────────────────────────────
     @testset "@modal_handler" begin
         tree = CommandTree()
         mock_client = (; command_tree=tree)
@@ -482,7 +476,6 @@ end
         @test haskey(tree.modal_handlers, "modal_1")
     end
 
-    # ─── @autocomplete ────────────────────────────────────────────────
     @testset "@autocomplete" begin
         tree = CommandTree()
         mock_client = (; command_tree=tree)
@@ -491,7 +484,6 @@ end
         @test haskey(tree.autocomplete_handlers, "search")
     end
 
-    # ─── @on_message (macro expansion) ─────────────────────────────────
     @testset "@on_message macro expansion" begin
         expr = @macroexpand @on_message client (c, msg) -> nothing
         @test expr isa Expr
@@ -499,7 +491,6 @@ end
         @test occursin("MessageCreate", expr_str)
     end
 
-    # ─── @user_command ─────────────────────────────────────────────────
     @testset "@user_command" begin
 
         @testset "2-arg form (name, handler)" begin
@@ -529,19 +520,19 @@ end
         end
 
         @testset "drains pending checks" begin
-            Accord.drain_pending_checks!()
+            drain_pending_checks!()
             tree = CommandTree()
             mock_client = (; command_tree=tree)
 
-            lock(Accord._CHECKS_LOCK) do
-                push!(Accord._PENDING_CHECKS, ctx -> true)
+            lock(_CHECKS_LOCK) do
+                push!(_PENDING_CHECKS, ctx -> true)
             end
 
             @user_command mock_client "Check User" function(ctx) end
 
             cmd = tree.commands["Check User"]
             @test length(cmd.checks) == 1
-            @test isempty(Accord._PENDING_CHECKS)
+            @test isempty(_PENDING_CHECKS)
         end
 
         @testset "invalid args throws error" begin
@@ -551,7 +542,6 @@ end
         end
     end
 
-    # ─── @message_command ──────────────────────────────────────────────
     @testset "@message_command" begin
 
         @testset "2-arg form (name, handler)" begin
@@ -581,21 +571,20 @@ end
         end
 
         @testset "drains pending checks" begin
-            Accord.drain_pending_checks!()
+            drain_pending_checks!()
             tree = CommandTree()
             mock_client = (; command_tree=tree)
 
-            lock(Accord._CHECKS_LOCK) do
-                push!(Accord._PENDING_CHECKS, ctx -> true)
-                push!(Accord._PENDING_CHECKS, ctx -> false)
+            lock(_CHECKS_LOCK) do
+                push!(_PENDING_CHECKS, ctx -> true)
+                push!(_PENDING_CHECKS, ctx -> false)
             end
 
             @message_command mock_client "Pin Message" function(ctx) end
 
             cmd = tree.commands["Pin Message"]
             @test length(cmd.checks) == 2
-            @test isempty(Accord._PENDING_CHECKS)
+            @test isempty(_PENDING_CHECKS)
         end
     end
-
 end

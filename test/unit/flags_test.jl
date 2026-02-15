@@ -1,4 +1,7 @@
-@testset "Flags" begin
+@testitem "Flags" tags=[:fast] begin
+    using Accord, JSON3
+    using Accord: has_flag
+
     @testset "Intents" begin
         @test IntentGuilds.value == 1 << 0
         @test IntentGuildMembers.value == 1 << 1

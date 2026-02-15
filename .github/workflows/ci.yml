@@ -29,10 +29,16 @@ jobs:
         with:
           version: ${{ matrix.julia-version }}
       - uses: julia-actions/cache@v2
+      - name: Cache ReTestItems
+        uses: actions/cache@v4
+        with:
+          path: .retestitems
+          key: ${{ runner.os }}-retestitems-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-retestitems-
       - uses: julia-actions/julia-buildpkg@v1
-      - uses: julia-actions/julia-runtest@v1
-        env:
-          ACCORD_INTEGRATION_TESTS: '1'
+      - name: Run Tests
+        run: julia --project -e 'include("test/runtests.jl")' all
       - uses: julia-actions/julia-processcoverage@v1
       - name: Coverage summary and threshold check
         run: |
@@ -47,7 +53,7 @@ jobs:
             println("----------------------------------------------")
             println("Coverage: $covered / $relevant lines ($pct%)")
             println("----------------------------------------------")
-            min_coverage = 15.0
+            min_coverage = 50.0
             if pct < min_coverage
               error("Coverage $pct% is below minimum threshold of $min_coverage%")
             end
@@ -69,11 +75,16 @@ jobs:
         with:
           version: '1'
       - uses: julia-actions/cache@v2
+      - name: Cache ReTestItems
+        uses: actions/cache@v4
+        with:
+          path: .retestitems
+          key: ${{ runner.os }}-retestitems-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-retestitems-
       - uses: julia-actions/julia-buildpkg@v1
       - name: Run JET analysis
-        env:
-          ACCORD_JET: '1'
-        run: julia --project=. -e 'using Pkg; Pkg.test()'
+        run: julia --project -e 'include("test/runtests.jl")' quality
 
   docs:
     name: Documentation

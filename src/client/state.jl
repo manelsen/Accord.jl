@@ -54,6 +54,12 @@ function Base.get(store::Store{T}, id::Snowflake, default=nothing) where T
     return default
 end
 
+function Base.getindex(store::Store{T}, id::Snowflake) where T
+    val = get(store, id)
+    isnothing(val) && throw(KeyError(id))
+    return val
+end
+
 function Base.setindex!(store::Store{T}, value::T, id::Snowflake) where T
     store.strategy isa CacheNever && return value
 

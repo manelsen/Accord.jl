@@ -1,4 +1,6 @@
-@testset "Types JSON round-trip" begin
+@testitem "Types JSON round-trip" tags=[:fast] begin
+    using Accord, JSON3
+
     @testset "User" begin
         json = """{"id":"123456789","username":"testuser","discriminator":"0","global_name":"Test User","avatar":"abc123","bot":false}"""
         user = JSON3.read(json, User)
