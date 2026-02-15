@@ -37,8 +37,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-retestitems-
       - uses: julia-actions/julia-buildpkg@v1
-      - name: Run Tests
-        run: julia --project -e 'using Pkg; Pkg.test(test_args=["all"])'
+      - uses: julia-actions/julia-runtest@v1
       - uses: julia-actions/julia-processcoverage@v1
       - name: Coverage summary and threshold check
         run: |
@@ -98,6 +97,13 @@ jobs:
         with:
           version: '1'
       - uses: julia-actions/cache@v2
+      - name: Cache ReTestItems
+        uses: actions/cache@v4
+        with:
+          path: .retestitems
+          key: ${{ runner.os }}-retestitems-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-retestitems-
       - name: Install dependencies
         run: |
           julia --project=docs/ -e '
