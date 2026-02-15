@@ -4,34 +4,34 @@ using Accord
 # ── Accord.jl Granular Test Runner ─────────────────────────────────────────
 
 function run_accord_tests()
-    # Se passarmos um argumento, tratamos como a tag da categoria (unit, integration, aqua, jet)
-    # Se não passar nada ou for "all", roda tudo (exceto jet/aqua por padrão local)
-    
     category = !isempty(ARGS) ? ARGS[1] : "default"
-    
-    if category == "unit"
-        selected_tags = [:unit]
-    elseif category == "integration"
-        selected_tags = [:integration]
-    elseif category == "aqua"
-        selected_tags = [:aqua]
-    elseif category == "jet"
-        selected_tags = [:jet]
-    elseif category == "quality"
-        selected_tags = [:aqua, :jet]
-    elseif category == "all"
-        selected_tags = nothing # Tudo
-    else
-        # Local default: Unit + Integration
-        selected_tags = ti_tags -> !(:aqua in ti_tags || :jet in ti_tags)
-    end
-
     println("▶ Accord.jl Runner | Category: $category")
 
+    # Definimos a função de filtro baseada na categoria
+    function ti_filter(ti)
+        if category == "unit"
+            return :unit in ti.tags
+        elseif category == "integration"
+            return :integration in ti.tags
+        elseif category == "aqua"
+            return :aqua in ti.tags
+        elseif category == "jet"
+            return :jet in ti.tags
+        elseif category == "quality"
+            return :aqua in ti.tags || :jet in ti.tags
+        elseif category == "all"
+            return true
+        else
+            # Local default: Unit + Integration (no JET/Aqua)
+            return !(:aqua in ti.tags || :jet in ti.tags)
+        end
+    end
+
+    # ReTestItems.runtests(filter_func, Module; ...)
     ReTestItems.runtests(
+        ti_filter,
         Accord;
-        tags = selected_tags,
-        nworkers = 0, # Processo principal para melhor aproveitamento de cache/cobertura
+        nworkers = 0, 
         report = true,
         verbose_results = true
     )
