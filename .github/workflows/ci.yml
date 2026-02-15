@@ -20,6 +20,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
+      max-parallel: 5 # Evita sobrecarregar o servidor de pacotes
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         julia-version: ['1']
@@ -45,6 +46,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-retestitems-${{ matrix.category }}-
       - name: Run Tests
+        env:
+          JULIA_PKG_SERVER: "" # Força o uso de Git para o registro em caso de falha no PkgServer
         run: julia --project -e 'using Pkg; Pkg.test(test_args=["${{ matrix.category }}"])'
       - uses: julia-actions/julia-processcoverage@v1
         if: matrix.os == 'ubuntu-latest'
