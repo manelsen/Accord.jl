@@ -5,7 +5,7 @@ Connects to Discord, captures real payloads, and saves them as JSON fixtures
 for integration testing. No Accord.jl dependency — uses raw HTTP + JSON3.
 
 Usage:
-    DISCORD_TOKEN="Bot YOUR_TOKEN" julia test/integration/capture_payloads.jl
+    DISCORD_TOKEN="Bot YOUR_TOKEN" julia scripts/capture_payloads.jl
 
 Optional env vars:
     CAPTURE_DURATION   — seconds to stay connected (default: 30)
@@ -27,7 +27,7 @@ const TEST_GUILD = get(ENV, "TEST_GUILD_ID", "")
 
 const API_BASE = "https://discord.com/api/v10"
 const GATEWAY_URL = "wss://gateway.discord.gg/?v=10&encoding=json"
-const FIXTURES_DIR = joinpath(@__DIR__, "fixtures")
+const FIXTURES_DIR = joinpath(@__DIR__, "..", "test", "integration", "fixtures")
 
 # Minimal intents: guilds + guild messages + message content + auto mod
 const INTENTS = UInt32(1 << 0 | 1 << 9 | 1 << 15 | 1 << 20 | 1 << 21)

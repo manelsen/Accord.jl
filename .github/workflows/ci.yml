@@ -43,11 +43,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-retestitems-
       
-      # Rodamos Unit + Integration + Aqua em um único comando Pkg.test.
-      # Isso paga o imposto de compilação apenas UMA VEZ por OS.
-      - name: Run Tests (Unit, Integration, Aqua)
+      # Unit + Integration — paga o imposto de compilação apenas UMA VEZ por OS.
+      - name: Run Tests (Unit, Integration)
         env:
-          JULIA_PKG_SERVER: "" # Segurança contra soluços do PkgServer
+          JULIA_PKG_SERVER: ""
         run: julia --project -e 'using Pkg; Pkg.test(test_args=["default"])'
       
       - uses: julia-actions/julia-processcoverage@v1
@@ -60,7 +59,7 @@ jobs:
           path: lcov.info
 
   jet:
-    name: Static Analysis (JET)
+    name: Code Quality (Aqua + JET)
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
@@ -76,10 +75,10 @@ jobs:
         with:
           path: .retestitems
           key: ${{ runner.os }}-retestitems-jet-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
-      - name: Run JET analysis
+      - name: Run Aqua + JET analysis
         env:
           JULIA_PKG_SERVER: ""
-        run: julia --project -e 'using Pkg; Pkg.test(test_args=["jet"])'
+        run: julia --project -e 'using Pkg; Pkg.test(test_args=["quality"])'
 
   docs:
     name: Documentation

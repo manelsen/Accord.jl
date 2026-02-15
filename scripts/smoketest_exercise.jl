@@ -6,7 +6,7 @@ Registers a slash command, sends messages, embeds, reactions, and cleans up.
 
 Usage:
     DISCORD_TOKEN="Bot ..." TEST_GUILD_ID="..." TEST_CHANNEL_ID="..." \
-        julia --project=. test/integration/smoketest_exercise.jl
+        julia --project=. scripts/smoketest_exercise.jl
 
 The bot will:
   1. Connect and wait for READY
