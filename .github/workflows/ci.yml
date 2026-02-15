@@ -38,7 +38,7 @@ jobs:
             ${{ runner.os }}-retestitems-
       - uses: julia-actions/julia-buildpkg@v1
       - name: Run Tests
-        run: julia --project -e 'include("test/runtests.jl")' all
+        run: julia --project -e 'using Pkg; Pkg.test(test_args=["all"])'
       - uses: julia-actions/julia-processcoverage@v1
       - name: Coverage summary and threshold check
         run: |
@@ -84,7 +84,7 @@ jobs:
             ${{ runner.os }}-retestitems-
       - uses: julia-actions/julia-buildpkg@v1
       - name: Run JET analysis
-        run: julia --project -e 'include("test/runtests.jl")' quality
+        run: julia --project -e 'using Pkg; Pkg.test(test_args=["quality"])'
 
   docs:
     name: Documentation
