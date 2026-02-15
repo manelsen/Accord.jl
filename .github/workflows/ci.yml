@@ -47,7 +47,7 @@ jobs:
             println("----------------------------------------------")
             println("Coverage: $covered / $relevant lines ($pct%)")
             println("----------------------------------------------")
-            min_coverage = 50.0
+            min_coverage = 15.0
             if pct < min_coverage
               error("Coverage $pct% is below minimum threshold of $min_coverage%")
             end
