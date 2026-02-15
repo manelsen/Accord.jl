@@ -28,7 +28,7 @@ function run_accord_tests()
     ReTestItems.runtests(
         ti_filter,
         Accord;
-        nworkers = get(ENV, "CI", "") == "true" ? 4 : 0, 
+        nworkers = 0, 
         report = true,
         verbose_results = !isnothing(target_name) # Se for focado, mostre detalhes
     )
