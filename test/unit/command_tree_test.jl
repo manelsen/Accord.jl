@@ -884,7 +884,84 @@
 
     @testset "cooldown invalid bucket" begin
         @test_throws ErrorException cooldown(5; per=:invalid)
-        # The error is thrown at call time from _cooldown_key
+    end
+
+    @testset "cooldown expiry allows re-use" begin
+        client = mock_client(application_id=Snowflake(100))
+        start_ratelimiter!(client.ratelimiter)
+        try
+            u = mock_user(id=Snowflake(42))
+            m = Member(user=u, roles=Snowflake[])
+            interaction = slash_interaction(guild_id=Snowflake(111), member=m)
+
+            check = cooldown(0.1; per=:user)  # 100ms cooldown
+            ctx1 = InteractionContext(client, interaction)
+            @test check(ctx1) == true
+
+            ctx2 = InteractionContext(client, interaction)
+            @test check(ctx2) == false  # Still in cooldown
+
+            sleep(0.2)  # Wait for cooldown to expire
+
+            ctx3 = InteractionContext(client, interaction)
+            @test check(ctx3) == true  # Cooldown expired, should pass
+        finally
+            stop_ratelimiter!(client.ratelimiter)
+        end
+    end
+
+    @testset "cooldown concurrent access is safe" begin
+        client = mock_client(application_id=Snowflake(100))
+        start_ratelimiter!(client.ratelimiter)
+        try
+            check = cooldown(100.0; per=:global)  # Long cooldown, global bucket
+
+            # Launch many tasks concurrently — exactly one should pass
+            n_tasks = 20
+            results = Vector{Bool}(undef, n_tasks)
+            @sync for i in 1:n_tasks
+                Threads.@spawn begin
+                    u = mock_user(id=Snowflake(i))
+                    m = Member(user=u, roles=Snowflake[])
+                    interaction = slash_interaction(guild_id=Snowflake(111), member=m)
+                    ctx = InteractionContext(client, interaction)
+                    results[i] = check(ctx)
+                end
+            end
+
+            # Exactly one task should have passed the cooldown
+            @test count(results) == 1
+        finally
+            stop_ratelimiter!(client.ratelimiter)
+        end
+    end
+
+    @testset "cooldown per-user different users independent" begin
+        client = mock_client(application_id=Snowflake(100))
+        start_ratelimiter!(client.ratelimiter)
+        try
+            check = cooldown(100.0; per=:user)
+
+            # User A
+            u_a = mock_user(id=Snowflake(1))
+            m_a = Member(user=u_a, roles=Snowflake[])
+            int_a = slash_interaction(guild_id=Snowflake(111), member=m_a)
+            ctx_a = InteractionContext(client, int_a)
+            @test check(ctx_a) == true  # User A first call
+
+            # User B — different user, should not be affected by A's cooldown
+            u_b = mock_user(id=Snowflake(2))
+            m_b = Member(user=u_b, roles=Snowflake[])
+            int_b = slash_interaction(guild_id=Snowflake(111), member=m_b)
+            ctx_b = InteractionContext(client, int_b)
+            @test check(ctx_b) == true  # User B first call
+
+            # User A again — should be blocked
+            ctx_a2 = InteractionContext(client, int_a)
+            @test check(ctx_a2) == false
+        finally
+            stop_ratelimiter!(client.ratelimiter)
+        end
     end
 
     # ── _cooldown_key ────────────────────────────────────────────────────────────
