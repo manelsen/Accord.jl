@@ -30,8 +30,8 @@
     # ─── Preflight ───────────────────────────────────────────────────────────────
 
     if !isdir(FIXTURES_DIR) || !has_fixture("_manifest")
-        @warn "No fixtures found at $FIXTURES_DIR. Skipping integration tests."
-        @test_skip true
+        @error "Fixtures missing at $FIXTURES_DIR — run scripts/capture_payloads.jl to generate them."
+        @test false
     else
         manifest = JSON3.read(read(joinpath(FIXTURES_DIR, "_manifest.json"), String), Dict{String,Any})
         @info "Loading fixtures" captured_at=manifest["captured_at"] categories=manifest["categories"]

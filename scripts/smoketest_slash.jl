@@ -12,7 +12,7 @@ This script:
 
 Usage:
     DISCORD_TOKEN="Bot ..." TEST_GUILD_ID="..." TEST_CHANNEL_ID="..." \
-        julia --project=. test/integration/smoketest_slash.jl
+        julia --project=. scripts/smoketest_slash.jl
 
     Then invoke each command in Discord:
       /ping          — immediate text response

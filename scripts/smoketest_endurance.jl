@@ -6,7 +6,7 @@ Logs reconnects, heartbeat health, errors, and memory usage.
 
 Usage:
     DISCORD_TOKEN="Bot ..." TEST_CHANNEL_ID="..." \
-        julia --project=. test/integration/smoketest_endurance.jl
+        julia --project=. scripts/smoketest_endurance.jl
 
 Optional env vars:
     ENDURANCE_HOURS  — how long to run (default: 24)

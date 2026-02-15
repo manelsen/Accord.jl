@@ -137,7 +137,7 @@ julia --project=. -e 'using Pkg; Pkg.test()'
 ### Coverage
 Generate a local HTML coverage report using `Coverage.jl`:
 ```bash
-julia test/coverage.jl
+julia scripts/coverage.jl
 ```
 The report will be generated in the `coverage/` directory (if configured) or summarized in the terminal.
 
