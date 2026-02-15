@@ -10,6 +10,9 @@ Mocking.activate()
 @testset "REST Mocking Integration" begin
     client = Client("mock_token")
     
+    # Start rate limiter to avoid deadlocks in REST calls
+    Accord.start_ratelimiter!(client.ratelimiter)
+    
     # We mock 'submit_rest' because it's the point where the job is actually processed
     # In a real scenario, submit_rest would use HTTP.jl
     
@@ -45,4 +48,7 @@ Mocking.activate()
             @info "Mocked Create Message: $(msg.content)"
         end
     end
+
+    # Stop rate limiter
+    Accord.stop_ratelimiter!(client.ratelimiter)
 end
