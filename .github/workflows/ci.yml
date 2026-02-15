@@ -42,7 +42,7 @@ jobs:
             Pkg.add("Coverage")
             using Coverage
             coverage = process_folder("src")
-            relevant, covered = get_summary(coverage)
+            covered, relevant = get_summary(coverage)
             pct = round(covered / relevant * 100, digits=2)
             println("----------------------------------------------")
             println("Coverage: $covered / $relevant lines ($pct%)")
