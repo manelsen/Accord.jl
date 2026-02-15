@@ -33,6 +33,7 @@ mutable struct RateLimiter
     jobs::Channel{RestJob}
     task::Nullable{Task}
     running::Bool
+    request_handler::Function # (method, url, headers, body) -> HTTP.Response
 end
 
 function RateLimiter(;global_limit::Int=50)
@@ -42,6 +43,7 @@ function RateLimiter(;global_limit::Int=50)
         0.0, global_limit, global_limit,
         Channel{RestJob}(256),
         nothing, false,
+        (m, u, h, b) -> HTTP.request(m, u, h, b; status_exception=false, retry=false)
     )
 end
 
@@ -108,17 +110,7 @@ function _process_job(rl::RateLimiter, job::RestJob)
 
         # Execute request
         try
-            kwargs = Dict{Symbol,Any}(
-                :status_exception => false,
-                :retry => false,
-            )
-            if !isnothing(job.body)
-                kwargs[:body] = job.body
-            end
-            resp = @mock HTTP.request(
-                job.method, job.url, job.headers;
-                kwargs...,
-            )
+            resp = rl.request_handler(job.method, job.url, job.headers, job.body)
 
             # Update rate limit state from headers
             _update_ratelimit(rl, job.route, resp)
