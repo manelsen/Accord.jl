@@ -24,7 +24,6 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
         julia-version: ['1']
         category: [unit, integration, aqua, jet]
-        # Opcional: Testar Julia 1.11 apenas no Linux para economizar
         include:
           - os: ubuntu-latest
             julia-version: '1.11'
@@ -45,7 +44,6 @@ jobs:
           key: ${{ runner.os }}-retestitems-${{ matrix.category }}-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
           restore-keys: |
             ${{ runner.os }}-retestitems-${{ matrix.category }}-
-      - uses: julia-actions/julia-buildpkg@v1
       - name: Run Tests
         run: julia --project -e 'using Pkg; Pkg.test(test_args=["${{ matrix.category }}"])'
       - uses: julia-actions/julia-processcoverage@v1
