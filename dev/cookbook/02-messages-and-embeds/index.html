@@ -37,7 +37,7 @@ create_message(client, channel_id; embeds=[e])</code></pre><h3 id="Color-Referen
     :red     =&gt; 0xED4245,
     :white   =&gt; 0xFFFFFF,
     :black   =&gt; 0x23272A,
-)</code></pre><h2 id="3.-Multiple-Embeds"><a class="docs-heading-anchor" href="#3.-Multiple-Embeds">3. Multiple Embeds</a><a id="3.-Multiple-Embeds-1"></a><a class="docs-heading-anchor-permalink" href="#3.-Multiple-Embeds" title="Permalink"></a></h2><p>Send up to 10 embeds per message:</p><pre><code class="language-julia hljs">embeds = [
+)</code></pre><h2 id="3.-Multiple-Embeds"><a class="docs-heading-anchor" href="#3.-Multiple-Embeds">3. Multiple Embeds</a><a id="3.-Multiple-Embeds-1"></a><a class="docs-heading-anchor-permalink" href="#3.-Multiple-Embeds" title="Permalink"></a></h2><div class="admonition is-info" id="Embed-Limits-cfe4b96408f6bc56"><header class="admonition-header">Embed Limits<a class="admonition-anchor" href="#Embed-Limits-cfe4b96408f6bc56" title="Permalink"></a></header><div class="admonition-body"><p>Discord imposes limits on embeds:</p><ul><li><strong>Total characters</strong>: 6000 across all embeds in a message</li><li><strong>Fields</strong>: Maximum 25 per embed</li><li><strong>Field name</strong>: 256 characters maximum</li><li><strong>Field value</strong>: 1024 characters maximum</li><li><strong>Description</strong>: 4096 characters maximum</li><li><strong>Up to 10 embeds per message</strong></li></ul></div></div><pre><code class="language-julia hljs">embeds = [
     embed(title=&quot;Embed 1&quot;, description=&quot;First&quot;, color=0xED4245),
     embed(title=&quot;Embed 2&quot;, description=&quot;Second&quot;, color=0x57F287),
     embed(title=&quot;Embed 3&quot;, description=&quot;Third&quot;, color=0x5865F2),
@@ -49,14 +49,14 @@ create_reaction(client, channel_id, message_id, &quot;👍&quot;)
 # Custom emoji — use format name:id
 create_reaction(client, channel_id, message_id, &quot;custom_emoji:123456789012345678&quot;)</code></pre><h3 id="Reaction-Role-System"><a class="docs-heading-anchor" href="#Reaction-Role-System">Reaction-Role System</a><a id="Reaction-Role-System-1"></a><a class="docs-heading-anchor-permalink" href="#Reaction-Role-System" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Map emoji to role IDs
 const REACTION_ROLES = Dict(
-    &quot;🎮&quot; =&gt; Snowflake(111111111111111111),  # Gamer role
-    &quot;🎨&quot; =&gt; Snowflake(222222222222222222),  # Artist role
-    &quot;🎵&quot; =&gt; Snowflake(333333333333333333),  # Music role
+    &quot;🎮&quot; =&gt; [`Snowflake`](@ref)(111111111111111111),  # Gamer role
+    &quot;🎨&quot; =&gt; [`Snowflake`](@ref)(222222222222222222),  # Artist role
+    &quot;🎵&quot; =&gt; [`Snowflake`](@ref)(333333333333333333),  # Music role
 )
 
-const ROLE_MESSAGE_ID = Snowflake(444444444444444444)  # the message to watch
+const ROLE_MESSAGE_ID = [`Snowflake`](@ref)(444444444444444444)  # the message to watch
 
-on(client, MessageReactionAdd) do c, event
+on(client, [`MessageReactionAdd`](@ref)) do c, event
     event.message_id != ROLE_MESSAGE_ID &amp;&amp; return
     ismissing(event.member) &amp;&amp; return
 
@@ -73,7 +73,7 @@ on(client, MessageReactionAdd) do c, event
     @info &quot;Added role&quot; role=role_id user=event.member.user.id
 end
 
-on(client, MessageReactionRemove) do c, event
+on(client, [`MessageReactionRemove`](@ref)) do c, event
     event.message_id != ROLE_MESSAGE_ID &amp;&amp; return
 
     emoji_name = event.emoji.name
@@ -95,10 +95,15 @@ edit_message(client, channel_id, message_id;
 # Delete a single message
 delete_message(client, channel_id, message_id)
 
-# Bulk delete messages (2-100 messages, &lt; 14 days old)
+# Bulk delete messages
 message_ids = [Snowflake(id1), Snowflake(id2), Snowflake(id3)]
 bulk_delete_messages(client.ratelimiter, channel_id;
-    token=client.token, message_ids=message_ids)</code></pre><h2 id="6.-File-Attachments"><a class="docs-heading-anchor" href="#6.-File-Attachments">6. File Attachments</a><a id="6.-File-Attachments-1"></a><a class="docs-heading-anchor-permalink" href="#6.-File-Attachments" title="Permalink"></a></h2><p>Send files using the <code>files</code> parameter as a vector of <code>(filename, data)</code> tuples:</p><pre><code class="language-julia hljs"># Send a text file
+    token=client.token, message_ids=message_ids)
+
+!!! warning &quot;bulk_delete_messages Constraints&quot;
+    - Must delete between **2 and 100 messages** at a time
+    - Messages must be **less than 14 days old**
+    - Messages older than 14 days must be deleted individually with [`delete_message`](@ref)</code></pre><h2 id="6.-File-Attachments"><a class="docs-heading-anchor" href="#6.-File-Attachments">6. File Attachments</a><a id="6.-File-Attachments-1"></a><a class="docs-heading-anchor-permalink" href="#6.-File-Attachments" title="Permalink"></a></h2><p>Send files using the <code>files</code> parameter as a vector of <code>(filename, data)</code> tuples:</p><pre><code class="language-julia hljs"># Send a text file
 create_message(client, channel_id;
     content=&quot;Here&#39;s a log file:&quot;,
     files=[(&quot;log.txt&quot;, Vector{UInt8}(codeunits(&quot;Line 1\nLine 2\nLine 3&quot;)))]
@@ -158,4 +163,4 @@ on(client, MessageCreate) do c, event
         )
         create_message(c, msg.channel_id; embeds=[e])
     end
-end</code></pre><hr/><p><strong>Next steps:</strong> <a href="../03-slash-commands/">Recipe 03 — Slash Commands</a> to replace prefix commands with Discord&#39;s native slash commands.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../01-basic-bot/">« Your First Bot</a><a class="docs-footer-nextpage" href="../03-slash-commands/">Slash Commands »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Monday 16 February 2026 18:22">Monday 16 February 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end</code></pre><hr/><p><strong>Next steps:</strong> <a href="../03-slash-commands/">Recipe 03 — Slash Commands</a> to replace prefix commands with Discord&#39;s native slash commands.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../01-basic-bot/">« Your First Bot</a><a class="docs-footer-nextpage" href="../03-slash-commands/">Slash Commands »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Monday 16 February 2026 19:46">Monday 16 February 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
