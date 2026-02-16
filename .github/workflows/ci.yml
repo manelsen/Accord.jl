@@ -47,6 +47,7 @@ jobs:
       - name: Run Tests (Unit, Integration)
         env:
           JULIA_PKG_SERVER: ""
+          ACCORD_TEST_WORKERS: ${{ matrix.os == 'windows-latest' && '0' || '6' }}
         run: julia --project -e 'using Pkg; Pkg.test(test_args=["default"])'
       
       - uses: julia-actions/julia-processcoverage@v1
