@@ -138,6 +138,13 @@ end
 Use this to customize how your bot handles errors that occur during event processing.
 
 Set a custom error handler. Receives (client, event, error).
+
+# Example
+```julia
+on_error(client) do c, event, err
+    @error "Unhandled error" event_type=typeof(event) exception=err
+end
+```
 """
 function on_error(handler::Function, client::Client)
     client.event_handler.error_handler = handler
@@ -150,6 +157,17 @@ Use this to connect your bot to Discord and begin processing events.
 
 Connect to Discord and start processing events.
 If `blocking=true` (default), this blocks until the client is stopped.
+
+# Example
+```julia
+# Blocking (default) — blocks until Ctrl-C or stop()
+start(client)
+
+# Non-blocking — useful in scripts or REPL
+start(client; blocking=false)
+wait_until_ready(client)
+println("Bot is online!")
+```
 """
 function start(client::Client; blocking::Bool=true)
     client.running = true
@@ -201,6 +219,14 @@ end
 Use this to gracefully shut down your bot and disconnect from Discord.
 
 Disconnect from Discord and stop processing events.
+
+# Example
+```julia
+@slash_command client "shutdown" "Shut down the bot" function(ctx)
+    respond(ctx; content="Shutting down...")
+    stop(ctx.client)
+end
+```
 """
 function stop(client::Client)
     client.running = false
@@ -403,6 +429,15 @@ Send a message to a channel.
 - `files`: Optional files to upload.
 - `tts::Bool`: Whether to send as a text-to-speech message.
 - `message_reference`: Optional dictionary to reply to a specific message.
+
+# Example
+```julia
+create_message(client, channel_id;
+    content="Check this out!",
+    embeds=[embed(title="Hello", description="An embed", color=0x5865F2)],
+    components=[action_row([button(label="Click", custom_id="btn")])]
+)
+```
 """
 function create_message(client::Client, channel_id::Snowflake; content::String="", embeds::Vector=[], components::Vector=[], files=nothing, tts::Bool=false, message_reference=nothing)
     body = Dict{String, Any}()
@@ -477,6 +512,15 @@ end
 Use this to add an emoji reaction to a message on behalf of your bot.
 
 Create a reaction on a message. The `emoji` parameter should be a URL-encoded string: `"👍"` or `"custom_emoji:123456"`.
+
+# Example
+```julia
+on(client, MessageCreate) do c, event
+    if contains(event.message.content, "hello")
+        create_reaction(c, event.message.channel_id, event.message.id, "👋")
+    end
+end
+```
 """
 function create_reaction(client::Client, channel_id::Snowflake, message_id::Snowflake, emoji::String)
     create_reaction(client.ratelimiter, channel_id, message_id, emoji; token=client.token)
@@ -562,6 +606,15 @@ end
 Use this to change your bot's online status and activity display.
 
 Send a gateway command to update the bot's presence/status.
+
+# Example
+```julia
+# Set "Playing Accord.jl" status
+update_presence(client; activities=[activity("Accord.jl", ActivityTypes.GAME)])
+
+# Set "Do Not Disturb" with custom status
+update_presence(client; status="dnd", activities=[activity("maintenance", ActivityTypes.WATCHING)])
+```
 """
 function update_presence(client::Client; status::String="online", activities::Vector=[], afk::Bool=false, since=nothing)
     for shard in client.shards
@@ -581,6 +634,15 @@ end
 Use this to fetch member information for a guild through the gateway.
 
 Request guild members via the gateway.
+
+# Example
+```julia
+# Fetch all members whose name starts with "J"
+request_guild_members(client, guild_id; query="J", limit=10)
+
+# Fetch specific users by ID
+request_guild_members(client, guild_id; user_ids=[Snowflake("123456789")])
+```
 """
 function request_guild_members(client::Client, guild_id::Snowflake; query::String="", limit::Int=0, presences::Bool=false, user_ids=nothing, nonce=nothing)
     shard_id = shard_for_guild(guild_id, client.num_shards)

@@ -127,6 +127,12 @@ end
 Use this to send silent frames and maintain the voice connection without playing audio.
 
 Generates silence frames. Useful for keeping the voice connection alive.
+
+# Example
+```julia
+# Send 5 seconds of silence to keep the connection alive
+play!(vc, SilenceSource(5000))
+```
 """
 mutable struct SilenceSource <: AbstractAudioSource
     frames_remaining::Int

@@ -248,6 +248,14 @@ It matches the interaction type and ID to a registered handler in the tree.
 
 # Returns
 - The result of the handler function, or `nothing` if no handler was found.
+
+# Example
+```julia
+# This is wired automatically by Client, but can be called manually:
+on(client, InteractionCreate) do c, event
+    dispatch_interaction!(c.command_tree, c, event.interaction)
+end
+```
 """
 function dispatch_interaction!(tree::CommandTree, client, interaction::Interaction)
     ctx = InteractionContext(client, interaction)
