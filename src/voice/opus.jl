@@ -1,4 +1,7 @@
 # Opus codec wrapper via Opus_jll
+#
+# Internal module: Wraps the Opus codec library for encoding PCM audio to Opus
+# and decoding Opus back to PCM. Uses 48kHz stereo at 20ms frame size (Discord standard).
 
 using Opus_jll
 

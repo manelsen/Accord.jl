@@ -1,4 +1,7 @@
 # Heartbeat actor — runs as a Task, sends heartbeats at the specified interval
+#
+# Internal module: Sends OP 1 Heartbeat payloads at the interval specified by
+# Discord's HELLO payload. Detects zombie connections when ACKs stop arriving.
 
 mutable struct HeartbeatState
     interval_ms::Int

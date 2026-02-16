@@ -1,4 +1,7 @@
 # Shard management — multi-shard support via Tasks
+#
+# Internal module: Manages the lifecycle of individual gateway shards. Each shard
+# runs as an async Task and communicates via Channels for events and commands.
 
 """
     ShardInfo

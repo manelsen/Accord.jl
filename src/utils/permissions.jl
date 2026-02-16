@@ -1,4 +1,8 @@
 # Permission computation utilities
+#
+# Internal module: Computes effective permissions for guild members by combining
+# role permissions and applying channel-specific overwrites, following Discord's
+# permission hierarchy algorithm.
 
 """
     compute_base_permissions(member_roles::Vector{Snowflake}, guild_roles::Vector{Role}, owner_id::Snowflake, user_id::Snowflake) -> Permissions

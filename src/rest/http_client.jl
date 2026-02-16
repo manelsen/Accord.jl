@@ -1,4 +1,8 @@
 # HTTP client layer for REST API requests
+#
+# Internal module: Provides convenience functions (discord_get, discord_post, etc.)
+# for making Discord API requests through the RateLimiter. Handles JSON serialization,
+# multipart file uploads, and audit log reason headers.
 
 """
     discord_request(rl::RateLimiter, route::Route; kwargs...) -> HTTP.Response

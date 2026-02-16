@@ -1,4 +1,7 @@
 # Voice UDP transport — IP discovery and RTP packet handling
+#
+# Internal module: Handles RTP packet construction/parsing, IP discovery protocol,
+# and encrypted voice packet transmission over UDP.
 
 using Sockets
 

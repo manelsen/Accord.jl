@@ -1,4 +1,7 @@
 # Event dispatch: parse raw gateway payload → typed event struct
+#
+# Internal module: Converts raw JSON dictionaries from gateway DISPATCH payloads
+# into strongly-typed AbstractEvent subtypes using JSON3 deserialization.
 
 """
     parse_event(event_name::String, data::Dict) -> AbstractEvent

@@ -139,6 +139,10 @@ Use this to customize how your bot handles errors that occur during event proces
 
 Set a custom error handler. Receives (client, event, error).
 
+!!! warning
+    If your custom error handler itself throws, the error will be silently lost.
+    Always wrap your error handler body in a `try-catch`.
+
 # Example
 ```julia
 on_error(client) do c, event, err
@@ -157,6 +161,11 @@ Use this to connect your bot to Discord and begin processing events.
 
 Connect to Discord and start processing events.
 If `blocking=true` (default), this blocks until the client is stopped.
+
+!!! note
+    In blocking mode (the default), `start` will not return until [`stop`](@ref) is called
+    or the process receives an interrupt (Ctrl-C). Use `blocking=false` for REPL or
+    script workflows where you need to run code after the bot is online.
 
 # Example
 ```julia

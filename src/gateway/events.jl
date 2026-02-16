@@ -1,5 +1,9 @@
 # Gateway Event Type Hierarchy
 # All events inherit from AbstractEvent for multiple dispatch
+#
+# Internal module: Defines the complete hierarchy of Discord gateway event structs.
+# Each event wraps the relevant Discord object(s) and inherits from AbstractEvent
+# to enable Julia's multiple dispatch for event handling.
 
 """
     AbstractEvent

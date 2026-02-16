@@ -1,4 +1,7 @@
 # Voice encryption via libsodium
+#
+# Internal module: Provides xsalsa20_poly1305 and AEAD XChaCha20-Poly1305 encryption
+# for voice data packets using libsodium FFI bindings.
 
 using libsodium_jll
 

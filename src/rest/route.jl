@@ -1,4 +1,7 @@
 # REST Route abstraction for rate limiting
+#
+# Internal module: Defines the Route struct used to calculate rate limit bucket keys.
+# Major parameters (channel_id, guild_id, webhook_id) are factored into bucket grouping.
 
 """
     Route
