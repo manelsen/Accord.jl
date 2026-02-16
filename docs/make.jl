@@ -1,5 +1,8 @@
 using Documenter, Accord
 
+
+DocMeta.setdocmeta!(Accord, :DocTestSetup, :(using Accord); recursive=true)
+
 makedocs(;
     modules = [Accord],
     sitename = "Accord.jl",

@@ -15,16 +15,18 @@ Generate a Discord API struct with:
 - JSON3/StructTypes Mutable() integration
 
 # Example
-```julia
-@discord_struct MyResource begin
-    id::Snowflake
-    name::String
-    description::Optional{String}
-    count::Int
-end
+```jldoctest
+julia> Accord.@discord_struct MyResource begin
+           id::Snowflake
+           name::String
+           description::Optional{String}
+           count::Int
+       end;
 
-r = MyResource(id=Snowflake(123), name="test")
-r.description  # => missing (auto-defaulted)
+julia> r = MyResource(id=Snowflake(123), name="test");
+
+julia> r.description === missing
+true
 ```
 """
 macro discord_struct(name, block)

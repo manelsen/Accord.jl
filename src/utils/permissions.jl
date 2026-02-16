@@ -13,9 +13,13 @@ Compute the base [`Permissions`](@ref) for a member in a guild (before channel o
 Takes a list of [`Role`](@ref) IDs, all guild roles, the owner's [`Snowflake`](@ref), and the member's ID.
 
 # Example
-```julia
-base = compute_base_permissions(member.roles, guild.roles, guild.owner_id, user.id)
-has_flag(base, PermSendMessages)  # => true/false
+```jldoctest
+julia> r = Role(; id=Snowflake(1), name="foo", color=0, hoist=false, position=0, permissions="8", managed=false, mentionable=false);
+
+julia> base = Accord.compute_base_permissions([Snowflake(1)], [r], Snowflake(2), Snowflake(3));
+
+julia> has_flag(base, PermAdministrator)
+true
 ```
 """
 function compute_base_permissions(member_roles::Vector{Snowflake}, guild_roles::Vector{Role}, owner_id::Snowflake, user_id::Snowflake)
@@ -57,10 +61,17 @@ Use this to calculate final permissions by applying channel-specific overwrites 
 Apply channel [`Overwrite`](@ref)s to base [`Permissions`](@ref).
 
 # Example
-```julia
-base = compute_base_permissions(member.roles, guild.roles, guild.owner_id, user.id)
-channel_perms = compute_channel_permissions(base, member.roles, channel.permission_overwrites, guild.id, user.id)
-has_flag(channel_perms, PermSendMessages)  # => true/false
+```jldoctest
+julia> r = Role(; id=Snowflake(1), name="foo", color=0, hoist=false, position=0, permissions="0", managed=false, mentionable=false);
+
+julia> ow = Overwrite(; id=Snowflake(1), type=0, allow="2048", deny="0");
+
+julia> base = Permissions(0);
+
+julia> channel_perms = Accord.compute_channel_permissions(base, [Snowflake(1)], [ow], Snowflake(2), Snowflake(3));
+
+julia> has_flag(channel_perms, PermSendMessages)
+true
 ```
 """
 function compute_channel_permissions(base::Permissions, member_roles::Vector{Snowflake},

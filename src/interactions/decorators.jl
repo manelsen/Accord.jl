@@ -21,12 +21,13 @@ and a default "permission denied" ephemeral message is sent.
 - `cooldown(seconds; per=:user)` — rate-limit per user/guild/channel/global
 
 # Example
-```julia
-@check has_permissions(:MANAGE_GUILD)
-@check is_owner()
-@slash_command client "nuke" "Owner-only danger command" function(ctx)
-    respond(ctx; content="Boom!")
-end
+```jldoctest
+julia> @check has_permissions(:MANAGE_GUILD);
+
+julia> @check is_owner();
+
+julia> length(Accord._PENDING_CHECKS) # Verifies checks were queued
+2
 ```
 """
 macro check(expr)
@@ -48,10 +49,13 @@ messages with missing `author` or `content`.
 The handler receives `(client, message)` — the [`Message`](@ref) object directly.
 
 # Example
-```julia
-@on_message client (c, msg) -> begin
-    msg.content == "!ping" && reply(c, msg; content="Pong!")
-end
+```jldoctest
+julia> client = Client("token");
+
+julia> @on_message client (c, msg) -> "handled";
+
+julia> length(client.event_handler.handlers[Accord.MessageCreate])
+1
 ```
 """
 macro on_message(client, handler)
@@ -74,22 +78,19 @@ Use this macro to define slash commands that users can invoke with "/command".
 Register a slash command with the client's command tree.
 
 # Example
-```julia
-@slash_command client "greet" "Say hello" function(ctx)
-    respond(ctx; content="Hello!")
-end
+```jldoctest
+julia> client = Client("token");
 
-@slash_command client "double" "Double a number" [
-    @option Integer "number" "Number to double" required=true
-] function(ctx)
-    n = get_option(ctx, "number", 0)
-    respond(ctx; content="Result: \$(n * 2)")
-end
+julia> # Simple command
+       @slash_command client "greet" "Say hello" (ctx) -> "Hello!";
 
-# Guild-specific command:
-@slash_command client :guild_id "info" "Server info" function(ctx)
-    respond(ctx; content="Guild command!")
-end
+julia> # Command with options
+       @slash_command client "double" "Double a number" [
+           @option Integer "number" "Number to double" required=true
+       ] (ctx) -> get_option(ctx, "number", 0) * 2;
+
+julia> # Guild-specific command (Guild ID 123)
+       @slash_command client 123 "info" "Server info" (ctx) -> "Guild command!";
 ```
 """
 macro slash_command(client, args...)
@@ -232,17 +233,12 @@ Register a User Context Menu command (right-click on a user).
 Context menu commands have no description or options.
 
 # Example
-```julia
-@user_command client "User Info" function(ctx)
-    user = target(ctx)
-    respond(ctx; content="User: \$(user.username)")
-end
+```jldoctest
+julia> client = Client("token");
 
-# Guild-specific:
-@user_command client guild_id "Warn User" function(ctx)
-    user = target(ctx)
-    respond(ctx; content="Warned \$(user.username)", ephemeral=true)
-end
+julia> @user_command client "User Info" (ctx) -> "User Info";
+
+julia> @user_command client 123 "Warn User" (ctx) -> "Warned";
 ```
 """
 macro user_command(client, args...)
@@ -277,11 +273,12 @@ Register a Message Context Menu command (right-click on a message).
 Context menu commands have no description or options.
 
 # Example
-```julia
-@message_command client "Bookmark" function(ctx)
-    msg = target(ctx)
-    respond(ctx; content="Bookmarked message \$(msg.id)", ephemeral=true)
-end
+```jldoctest
+julia> client = Client("token");
+
+julia> @message_command client "Bookmark" (ctx) -> "Bookmarked";
+
+julia> @message_command client 123 "Report" (ctx) -> "Reported";
 ```
 """
 macro message_command(client, args...)
@@ -330,19 +327,19 @@ Create a command option dict using a concise syntax. `Type` is one of:
 `Number`, or [`Attachment`](@ref).
 
 # Examples
-```julia
-@option String "query" "Search query" required=true
-@option Integer "count" "How many" required=true min_value=1 max_value=25
-@option Channel "target" "Target channel"
+```jldoctest
+julia> opt = @option String "query" "Search query" required=true;
 
-# Use inside @slash_command:
-@slash_command client "search" "Search for items" [
-    @option String "query" "Search query" required=true
-    @option Integer "limit" "Max results" min_value=1 max_value=25
-] function(ctx)
-    q = get_option(ctx, "query", "")
-    respond(ctx; content="Searching for: \$q")
-end
+julia> opt["name"]
+"query"
+
+julia> opt["type"] == 3 # STRING type
+true
+
+julia> opt = @option Integer "count" "How many" min_value=1 max_value=25;
+
+julia> opt["min_value"]
+1
 ```
 """
 macro option(type_sym, name, description, kwargs...)
