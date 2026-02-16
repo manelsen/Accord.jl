@@ -9,6 +9,11 @@ const GATEWAY_URL = "wss://gateway.discord.gg/?v=$(API_VERSION)&encoding=json"
 """Use this internal struct to send control commands to the gateway connection actor.
 
 [`GatewayCommand`](@ref) sent to the connection actor.
+
+# Example
+```julia
+cmd = GatewayCommand(GatewayOpcodes.PRESENCE_UPDATE, Dict("status" => "online"))
+```
 """
 struct GatewayCommand
     op::Int
@@ -21,6 +26,12 @@ end
 Use this internal struct to track the state of an active gateway WebSocket connection.
 
 Holds state for a single [`GatewaySession`](@ref).
+
+# Example
+```julia
+session = GatewaySession()  # creates a fresh, unconnected session
+session.connected            # => false
+```
 """
 mutable struct GatewaySession
     ws::Nullable{HTTP.WebSockets.WebSocket}

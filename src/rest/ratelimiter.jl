@@ -6,7 +6,13 @@
 
 """Use this internal struct to track rate limit state for each Discord API bucket.
 
-State for a single rate limit bucket."""
+State for a single rate limit bucket.
+
+# Example
+```julia
+bucket = BucketState()  # remaining=1, reset_at=0.0
+```
+"""
 mutable struct BucketState
     remaining::Int
     reset_at::Float64  # Unix timestamp
@@ -18,6 +24,12 @@ BucketState() = BucketState(1, 0.0, nothing)
 """Use this internal struct to queue REST API requests for rate-limited execution.
 
 A REST job submitted to the [`RateLimiter`](@ref).
+
+# Example
+```julia
+result_ch = Channel{Any}(1)
+job = RestJob(route, "GET", url, headers, nothing, result_ch)
+```
 """
 struct RestJob
     route::Route
@@ -64,7 +76,14 @@ end
 
 """Use this to begin processing REST jobs through the rate limiter.
 
-Start the [`RateLimiter`](@ref) actor loop."""
+Start the [`RateLimiter`](@ref) actor loop.
+
+# Example
+```julia
+rl = RateLimiter()
+start_ratelimiter!(rl)  # begins processing in background
+```
+"""
 function start_ratelimiter!(rl::RateLimiter)
     rl.running = true
     rl.task = @async _ratelimiter_loop(rl)
@@ -73,7 +92,13 @@ end
 
 """Use this to gracefully shut down the rate limiter and stop processing jobs.
 
-Stop the [`RateLimiter`](@ref)."""
+Stop the [`RateLimiter`](@ref).
+
+# Example
+```julia
+stop_ratelimiter!(rl)  # closes job channel, stops actor
+```
+"""
 function stop_ratelimiter!(rl::RateLimiter)
     rl.running = false
     close(rl.jobs)
@@ -81,7 +106,14 @@ end
 
 """Use this to queue a REST API request and receive the response through rate limiting.
 
-Submit a [`RestJob`](@ref) and wait for the result."""
+Submit a [`RestJob`](@ref) and wait for the result.
+
+# Example
+```julia
+resp = submit_rest(rl, job)  # blocks until response or error
+resp.status  # => 200
+```
+"""
 function submit_rest(rl::RateLimiter, job::RestJob)
     put!(rl.jobs, job)
     result = take!(job.result)

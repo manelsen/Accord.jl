@@ -10,6 +10,12 @@ Use this struct when making REST API calls to properly handle Discord's rate lim
 
 Represents a Discord REST API route with method, path, and bucket key.
 The bucket key groups routes that share a rate limit.
+
+# Example
+```julia
+route = Route("GET", "/channels/{channel_id}/messages", "channel_id" => "123456")
+url(route)  # => "https://discord.com/api/v10/channels/123456/messages"
+```
 """
 struct Route
     method::String
@@ -42,5 +48,12 @@ end
 
 """Use this to get the complete URL for making HTTP requests to this route.
 
-Full URL for this route."""
+Full URL for this route.
+
+# Example
+```julia
+route = Route("POST", "/channels/123/messages")
+url(route)  # => "https://discord.com/api/v10/channels/123/messages"
+```
+"""
 url(r::Route) = API_BASE * r.path

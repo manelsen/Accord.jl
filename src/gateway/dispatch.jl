@@ -9,6 +9,12 @@
 Use this internal function to convert raw gateway payloads into typed event structures for processing.
 
 Parse a raw gateway dispatch payload into a typed [`AbstractEvent`](@ref) struct.
+
+# Example
+```julia
+data = Dict{String, Any}("content" => "hello", "id" => "123", ...)
+event = parse_event("MESSAGE_CREATE", data)  # => MessageCreate(...)
+```
 """
 function parse_event(event_name::String, data::Dict{String, Any})
     # Look up event type

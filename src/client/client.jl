@@ -21,6 +21,9 @@ Use this as the main entry point for your Discord bot to manage connections, eve
 
 The main Discord client that orchestrates gateway connections, REST API calls, and state caching.
 
+!!! compat "Accord 0.1.0"
+    `Client` and the full event-driven API are available since Accord 0.1.0.
+
 # Constructor
     Client(token::String; intents=IntentAllNonPrivileged, num_shards=1, state=nothing, state_options...)
 

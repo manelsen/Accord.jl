@@ -31,6 +31,9 @@ end
 Organizes and routes slash commands, components, and modal handlers.
 The `client.command_tree` field holds the instance used by the bot.
 
+!!! compat "Accord 0.1.0"
+    `CommandTree` and the declarative command registration API are available since Accord 0.1.0.
+
 # Fields
 - `commands::Dict{String, CommandDefinition}`: Map of command names to definitions.
 - `component_handlers::Dict{String, Function}`: Map of custom_ids to component handlers.
