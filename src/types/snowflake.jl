@@ -7,9 +7,12 @@ Discord Snowflake ID type — a UInt64 wrapper with timestamp extraction.
 Discord sends snowflakes as JSON strings; we parse them to UInt64.
 
 # Example
-```julia
-id = Snowflake("1234567890123456789")
-id = Snowflake(1234567890123456789)
+```jldoctest
+julia> id = Snowflake("1234567890123456789")
+Snowflake(1234567890123456789)
+
+julia> id = Snowflake(1234567890123456789)
+Snowflake(1234567890123456789)
 ```
 """
 struct Snowflake
@@ -27,9 +30,11 @@ const DISCORD_EPOCH = 1420070400000  # ms since Unix epoch (2015-01-01T00:00:00Z
 Extract the creation timestamp from a Snowflake.
 
 # Example
-```julia
-id = Snowflake("175928847299117063")
-timestamp(id)  # => 2016-04-30T11:18:36.163
+```jldoctest
+julia> id = Snowflake("175928847299117063");
+
+julia> timestamp(id)
+2016-04-30T11:18:25.796
 ```
 """
 timestamp(s::Snowflake) = Dates.unix2datetime(((s.value >> 22) + DISCORD_EPOCH) / 1000)
@@ -39,8 +44,9 @@ timestamp(s::Snowflake) = Dates.unix2datetime(((s.value >> 22) + DISCORD_EPOCH) 
 Extract the internal worker ID.
 
 # Example
-```julia
-worker_id(Snowflake("175928847299117063"))  # => 1
+```jldoctest
+julia> Int(Accord.worker_id(Snowflake("175928847299117063")))
+1
 ```
 """
 worker_id(s::Snowflake) = (s.value >> 17) & 0x1F
@@ -50,8 +56,9 @@ worker_id(s::Snowflake) = (s.value >> 17) & 0x1F
 Extract the internal process ID.
 
 # Example
-```julia
-process_id(Snowflake("175928847299117063"))  # => 0
+```jldoctest
+julia> Int(Accord.process_id(Snowflake("175928847299117063")))
+0
 ```
 """
 process_id(s::Snowflake) = (s.value >> 12) & 0x1F
@@ -61,8 +68,9 @@ process_id(s::Snowflake) = (s.value >> 12) & 0x1F
 Extract the increment.
 
 # Example
-```julia
-increment(Snowflake("175928847299117063"))  # => 7
+```jldoctest
+julia> Int(Accord.increment(Snowflake("175928847299117063")))
+7
 ```
 """
 increment(s::Snowflake) = s.value & 0xFFF

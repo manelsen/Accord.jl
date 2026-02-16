@@ -5,10 +5,14 @@
 Check if `a` has all flags in `b` set.
 
 # Example
-```julia
-perms = PermSendMessages | PermEmbedLinks
-has_flag(perms, PermSendMessages)   # => true
-has_flag(perms, PermAdministrator)  # => false
+```jldoctest
+julia> perms = PermSendMessages | PermEmbedLinks;
+
+julia> has_flag(perms, PermSendMessages)
+true
+
+julia> has_flag(perms, PermAdministrator)
+false
 ```
 """
 function has_flag end
@@ -63,8 +67,10 @@ end
 Register integer-based StructTypes for a flags type.
 
 # Example
-```julia
-@_flags_structtypes_int MyFlagsType
+```jldoctest
+julia> struct MyFlagsType; value::UInt64; end;
+
+julia> Accord.@_flags_structtypes_int MyFlagsType
 ```
 """
 macro _flags_structtypes_int(name)
@@ -122,8 +128,8 @@ Intents
 All non-privileged intents.
 
 # Example
-```julia
-client = Client("Bot my_token"; intents=IntentAllNonPrivileged)
+```jldoctest
+julia> client = Client("Bot my_token"; intents=IntentAllNonPrivileged);
 ```
 """
 const IntentAllNonPrivileged = IntentGuilds | IntentGuildModeration | IntentGuildExpressions |
@@ -139,8 +145,8 @@ const IntentAllNonPrivileged = IntentGuilds | IntentGuildModeration | IntentGuil
 All intents including privileged (GuildMembers, GuildPresences, MessageContent).
 
 # Example
-```julia
-client = Client("Bot my_token"; intents=IntentAll)
+```jldoctest
+julia> client = Client("Bot my_token"; intents=IntentAll);
 ```
 """
 const IntentAll = IntentAllNonPrivileged | IntentGuildMembers | IntentGuildPresences | IntentMessageContent
