@@ -2,16 +2,35 @@
 
 using LRUCache
 
-"""Cache strategy for a resource type."""
+"""Use this abstract type to define how Discord objects are cached in memory.
+
+Cache strategy for a resource type.
+
+# Subtypes
+- `CacheForever()`: Keep entries indefinitely.
+- `CacheNever()`: Do not cache entries.
+- `CacheLRU(maxsize)`: Keep only the most recently used entries.
+- `CacheTTL(ttl_seconds)`: Expire entries after a certain time.
+
+# Example
+```julia
+client = Client(token; user_strategy=CacheLRU(1000))
+```
+"""
 abstract type CacheStrategy end
 
+"""Keep entries indefinitely in memory."""
 struct CacheForever <: CacheStrategy end
+
+"""Do not cache entries (REST fallback on every access)."""
 struct CacheNever <: CacheStrategy end
 
+"""Keep only the `maxsize` most recently used entries."""
 struct CacheLRU <: CacheStrategy
     maxsize::Int
 end
 
+"""Expire entries after `ttl_seconds` have passed."""
 struct CacheTTL <: CacheStrategy
     ttl_seconds::Float64
 end
@@ -19,8 +38,17 @@ end
 """
     Store{T}
 
+Use this to cache Discord objects like guilds, channels, and users with configurable eviction policies.
+
 A cache store for a specific resource type, keyed by Snowflake.
 Uses LRUCache.LRU for O(1) LRU eviction, plain Dict for other strategies.
+
+# Example
+```julia
+store = Store{User}(CacheLRU(1000))
+store[id] = user
+user = store[id]
+```
 """
 mutable struct Store{T}
     strategy::CacheStrategy
@@ -86,7 +114,15 @@ Base.keys(store::Store) = keys(store.data)
 """
     State
 
+Use this to access and manage cached Discord objects for your bot.
+
 Holds all cached Discord state.
+
+# Example
+```julia
+client.state.guilds[id]
+client.state.me.username
+```
 """
 mutable struct State
     guilds::Store{Guild}
@@ -121,6 +157,14 @@ function State(;
 end
 
 # --- State update methods ---
+
+"""
+    update_state!(state::State, event::AbstractEvent)
+
+Update the internal cache based on the incoming gateway event.
+Accord.jl handles this automatically for you.
+"""
+function update_state! end
 
 function update_state!(state::State, event::ReadyEvent)
     state.me = event.user

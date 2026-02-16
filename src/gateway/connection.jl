@@ -2,7 +2,10 @@
 
 const GATEWAY_URL = "wss://gateway.discord.gg/?v=$(API_VERSION)&encoding=json"
 
-"""Gateway command sent to the connection actor."""
+"""Use this internal struct to send control commands to the gateway connection actor.
+
+[`GatewayCommand`](@ref) sent to the connection actor.
+"""
 struct GatewayCommand
     op::Int
     data::Any
@@ -11,7 +14,9 @@ end
 """
     GatewaySession
 
-Holds state for a single gateway WebSocket session.
+Use this internal struct to track the state of an active gateway WebSocket connection.
+
+Holds state for a single [`GatewaySession`](@ref).
 """
 mutable struct GatewaySession
     ws::Nullable{HTTP.WebSockets.WebSocket}
@@ -34,12 +39,14 @@ end
 """
     gateway_connect(token, intents, shard, events_channel, commands_channel; resume=false)
 
-Main gateway connection loop. Runs as a Task.
+Use this internal function to establish and maintain a WebSocket connection to Discord's gateway.
+
+Main gateway connection loop. Runs as a `Task`.
 - Connects to Discord gateway via WebSocket
 - Handles IDENTIFY/RESUME
 - Decompresses zlib-stream payloads
-- Dispatches events to `events_channel`
-- Receives commands from `commands_channel`
+- Dispatches events to `events_channel` (which receives [`AbstractEvent`](@ref)s)
+- Receives commands from `commands_channel` (which receives [`GatewayCommand`](@ref)s)
 - Auto-reconnects on disconnection
 """
 function gateway_connect(

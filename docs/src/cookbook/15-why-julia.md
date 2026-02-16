@@ -13,15 +13,18 @@ Julia offers a similar leap for Python bot developers: not just incremental impr
 
 ## 2. Performance: No GIL, Real Parallelism
 
+!!! note "True Parallelism Without the GIL"
+    Unlike Python's Global Interpreter Lock (GIL) which prevents true parallelism, Julia has no GIL. CPU-bound tasks can run on multiple threads simultaneously, making Julia ideal for bots that perform computations, data processing, or ML inference.
+
 Python's Global Interpreter Lock (GIL) means your bot is single-threaded, no matter how many cores your server has. Julia has no GIL.
 
 ```julia
 # Julia: true parallel execution
-on(client, MessageCreate) do c, event
+on(client, [`MessageCreate`](@ref)) do c, event
     Threads.@spawn begin
         # This runs on a separate thread — truly parallel
         result = heavy_computation(event.message.content)
-        create_message(c, event.message.channel_id; content=result)
+        [`create_message`](@ref)(c, event.message.channel_id; content=result)
     end
 end
 ```
@@ -53,18 +56,18 @@ Accord.jl uses Julia's type system for event dispatch — no string matching or 
 
 ```julia
 # Julia: the type system IS the routing
-on(client, MessageCreate) do c, event
+on(client, [`MessageCreate`](@ref)) do c, event
     # Only called for MessageCreate events
 end
 
-on(client, GuildMemberAdd) do c, event
+on(client, [`GuildMemberAdd`](@ref)) do c, event
     # Only called for GuildMemberAdd events
 end
 
 # Even cache updates use dispatch:
-update_state!(state, event::GuildCreate)    # handles guild creation
-update_state!(state, event::ChannelDelete)  # handles channel deletion
-update_state!(state, event::AbstractEvent)  # fallback
+[`update_state!`](@ref)(state, event::[`GuildCreate`](@ref))    # handles guild creation
+[`update_state!`](@ref)(state, event::[`ChannelDelete`](@ref))  # handles channel deletion
+[`update_state!`](@ref)(state, event::[`AbstractEvent`](@ref))  # fallback
 ```
 
 ```python
@@ -86,12 +89,12 @@ Accord.jl catches bugs at compile time that Python misses at runtime:
 
 ```julia
 # Snowflake: can't accidentally pass a string where an ID is needed
-channel_id = Snowflake(123456789012345678)
-create_message(client, channel_id; content="typed!")
+channel_id = [`Snowflake`](@ref)(123456789012345678)
+[`create_message`](@ref)(client, channel_id; content="typed!")
 
 # Permission flags: bitfield type prevents integer mistakes
-perms = PermSendMessages | PermEmbedLinks
-has_flag(perms, PermAdministrator)  # false — type-safe check
+perms = [`PermSendMessages`](@ref) | [`PermEmbedLinks`](@ref)
+[`has_flag`](@ref)(perms, [`PermAdministrator`](@ref))  # false — type-safe check
 
 # Optional{T}: explicit handling of missing fields
 if !ismissing(msg.content)
@@ -119,7 +122,7 @@ model = Chain(Dense(784, 128, relu), Dense(128, 10), softmax)
     # All in pure Julia — no Python subprocess needed
     img = load_image(attachment_url)
     prediction = Flux.onecold(model(img))
-    respond(ctx; content="I think that's a **$prediction**!")
+    [`respond`](@ref)(ctx; content="I think that's a **$prediction**!")
 end
 ```
 
@@ -130,7 +133,7 @@ using Accord
 using CairoMakie  # publication-quality plots
 
 @slash_command client "chart" "Generate a chart" function(ctx)
-    defer(ctx)
+    [`defer`](@ref)(ctx)
 
     fig = Figure(size=(800, 400))
     ax = Axis(fig[1,1], title="Server Activity")
@@ -139,7 +142,7 @@ using CairoMakie  # publication-quality plots
     # Save to buffer and send
     io = IOBuffer()
     save(io, fig; pt_per_unit=1)
-    respond(ctx; content="Here's your chart:", files=[("chart.png", take!(io))])
+    [`respond`](@ref)(ctx; content="Here's your chart:", files=[("chart.png", take!(io))])
 end
 ```
 
@@ -150,19 +153,19 @@ using Accord
 using DifferentialEquations  # world-class ODE solvers
 
 options_simulate = [
-    command_option(type=ApplicationCommandOptionTypes.NUMBER, name="rate", description="Growth rate", required=true),
+    [`command_option`](@ref)(type=ApplicationCommandOptionTypes.NUMBER, name="rate", description="Growth rate", required=true),
 ]
 
 @slash_command client "simulate" "Simulate a system" options_simulate function(ctx)
-    defer(ctx)
-    rate = get_option(ctx, "rate", 1.0)::Number
+    [`defer`](@ref)(ctx)
+    rate = [`get_option`](@ref)(ctx, "rate", 1.0)::Number
 
     # Solve an ODE — in the same process as the bot
     f(u, p, t) = rate * u
     prob = ODEProblem(f, 1.0, (0.0, 5.0))
     sol = solve(prob)
 
-    respond(ctx; content="Final value at t=5: **$(round(sol.u[end], digits=3))**")
+    [`respond`](@ref)(ctx; content="Final value at t=5: **$(round(sol.u[end], digits=3))**")
 end
 ```
 
@@ -175,17 +178,17 @@ Non-blocking mode gives you a live REPL connected to Discord:
 
 ```julia
 start(client; blocking=false)
-wait_until_ready(client)
+[`wait_until_ready`](@ref)(client)
 
 # Test things live:
-create_message(client, Snowflake(ch_id); content="Testing!")
+[`create_message`](@ref)(client, [`Snowflake`](@ref)(ch_id); content="Testing!")
 
 # Inspect state:
 client.state.me.username
 length(client.state.guilds)
 
 # Hot-reload handlers (just redefine):
-on(client, MessageCreate) do c, event
+on(client, [`MessageCreate`](@ref)) do c, event
     # This replaces the previous handler
     @info "New handler!" content=event.message.content
 end
@@ -250,7 +253,7 @@ bot = discord.Bot(intents=discord.Intents.default())
 ```julia
 # Accord.jl
 using Accord
-client = Client(token; intents=IntentAllNonPrivileged)
+client = [`Client`](@ref)(token; intents=[`IntentAllNonPrivileged`](@ref))
 ```
 
 ### Event Handlers
@@ -265,10 +268,10 @@ async def on_message(message):
 
 ```julia
 # Accord.jl
-on(client, MessageCreate) do c, event
+on(client, [`MessageCreate`](@ref)) do c, event
     msg = event.message
     ismissing(msg.content) && return
-    msg.content == "!ping" && create_message(c, msg.channel_id; content="Pong!")
+    msg.content == "!ping" && [`create_message`](@ref)(c, msg.channel_id; content="Pong!")
 end
 ```
 
@@ -283,12 +286,12 @@ async def greet(ctx, name: str):
 
 ```julia
 # Accord.jl
-tree = CommandTree()
-register_command!(tree, "greet", "Say hello", function(ctx)
-    name = get_option(ctx, "name", "World")
-    respond(ctx; content="Hello, $name!")
+tree = [`CommandTree`](@ref)()
+[`register_command!`](@ref)(tree, "greet", "Say hello", function(ctx)
+    name = [`get_option`](@ref)(ctx, "name", "World")
+    [`respond`](@ref)(ctx; content="Hello, $name!")
 end; options=[
-    command_option(type=ApplicationCommandOptionTypes.STRING, name="name", description="Name", required=true),
+    [`command_option`](@ref)(type=ApplicationCommandOptionTypes.STRING, name="name", description="Name", required=true),
 ])
 ```
 
@@ -303,10 +306,10 @@ await ctx.send(embed=embed)
 
 ```julia
 # Accord.jl
-e = embed(title="Info", color=0x5865F2, fields=[
+e = [`embed`](@ref)(title="Info", color=0x5865F2, fields=[
     Dict("name" => "Field", "value" => "Value"),
 ])
-create_message(client, channel_id; embeds=[e])
+[`create_message`](@ref)(client, channel_id; embeds=[e])
 ```
 
 ### Permissions
@@ -321,9 +324,9 @@ async def ban(ctx, member):
 
 ```julia
 # Accord.jl
-register_command!(tree, "ban", "Ban a user", function(ctx)
+[`register_command!`](@ref)(tree, "ban", "Ban a user", function(ctx)
     perms = get_member_permissions(ctx.client, ctx.interaction.guild_id, ctx.interaction.member.user.id)
-    has_flag(perms, PermBanMembers) || return respond(ctx; content="No permission", ephemeral=true)
+    [`has_flag`](@ref)(perms, [`PermBanMembers`](@ref)) || return [`respond`](@ref)(ctx; content="No permission", ephemeral=true)
     # ... ban logic
 end)
 ```

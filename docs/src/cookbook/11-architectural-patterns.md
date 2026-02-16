@@ -9,6 +9,9 @@
 
 ## 1. Production Project Structure
 
+!!! tip "Recommended Project Structure"
+    Organize your bot into logical modules: commands, handlers, services, and utilities. This makes testing easier and allows multiple developers to work on different features simultaneously. Keep configuration separate from code, and never commit secrets.
+
 ```text
 MyBot/
 ├── Project.toml
@@ -83,7 +86,7 @@ function create_bot(config)
     register_member_handlers!(client, config)
 
     # Sync commands on ready
-    on(client, ReadyEvent) do c, event
+    on(client, [`ReadyEvent`](@ref)) do c, event
         sync_commands!(c, c.command_tree; guild_id=get(config, "dev_guild_id", nothing))
         @info "Bot ready!" user=event.user.username
     end
@@ -157,13 +160,16 @@ end
 
 ### Global Error Handler
 
+!!! warning "Blocking the Event Loop with Synchronous Operations"
+    Never perform blocking operations (like `sleep()`, file I/O without async, or long computations) directly in event handlers. This blocks the entire event loop and prevents the bot from receiving new events. Always wrap slow operations in `@async` or `Threads.@spawn`.
+
 ```julia
 on_error(client) do c, event, error
     # Log the error with full context
     @error "Handler error" event_type=typeof(event) exception=(error, catch_backtrace())
 
     # Optionally notify a channel
-    ERROR_CHANNEL = Snowflake(config["error_channel_id"])
+    ERROR_CHANNEL = [`Snowflake`](@ref)(config["error_channel_id"])
     try
         e = embed(
             title="Bot Error",
@@ -220,10 +226,10 @@ register_middleware!(client.event_handler) do client, event
 end
 
 # Ignore list middleware
-const IGNORED_USERS = Set{Snowflake}()
+const IGNORED_USERS = Set{[`Snowflake`](@ref)}()
 
 register_middleware!(client.event_handler) do client, event
-    if event isa MessageCreate
+    if event isa [`MessageCreate`](@ref)
         user_id = ismissing(event.message.author) ? nothing : event.message.author.id
         if !isnothing(user_id) && user_id in IGNORED_USERS
             return nothing  # cancel event
@@ -233,11 +239,11 @@ register_middleware!(client.event_handler) do client, event
 end
 
 # Rate limiting middleware
-const user_cooldowns = Dict{Snowflake, Float64}()
+const user_cooldowns = Dict{[`Snowflake`](@ref), Float64}()
 const COOLDOWN_SECONDS = 2.0
 
 register_middleware!(client.event_handler) do client, event
-    if event isa InteractionCreate
+    if event isa [`InteractionCreate`](@ref)
         user_id = event.interaction.member.user.id
         last_use = get(user_cooldowns, user_id, 0.0)
         if time() - last_use < COOLDOWN_SECONDS
@@ -349,15 +355,15 @@ end
 
 ```julia
 # Julia's type system naturally routes events
-function handle_event(client, event::GuildMemberAdd)
+function handle_event(client, event::[`GuildMemberAdd`](@ref))
     @info "Welcome!" user=event.member.user.username
 end
 
-function handle_event(client, event::GuildMemberRemove)
+function handle_event(client, event::[`GuildMemberRemove`](@ref))
     @info "Goodbye!" user=event.user.username
 end
 
-function handle_event(client, event::AbstractEvent)
+function handle_event(client, event::[`AbstractEvent`](@ref))
     # fallback — nothing
 end
 ```
@@ -378,7 +384,7 @@ end
 ```julia
 # ✅ Preferred: inject state via Client's state parameter
 struct BotState
-    warnings::Dict{Snowflake, Vector{String}}
+    warnings::Dict{[`Snowflake`](@ref), Vector{String}}
     config::Dict{String, Any}
     db::Any
 end

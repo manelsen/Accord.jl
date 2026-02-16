@@ -9,7 +9,7 @@
 
 ## 1. Why Caching Matters
 
-Every time you call `get_guild`, `get_channel`, or `get_user`, Accord.jl checks its in-memory cache first. Cache hits avoid:
+Every time you call [`get_guild`](@ref), [`get_channel`](@ref), or [`get_user`](@ref), Accord.jl checks its in-memory cache first. Cache hits avoid:
 - REST API calls (each costs ~50-200ms)
 - Rate limit consumption (you only get ~50 requests/second)
 
@@ -26,7 +26,7 @@ But caching everything wastes memory. Accord.jl lets you choose per resource typ
 
 ## 3. Per-Resource Configuration
 
-Configure caching in the `Client` constructor:
+Configure caching in the [`Client`](@ref) constructor:
 
 ```julia
 client = Client(token;
@@ -64,6 +64,9 @@ client = Client(token;
 )
 ```
 
+!!! tip "Memory-Constrained Environments"
+    For bots running on limited memory (VPS with <2GB RAM), use [`CacheLRU`](@ref) or [`CacheTTL`](@ref) strategies. Avoid [`CacheForever`](@ref) for users and members, as these can grow unbounded in large guilds.
+
 ### Large Bot (Memory Conscious)
 
 ```julia
@@ -76,16 +79,19 @@ client = Client(token;
 )
 ```
 
-## 5. How `Store{T}` Works Internally
+!!! warning "CacheNever Means REST Fallback on Every Access"
+    Using [`CacheNever`](@ref) means every call to [`get_user`](@ref), [`get_channel`](@ref), etc. will hit the Discord REST API. This can quickly exhaust your rate limits. Only use [`CacheNever`](@ref) for data you truly don't need to cache, not as a default strategy.
 
-Each resource type has a `Store{T}`:
+## 5. How [`Store`](@ref){T} Works Internally
+
+Each resource type has a [`Store`](@ref){T}:
 
 ```julia
 mutable struct Store{T}
     strategy::CacheStrategy
-    data::Dict{Snowflake, T}        # the actual cache
-    access_order::Vector{Snowflake}  # LRU tracking
-    timestamps::Dict{Snowflake, Float64}  # TTL tracking
+    data::Dict{[`Snowflake`](@ref), T}        # the actual cache
+    access_order::Vector{[`Snowflake`](@ref)}  # LRU tracking
+    timestamps::Dict{[`Snowflake`](@ref), Float64}  # TTL tracking
     maxsize::Int
 end
 ```
@@ -101,19 +107,19 @@ The cache updates automatically from gateway events:
 
 | Event | Cache Action |
 |-------|-------------|
-| `ReadyEvent` | Sets `state.me`, caches unavailable guilds |
-| `GuildCreate` | Caches guild, channels, roles, emojis, members |
-| `GuildUpdate` | Updates guild |
-| `GuildDelete` | Removes guild and all associated data |
+| [`ReadyEvent`](@ref) | Sets `state.me`, caches unavailable guilds |
+| [`GuildCreate`](@ref) | Caches guild, channels, roles, emojis, members |
+| [`GuildUpdate`](@ref) | Updates guild |
+| [`GuildDelete`](@ref) | Removes guild and all associated data |
 | `ChannelCreate/Update` | Caches channel |
 | `ChannelDelete` | Removes channel |
-| `GuildMemberAdd` | Caches member and user |
-| `GuildMemberRemove` | Removes member |
-| `GuildMemberUpdate` | Updates member fields |
+| [`GuildMemberAdd`](@ref) | Caches member and user |
+| [`GuildMemberRemove`](@ref) | Removes member |
+| [`GuildMemberUpdate`](@ref) | Updates member fields |
 | `GuildRoleCreate/Update` | Caches role |
-| `GuildRoleDelete` | Removes role |
-| `MessageCreate` | Caches message author |
-| `VoiceStateUpdateEvent` | Updates voice state tracking |
+| [`GuildRoleDelete`](@ref) | Removes role |
+| [`MessageCreate`](@ref) | Caches message author |
+| [`VoiceStateUpdateEvent`](@ref) | Updates voice state tracking |
 
 ## 7. Memory Estimation
 
@@ -121,12 +127,12 @@ Rough per-object memory estimates:
 
 | Object | Approximate Size |
 |--------|-----------------|
-| `Guild` | 2-5 KB |
-| `DiscordChannel` | 0.5-1 KB |
-| `User` | 0.3-0.5 KB |
-| `Member` | 0.2-0.5 KB |
-| `Role` | 0.2-0.3 KB |
-| `Presence` | 0.5-2 KB |
+| [`Guild`](@ref) | 2-5 KB |
+| [`DiscordChannel`](@ref) | 0.5-1 KB |
+| [`User`](@ref) | 0.3-0.5 KB |
+| [`Member`](@ref) | 0.2-0.5 KB |
+| [`Role`](@ref) | 0.2-0.3 KB |
+| [`Presence`](@ref) | 0.5-2 KB |
 
 For a bot in 1,000 guilds with an average 500 members per guild:
 - Guilds: 1,000 × 3 KB ≈ **3 MB**
@@ -149,11 +155,11 @@ wait_until_ready(client)
 @info "Users:    $(length(client.state.users))"
 
 # Look up a specific guild
-guild = get(client.state.guilds, Snowflake(123456789))
+guild = get(client.state.guilds, [`Snowflake`](@ref)(123456789))
 guild.name
 
 # List cached roles for a guild
-roles = get(client.state.roles, Snowflake(123456789), nothing)
+roles = get(client.state.roles, [`Snowflake`](@ref)(123456789), nothing)
 if !isnothing(roles)
     for role in values(roles)
         println("  $(role.name): $(role.id)")

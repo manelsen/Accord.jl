@@ -3,12 +3,14 @@
 """
     @check check_function
 
+Use this macro to add permission checks or guards before a command executes.
+
 Add a pre-execution check (guard) to the next `@slash_command`, `@user_command`,
 or `@message_command`.
 Checks are stacked — multiple `@check` macros accumulate and are
 all drained when a command macro is invoked.
 
-Check functions receive an `InteractionContext` and return `true` (pass)
+Check functions receive an [`InteractionContext`](@ref) and return `true` (pass)
 or `false` (deny). If a check fails, the command handler is never called
 and a default "permission denied" ephemeral message is sent.
 
@@ -38,10 +40,12 @@ end
 """
     @on_message client handler
 
+Use this macro to easily register a handler for incoming text messages.
+
 Register a `MessageCreate` handler that automatically skips bot messages and
 messages with missing `author` or `content`.
 
-The handler receives `(client, message)` — the `Message` object directly.
+The handler receives `(client, message)` — the [`Message`](@ref) object directly.
 
 # Example
 ```julia
@@ -64,6 +68,8 @@ end
 
 """
     @slash_command client [guild_id] name description [options] handler
+
+Use this macro to define slash commands that users can invoke with "/command".
 
 Register a slash command with the client's command tree.
 
@@ -133,6 +139,8 @@ end
 """
     @button_handler client custom_id handler
 
+Use this macro to handle clicks on buttons with a specific custom_id.
+
 Register a button click handler.
 
 # Example
@@ -150,6 +158,8 @@ end
 
 """
     @select_handler client custom_id handler
+
+Use this macro to handle selections from dropdown menus.
 
 Register a select menu handler.
 
@@ -170,6 +180,8 @@ end
 """
     @modal_handler client custom_id handler
 
+Use this macro to handle form submissions from modal dialogs.
+
 Register a modal submission handler.
 
 # Example
@@ -188,6 +200,8 @@ end
 
 """
     @autocomplete client command_name handler
+
+Use this macro to provide dynamic autocomplete suggestions as users type command options.
 
 Register an autocomplete handler for a slash command.
 
@@ -211,6 +225,8 @@ end
 
 """
     @user_command client [guild_id] name handler
+
+Use this macro to add right-click context menu commands on users.
 
 Register a User Context Menu command (right-click on a user).
 Context menu commands have no description or options.
@@ -254,6 +270,8 @@ end
 
 """
     @message_command client [guild_id] name handler
+
+Use this macro to add right-click context menu commands on messages.
 
 Register a Message Context Menu command (right-click on a message).
 Context menu commands have no description or options.
@@ -305,9 +323,11 @@ const _OPTION_TYPE_MAP = Dict{Symbol, Int}(
 """
     @option Type name description [kwargs...]
 
+Use this macro to define command options with types and validation rules.
+
 Create a command option dict using a concise syntax. `Type` is one of:
-`String`, `Integer`, `Boolean`, `User`, `Channel`, `Role`, `Mentionable`,
-`Number`, or `Attachment`.
+`String`, `Integer`, `Boolean`, [`User`](@ref), `Channel`, [`Role`](@ref), `Mentionable`,
+`Number`, or [`Attachment`](@ref).
 
 # Examples
 ```julia

@@ -11,6 +11,14 @@
 
 ### .env File
 
+!!! warning "Token Exposure Risk"
+    **Never commit tokens to version control.** Tokens are credentials that grant access to your bot. If exposed:
+    - Malicious users could control your bot
+    - Your bot could be used for spam/abuse
+    - Discord may reset the token and ban the application
+    
+    Use environment variables or a `.env` file (in `.gitignore`), never hardcode tokens.
+
 ```bash
 # .env — NEVER commit this file
 DISCORD_TOKEN=Bot XXXXXXXXXXXXXXXXXXXXXXXXXX.XXXXXX.XXXXXXXXXXXXXXXXXXXXXXXX
@@ -208,6 +216,9 @@ docker compose up -d --build
 
 ## 4. PackageCompiler Sysimage
 
+!!! tip "Sysimage Creation for Faster Startup"
+    PackageCompiler.jl can create a custom sysimage that pre-compiles Accord.jl and its dependencies. This reduces startup time from ~10 seconds to ~1 second — critical for production deployments where quick restarts matter.
+
 Create a sysimage for near-instant startup (~1s vs ~10s):
 
 ```julia
@@ -226,16 +237,16 @@ create_sysimage(
 using Accord
 
 # Exercise the code paths that matter
-client = Client("Bot fake"; intents=IntentGuilds)
-tree = CommandTree()
+client = [`Client`](@ref)("Bot fake"; intents=[`IntentGuilds`](@ref))
+tree = [`CommandTree`](@ref)()
 
 # Components
-embed(title="T", color=0x5865F2)
-button(label="B", custom_id="b")
-action_row([button(label="X", custom_id="x")])
-string_select(custom_id="s", options=[select_option(label="L", value="V")])
-text_input(custom_id="ti", label="L")
-command_option(type=3, name="n", description="d")
+[`embed`](@ref)(title="T", color=0x5865F2)
+[`button`](@ref)(label="B", custom_id="b")
+[`action_row`](@ref)([[`button`](@ref)(label="X", custom_id="x")])
+[`string_select`](@ref)(custom_id="s", options=[[`select_option`](@ref)(label="L", value="V")])
+[`text_input`](@ref)(custom_id="ti", label="L")
+[`command_option`](@ref)(type=3, name="n", description="d")
 
 println("Precompilation complete")
 ```
@@ -282,7 +293,7 @@ end
 
 const start_time = time()
 
-on(client, ReadyEvent) do c, event
+on(client, [`ReadyEvent`](@ref)) do c, event
     start_health_server(c)
     @info "Health endpoint running on :8080/health"
 end

@@ -9,13 +9,21 @@
 
 ## 1. How Auto-Moderation Works
 
+!!! note "AutoMod Rule Limits"
+    Discord limits guilds to:
+    - **6 keyword rules** per guild (keyword filter + keyword preset combined)
+    - **1 spam rule** per guild
+    - **1 mention spam rule** per guild
+    
+    Plan your moderation strategy accordingly. Combine similar keywords into single rules rather than creating many small rules.
+
 Discord's AutoMod system lets you create rules that automatically act on messages:
 
 - **Trigger** — what to look for (keywords, spam, mention spam, presets)
 - **Action** — what to do (block message, send alert, timeout user)
 - **Exemptions** — roles/channels that bypass the rule
 
-Your bot needs these intents:
+Your bot needs these [`Intents`](@ref):
 
 ```julia
 client = Client(token;
@@ -146,7 +154,7 @@ create_auto_moderation_rule(client.ratelimiter, guild_id;
 
 ## 7. Listening for AutoMod Actions
 
-When an AutoMod rule triggers, you get an `AutoModerationActionExecution` event:
+When an [`AutoModRule`](@ref) triggers, you get an `AutoModerationActionExecution` event:
 
 ```julia
 on(client, AutoModerationActionExecution) do c, event

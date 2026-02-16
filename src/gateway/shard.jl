@@ -3,7 +3,11 @@
 """
     ShardInfo
 
-Tracks state for a single gateway shard.
+Use this internal struct to manage the lifecycle and events of a single gateway shard.
+
+Tracks state for a single gateway shard. Uses [`GatewaySession`](@ref) for the connection.
+Events are dispatched to a shared [`AbstractEvent`](@ref) channel.
+Commands are received via a [`GatewayCommand`](@ref) channel.
 """
 mutable struct ShardInfo
     id::Int
@@ -26,7 +30,9 @@ end
 """
     start_shard(shard::ShardInfo, token::String, intents::UInt32)
 
-Start a gateway connection for this shard in a new Task.
+Use this internal function to launch a new shard connection as a background task.
+
+Start a gateway connection for this [`ShardInfo`](@ref) in a new `Task`.
 """
 function start_shard(shard::ShardInfo, token::String, intents::UInt32)
     shard.task = @async gateway_connect(
@@ -40,7 +46,9 @@ end
 """
     stop_shard(shard::ShardInfo)
 
-Signal the shard to disconnect.
+Use this internal function to gracefully terminate a shard connection.
+
+Signal the [`ShardInfo`](@ref) to disconnect.
 """
 function stop_shard(shard::ShardInfo)
     notify(shard.session.stop_event)
@@ -50,7 +58,9 @@ end
 """
     send_to_shard(shard::ShardInfo, cmd::GatewayCommand)
 
-Send a gateway command to a specific shard.
+Use this internal function to send control commands to a running shard.
+
+Send a [`GatewayCommand`](@ref) to a specific [`ShardInfo`](@ref).
 """
 function send_to_shard(shard::ShardInfo, cmd::GatewayCommand)
     put!(shard.commands, cmd)
@@ -59,7 +69,9 @@ end
 """
     shard_for_guild(guild_id::Snowflake, num_shards::Int) -> Int
 
-Calculate which shard handles a given guild.
+Use this internal function to determine which shard should handle events for a specific guild.
+
+Calculate which shard handles a given guild [`Snowflake`](@ref).
 Formula: (guild_id >> 22) % num_shards
 """
 function shard_for_guild(guild_id::Snowflake, num_shards::Int)
@@ -68,6 +80,8 @@ end
 
 """
     get_gateway_bot(token::String) -> (url, shards, session_start_limit)
+
+Use this to retrieve gateway connection info and determine how many shards your bot needs.
 
 Fetch /gateway/bot to get recommended shard count and session limits.
 """

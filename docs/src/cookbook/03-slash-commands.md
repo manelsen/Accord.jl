@@ -11,10 +11,10 @@
 
 The interaction flow:
 
-1. You create a `CommandTree` and register commands on it
-2. On `ReadyEvent`, call `sync_commands!` to push definitions to Discord
-3. On `InteractionCreate`, call `dispatch_interaction!` to route to handlers
-4. Each handler receives an `InteractionContext` with helper methods
+1. You create a [`CommandTree`](@ref) and register commands on it
+2. On [`ReadyEvent`](@ref), call [`sync_commands!`](@ref) to push definitions to Discord
+3. On [`InteractionCreate`](@ref), call [`dispatch_interaction!`](@ref) to route to handlers
+4. Each handler receives an [`InteractionContext`](@ref) with helper methods
 
 ## 2. Basic Slash Command
 
@@ -38,7 +38,7 @@ end
 start(client)
 ```
 
-Note that `Client` automatically handles interaction dispatch to its internal `command_tree`.
+Note that [`Client`](@ref) automatically handles interaction dispatch to its internal `command_tree`.
 
 ## 3. Commands with Options
 
@@ -206,12 +206,20 @@ end
 
 ## 7. Guild vs Global Commands
 
+!!! note "Command Sync Delay"
+    Global commands take up to **1 hour** to propagate across all Discord servers. If you update a global command, users may see the old version for a while.
+
 ```julia
 # Global commands — available everywhere, up to 1 hour to propagate
 @slash_command client "ping" "Check latency" function(ctx)
     respond(ctx; content="Pong!")
 end
+```
 
+!!! tip "Use Guild Commands During Development"
+    Guild commands update instantly (within a few seconds). During development, sync commands to a specific guild for rapid iteration:
+
+```julia
 # Guild command — instant, only in one server
 GUILD_ID = 123456789012345678
 @slash_command client GUILD_ID "debug" "Debug info" function(ctx)
@@ -219,8 +227,8 @@ GUILD_ID = 123456789012345678
 end
 
 # Or sync everything to a specific guild for development
-on(client, ReadyEvent) do c, event
-    sync_commands!(c, c.command_tree; guild_id=Snowflake(GUILD_ID))  # instant during dev
+on(client, [`ReadyEvent`](@ref)) do c, event
+    sync_commands!(c, c.command_tree; guild_id=[`Snowflake`](@ref)(GUILD_ID))  # instant during dev
 end
 ```
 
