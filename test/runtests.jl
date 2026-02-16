@@ -28,10 +28,11 @@ function run_accord_tests()
     end
 
     # ReTestItems.runtests(filter_func, Module; ...)
+    nworkers = parse(Int, get(ENV, "ACCORD_TEST_WORKERS", "6"))
     ReTestItems.runtests(
         ti_filter,
         Accord;
-        nworkers = 6,
+        nworkers = nworkers,
         report = true,
         verbose_results = true
     )
