@@ -3,20 +3,28 @@
 """
     AbstractAudioSource
 
+Use this abstract type when implementing custom audio sources for voice playback.
+
 Base type for audio sources. Subtypes must implement:
 - `read_frame(source) -> Union{Vector{Int16}, Nothing}` — read one frame of PCM audio (960 samples * channels)
 - `close_source(source)` — cleanup
 """
 abstract type AbstractAudioSource end
 
-"""Read one PCM frame from the source. Returns nothing when done."""
+"""Use this to retrieve audio data from a source during playback.
+
+Read one PCM frame from the source. Returns nothing when done."""
 function read_frame end
 
-"""Close/cleanup the audio source."""
+"""Use this to release resources when done playing audio from a source.
+
+Close/cleanup the audio source."""
 function close_source end
 
 """
     AudioPlayer
+
+Use this to manage audio playback in voice channels including play, pause, and stop operations.
 
 Controls playback of audio to a voice connection.
 """
@@ -36,6 +44,8 @@ end
 """
     play!(player, source, send_fn)
 
+Use this to begin playing audio from a source through a voice connection.
+
 Start playing an audio source. `send_fn(opus_data)` is called for each encoded frame.
 """
 function play!(player::AudioPlayer, source::AbstractAudioSource, send_fn::Function)
@@ -53,7 +63,9 @@ function play!(player::AudioPlayer, source::AbstractAudioSource, send_fn::Functi
     return player
 end
 
-"""Stop playback."""
+"""Use this to immediately stop audio playback and clean up the source.
+
+Stop playback."""
 function stop!(player::AudioPlayer)
     player.playing = false
     if !isnothing(player.source)
@@ -66,17 +78,23 @@ function stop!(player::AudioPlayer)
     end
 end
 
-"""Pause playback."""
+"""Use this to temporarily pause audio playback without releasing resources.
+
+Pause playback."""
 function pause!(player::AudioPlayer)
     player.paused = true
 end
 
-"""Resume playback."""
+"""Use this to continue playing audio after a pause.
+
+Resume playback."""
 function resume!(player::AudioPlayer)
     player.paused = false
 end
 
-"""Check if the player is currently playing."""
+"""Use this to determine whether audio is currently being played.
+
+Check if the player is currently playing."""
 is_playing(player::AudioPlayer) = player.playing && !isnothing(player.source)
 
 function _playback_loop(player::AudioPlayer, send_fn::Function)

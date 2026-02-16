@@ -1,6 +1,8 @@
 """
     User
 
+Use this struct to access information about any Discord user, including bot users and guild members.
+
 Represents a Discord user.
 
 # Fields

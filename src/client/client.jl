@@ -3,7 +3,9 @@
 """
     EventWaiter
 
-Internal struct for `wait_for`. Holds the event type filter, predicate,
+Use this internal struct to wait for specific gateway events matching a predicate.
+
+Internal struct for [`wait_for`](@ref). Holds the event type filter, predicate,
 and a `Channel` that receives the matching event.
 """
 struct EventWaiter
@@ -14,6 +16,8 @@ end
 
 """
     Client
+
+Use this as the main entry point for your Discord bot to manage connections, events, and API calls.
 
 The main Discord client that orchestrates gateway connections, REST API calls, and state caching.
 
@@ -113,6 +117,8 @@ end
 """
     on(handler, client, EventType)
 
+Use this to register callbacks that respond to Discord gateway events like messages or reactions.
+
 Register an event handler. The handler receives (client, event).
 
 # Example
@@ -129,6 +135,8 @@ end
 """
     on_error(handler, client)
 
+Use this to customize how your bot handles errors that occur during event processing.
+
 Set a custom error handler. Receives (client, event, error).
 """
 function on_error(handler::Function, client::Client)
@@ -137,6 +145,8 @@ end
 
 """
     start(client::Client; blocking=true)
+
+Use this to connect your bot to Discord and begin processing events.
 
 Connect to Discord and start processing events.
 If `blocking=true` (default), this blocks until the client is stopped.
@@ -188,6 +198,8 @@ end
 """
     stop(client::Client)
 
+Use this to gracefully shut down your bot and disconnect from Discord.
+
 Disconnect from Discord and stop processing events.
 """
 function stop(client::Client)
@@ -207,6 +219,8 @@ end
 """
     wait_until_ready(client::Client)
 
+Use this to pause execution until your bot is fully connected and ready.
+
 Block until the client receives the READY event.
 """
 function wait_until_ready(client::Client)
@@ -216,6 +230,8 @@ end
 """
     wait_for(check, client, EventType; timeout=30.0)
 
+Use this to pause execution until a specific event occurs, useful for interactive commands or conversations.
+
 Wait for a specific gateway event that matches a predicate.
 Uses Julia's `Channel` and `Timer` for an efficient, non-blocking wait
 that suspends only the current `Task`, not the entire bot.
@@ -224,8 +240,8 @@ Returns the matching event, or `nothing` on timeout.
 
 # Arguments
 - `check::Function` — predicate `(event) -> Bool`. Only matching events are captured.
-- `client::Client` — the bot client.
-- `EventType` — the event type to listen for (e.g., `MessageCreate`).
+- `client::Client` — the bot client. See [`Client`](@ref).
+- `EventType` — the event type to listen for (e.g., [`MessageCreate`](@ref)).
 - `timeout` — seconds to wait before returning `nothing` (default: 30).
 
 # Example
@@ -281,6 +297,8 @@ end
 
 """
     _notify_waiters!(client::Client, event::AbstractEvent)
+
+Use this internal function to match incoming events against registered waiters for wait_for.
 
 Check registered waiters against an incoming event. If a waiter's predicate
 matches, deliver the event through its channel. Called from `_event_loop`.
@@ -374,6 +392,8 @@ end
 """
     create_message(client::Client, channel_id::Snowflake; kwargs...) -> Message
 
+Use this to send messages to any channel your bot has access to.
+
 Send a message to a channel.
 
 # Arguments
@@ -397,6 +417,8 @@ end
 """
     reply(client::Client, message::Message; kwargs...) -> Message
 
+Use this to respond to a specific message, creating a threaded conversation.
+
 Reply to a message. Automatically sets the channel ID and the `message_reference`.
 
 # Example
@@ -416,7 +438,14 @@ end
 """
     edit_message(client::Client, channel_id::Snowflake, message_id::Snowflake; kwargs...) -> Message
 
+Use this to modify a message your bot previously sent.
+
 Edit an existing message. `kwargs` correspond to the Discord API fields (content, embeds, etc.).
+
+# Example
+```julia
+edit_message(client, channel_id, message_id; content="Updated content!")
+```
 """
 function edit_message(client::Client, channel_id::Snowflake, message_id::Snowflake; kwargs...)
     body = Dict{String, Any}()
@@ -429,7 +458,14 @@ end
 """
     delete_message(client::Client, channel_id::Snowflake, message_id::Snowflake; reason=nothing)
 
+Use this to remove a message from a channel.
+
 Delete a message.
+
+# Example
+```julia
+delete_message(client, channel_id, message_id; reason="Spam")
+```
 """
 function delete_message(client::Client, channel_id::Snowflake, message_id::Snowflake; reason=nothing)
     delete_message(client.ratelimiter, channel_id, message_id; token=client.token, reason)
@@ -437,6 +473,8 @@ end
 
 """
     create_reaction(client::Client, channel_id::Snowflake, message_id::Snowflake, emoji::String)
+
+Use this to add an emoji reaction to a message on behalf of your bot.
 
 Create a reaction on a message. The `emoji` parameter should be a URL-encoded string: `"👍"` or `"custom_emoji:123456"`.
 """
@@ -447,7 +485,15 @@ end
 """
     get_channel(client::Client, channel_id::Snowflake) -> DiscordChannel
 
+Use this to retrieve channel information, with automatic caching for performance.
+
 Get a channel by ID. Checks the local state cache first.
+
+# Example
+```julia
+channel = get_channel(client, channel_id)
+println("Channel name: ", channel.name)
+```
 """
 function get_channel(client::Client, channel_id::Snowflake)
     # Check cache first
@@ -460,7 +506,15 @@ end
 """
     get_guild(client::Client, guild_id::Snowflake) -> Guild
 
+Use this to retrieve server information, with automatic caching for performance.
+
 Get a guild by ID. Checks the local state cache first.
+
+# Example
+```julia
+guild = get_guild(client, guild_id)
+println("Server name: ", guild.name)
+```
 """
 function get_guild(client::Client, guild_id::Snowflake)
     cached = get(client.state.guilds, guild_id)
@@ -471,6 +525,8 @@ end
 
 """
     get_user(client::Client, user_id::Snowflake) -> User
+
+Use this to retrieve user information, with automatic caching for performance.
 
 Get a user by ID. Checks the local state cache first.
 """
@@ -483,6 +539,8 @@ end
 
 """
     update_voice_state(client, guild_id; channel_id=nothing, self_mute=false, self_deaf=false)
+
+Use this to make your bot join, leave, or move between voice channels.
 
 Send a gateway command to update voice state (join/leave/move voice channels).
 """
@@ -501,6 +559,8 @@ end
 """
     update_presence(client; status="online", activities=[], afk=false, since=nothing)
 
+Use this to change your bot's online status and activity display.
+
 Send a gateway command to update the bot's presence/status.
 """
 function update_presence(client::Client; status::String="online", activities::Vector=[], afk::Bool=false, since=nothing)
@@ -517,6 +577,8 @@ end
 
 """
     request_guild_members(client, guild_id; query="", limit=0, presences=false, user_ids=nothing, nonce=nothing)
+
+Use this to fetch member information for a guild through the gateway.
 
 Request guild members via the gateway.
 """

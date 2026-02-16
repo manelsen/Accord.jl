@@ -3,6 +3,8 @@
 """
     EventHandler
 
+Use this internal struct to manage event handlers and middleware for the client.
+
 Stores registered event handlers for the client.
 """
 mutable struct EventHandler
@@ -26,6 +28,8 @@ end
 """
     register_handler!(eh::EventHandler, event_type, handler)
 
+Use this internal function to add an event handler for a specific gateway event type.
+
 Register a handler function for a specific event type.
 The handler should accept (client, event).
 """
@@ -37,6 +41,8 @@ end
 """
     register_middleware!(eh::EventHandler, middleware)
 
+Use this internal function to add middleware that processes events before handlers.
+
 Register middleware that runs before event handlers.
 Middleware should accept (client, event) and return the event (or nothing to cancel).
 """
@@ -46,6 +52,8 @@ end
 
 """
     dispatch_event!(eh::EventHandler, client, event)
+
+Use this internal function to route an incoming event to all applicable handlers.
 
 Dispatch an event to all registered handlers.
 """

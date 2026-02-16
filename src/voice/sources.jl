@@ -3,7 +3,15 @@
 """
     PCMSource
 
+Use this to play raw PCM audio data through the voice connection.
+
 Audio source from raw PCM Int16 data (48kHz, stereo).
+
+# Example
+```julia
+pcm_data = zeros(Int16, 48000 * 2 * 5)  # 5 seconds of silence
+source = PCMSource(pcm_data)
+```
 """
 mutable struct PCMSource <: AbstractAudioSource
     data::Vector{Int16}
@@ -28,7 +36,14 @@ close_source(::PCMSource) = nothing
 """
     FileSource
 
+Use this to play audio from raw PCM files on disk.
+
 Audio source from a raw PCM file (48kHz, 16-bit signed LE, stereo).
+
+# Example
+```julia
+source = FileSource("audio.raw")
+```
 """
 mutable struct FileSource <: AbstractAudioSource
     io::IO
@@ -54,8 +69,16 @@ end
 """
     FFmpegSource
 
+Use this to play audio files in any format supported by FFmpeg.
+
 Audio source that uses FFmpeg to decode any audio format to PCM.
 Requires `ffmpeg` to be available in PATH.
+
+# Example
+```julia
+source = FFmpegSource("song.mp3")
+source_low_vol = FFmpegSource("song.mp3"; volume=0.5)
+```
 """
 mutable struct FFmpegSource <: AbstractAudioSource
     process::Base.Process
@@ -100,6 +123,8 @@ end
 
 """
     SilenceSource
+
+Use this to send silent frames and maintain the voice connection without playing audio.
 
 Generates silence frames. Useful for keeping the voice connection alive.
 """

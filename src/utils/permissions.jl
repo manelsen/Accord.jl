@@ -1,9 +1,12 @@
 # Permission computation utilities
 
 """
-    compute_base_permissions(member::Member, guild::Guild) -> Permissions
+    compute_base_permissions(member_roles::Vector{Snowflake}, guild_roles::Vector{Role}, owner_id::Snowflake, user_id::Snowflake) -> Permissions
 
-Compute the base permissions for a member in a guild (before channel overwrites).
+Use this to determine what permissions a user has at the guild level before considering channel-specific restrictions.
+
+Compute the base [`Permissions`](@ref) for a member in a guild (before channel overwrites).
+Takes a list of [`Role`](@ref) IDs, all guild roles, the owner's [`Snowflake`](@ref), and the member's ID.
 """
 function compute_base_permissions(member_roles::Vector{Snowflake}, guild_roles::Vector{Role}, owner_id::Snowflake, user_id::Snowflake)
     # Guild owner has all permissions
@@ -37,9 +40,11 @@ function compute_base_permissions(member_roles::Vector{Snowflake}, guild_roles::
 end
 
 """
-    compute_channel_permissions(base_permissions, member_roles, channel_overwrites, guild_id) -> Permissions
+    compute_channel_permissions(base::Permissions, member_roles::Vector{Snowflake}, overwrites::Vector{Overwrite}, guild_id::Snowflake, user_id::Snowflake) -> Permissions
 
-Apply channel permission overwrites to base permissions.
+Use this to calculate final permissions by applying channel-specific overwrites to base guild permissions.
+
+Apply channel [`Overwrite`](@ref)s to base [`Permissions`](@ref).
 """
 function compute_channel_permissions(base::Permissions, member_roles::Vector{Snowflake},
         overwrites::Vector{Overwrite}, guild_id::Snowflake, user_id::Snowflake)

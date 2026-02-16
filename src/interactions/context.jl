@@ -3,7 +3,9 @@
 """
     InteractionContext
 
-Wraps an Interaction with convenience methods for responding.
+Use this in your slash command handlers to access interaction data and send responses.
+
+Wraps an [`Interaction`](@ref) with convenience methods for responding. Holds a reference to the [`Client`](@ref).
 """
 struct InteractionContext
     client::Client
@@ -20,7 +22,9 @@ end
 
 _is_present(x) = !ismissing(x) && !isnothing(x)
 
-"""Get the user who triggered the interaction."""
+"""Use this property to access the Discord user who invoked the command or interaction.
+
+Get the user who triggered the interaction."""
 function Base.getproperty(ctx::InteractionContext, name::Symbol)
     if name === :user || name === :author
         i = getfield(ctx, :interaction)
@@ -44,6 +48,8 @@ end
 """
     get_options(ctx::InteractionContext) -> Dict{String, Any}
 
+Use this to retrieve all command options that the user provided when invoking a slash command.
+
 Get all interaction data options as a dictionary mapping option names to values.
 """
 function get_options(ctx::InteractionContext)
@@ -64,6 +70,8 @@ end
 """
     get_option(ctx, name, default=nothing)
 
+Use this to retrieve a specific command option value by its name.
+
 Get a specific option value by name from the interaction data.
 """
 function get_option(ctx::InteractionContext, name::String, default=nothing)
@@ -74,7 +82,9 @@ end
 """
     custom_id(ctx) -> String
 
-Get the `custom_id` for component interactions (buttons, selects) or modal submissions.
+Use this to identify which button, select menu, or modal was interacted with.
+
+Get the [`custom_id`](@ref) for component interactions (buttons, selects) or modal submissions.
 """
 function custom_id(ctx::InteractionContext)
     data = ctx.interaction.data
@@ -86,6 +96,8 @@ end
 
 """
     selected_values(ctx) -> Vector{String}
+
+Use this to retrieve the values selected by the user in a select menu component.
 
 Get the selected values for a select menu interaction.
 """
@@ -100,7 +112,9 @@ end
 """
     modal_values(ctx) -> Dict{String, String}
 
-Get modal component values as a dictionary mapping `custom_id` to the input value.
+Use this to retrieve the values entered by the user in a modal form submission.
+
+Get modal component values as a dictionary mapping [`custom_id`](@ref) to the input value.
 """
 function modal_values(ctx::InteractionContext)
     data = ctx.interaction.data
@@ -127,11 +141,13 @@ end
 """
     target(ctx::InteractionContext)
 
+Use this to get the user or message that was right-clicked in a context menu command.
+
 Get the target of a context menu interaction (User or Message command).
 Returns the resolved User or Message object, or `nothing` if unavailable.
 
-For User commands (`ApplicationCommandTypes.USER`), returns a `User`.
-For Message commands (`ApplicationCommandTypes.MESSAGE`), returns a `Message`.
+For User commands (`ApplicationCommandTypes.USER`), returns a [`User`](@ref).
+For Message commands (`ApplicationCommandTypes.MESSAGE`), returns a [`Message`](@ref).
 """
 function target(ctx::InteractionContext)
     data = ctx.interaction.data
@@ -166,10 +182,19 @@ end
 """
     respond(ctx; content="", embeds=[], components=[], ephemeral=false, tts=false, files=nothing)
 
-Send an interaction response. Automatically chooses between creating a new response 
+Use this to send an immediate response to a slash command or component interaction.
+
+Send an interaction response. Automatically chooses between creating a new response
 or editing a deferred one.
 
-Must be called within 3 seconds of receiving the interaction, unless `defer` was called.
+Must be called within 3 seconds of receiving the interaction, unless [`defer`](@ref) was called.
+
+# Example
+```julia
+@slash_command client "hello" "Say hello" function(ctx)
+    respond(ctx; content="Hello, world!", ephemeral=true)
+end
+```
 """
 function respond(ctx::InteractionContext;
     content::String = "",
@@ -213,8 +238,19 @@ end
 """
     defer(ctx; ephemeral=false)
 
+Use this when you need more than 3 seconds to process a command before responding.
+
 Acknowledge the interaction and defer the response (shows a "thinking..." indicator).
-This gives you 15 minutes to call `respond` or `edit_response`.
+This gives you 15 minutes to call [`respond`](@ref) or [`edit_response`](@ref).
+
+# Example
+```julia
+@slash_command client "slow" "Slow command" function(ctx)
+    defer(ctx)
+    sleep(5)
+    respond(ctx; content="Done!")
+end
+```
 """
 function defer(ctx::InteractionContext; ephemeral::Bool=false)
     response_type = ctx.interaction.type == InteractionTypes.MESSAGE_COMPONENT ?
@@ -240,6 +276,8 @@ end
 """
     edit_response(ctx; content=nothing, embeds=nothing, components=nothing, files=nothing)
 
+Use this to modify your bot's response after it has already been sent.
+
 Edit the original interaction response.
 """
 function edit_response(ctx::InteractionContext;
@@ -264,6 +302,8 @@ end
 
 """
     followup(ctx; content="", embeds=[], components=[], ephemeral=false, files=nothing)
+
+Use this to send additional messages after the initial response to an interaction.
 
 Send a followup message to an interaction after the initial response.
 """
@@ -291,6 +331,8 @@ end
 
 """
     show_modal(ctx; title::String, custom_id::String, components::Vector)
+
+Use this to display a popup form for users to input data.
 
 Show a modal dialog to the user.
 """

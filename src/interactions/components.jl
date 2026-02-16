@@ -1,6 +1,17 @@
 # Component builder helpers
 
-"""Create an Action Row containing components."""
+"""Use this to group buttons and select menus into a horizontal row.
+
+Create an Action Row containing components.
+
+# Example
+```julia
+row = action_row([
+    button(label="Yes", custom_id="yes", style=ButtonStyles.SUCCESS),
+    button(label="No", custom_id="no", style=ButtonStyles.DANGER)
+])
+```
+"""
 function action_row(components::Vector)
     Dict{String, Any}(
         "type" => ComponentTypes.ACTION_ROW,
@@ -8,7 +19,15 @@ function action_row(components::Vector)
     )
 end
 
-"""Create a Button component."""
+"""Use this to create interactive buttons that users can click.
+
+Create a Button component.
+
+# Example
+```julia
+btn = button(label="Click me", custom_id="click_me", style=ButtonStyles.PRIMARY)
+```
+"""
 function button(;
     label::String = "",
     custom_id::String = "",
@@ -28,7 +47,19 @@ function button(;
     btn
 end
 
-"""Create a String Select Menu component."""
+"""Use this to create dropdown menus for users to select from text options.
+
+Create a String Select Menu component.
+
+# Example
+```julia
+options = [
+    select_option(label="Option 1", value="opt1"),
+    select_option(label="Option 2", value="opt2")
+]
+sel = string_select(custom_id="my_select", options=options, placeholder="Choose one...")
+```
+"""
 function string_select(;
     custom_id::String,
     options::Vector,
@@ -49,7 +80,9 @@ function string_select(;
     sel
 end
 
-"""Create a select option for string select menus."""
+"""Use this to define individual options within a string select menu.
+
+Create a select option for string select menus."""
 function select_option(;
     label::String,
     value::String,
@@ -64,7 +97,15 @@ function select_option(;
     opt
 end
 
-"""Create a User Select Menu."""
+"""Use this to create a dropdown for selecting Discord users.
+
+Create a User Select Menu.
+
+# Example
+```julia
+sel = user_select(custom_id="pick_user", placeholder="Select a member")
+```
+"""
 function user_select(; custom_id::String, placeholder::String="", min_values::Int=1, max_values::Int=1, disabled::Bool=false)
     sel = Dict{String, Any}("type" => ComponentTypes.USER_SELECT, "custom_id" => custom_id, "min_values" => min_values, "max_values" => max_values)
     !isempty(placeholder) && (sel["placeholder"] = placeholder)
@@ -72,7 +113,9 @@ function user_select(; custom_id::String, placeholder::String="", min_values::In
     sel
 end
 
-"""Create a Role Select Menu."""
+"""Use this to create a dropdown for selecting server roles.
+
+Create a Role Select Menu."""
 function role_select(; custom_id::String, placeholder::String="", min_values::Int=1, max_values::Int=1, disabled::Bool=false)
     sel = Dict{String, Any}("type" => ComponentTypes.ROLE_SELECT, "custom_id" => custom_id, "min_values" => min_values, "max_values" => max_values)
     !isempty(placeholder) && (sel["placeholder"] = placeholder)
@@ -80,7 +123,9 @@ function role_select(; custom_id::String, placeholder::String="", min_values::In
     sel
 end
 
-"""Create a Mentionable Select Menu."""
+"""Use this to create a dropdown for selecting users or roles.
+
+Create a Mentionable Select Menu."""
 function mentionable_select(; custom_id::String, placeholder::String="", min_values::Int=1, max_values::Int=1, disabled::Bool=false)
     sel = Dict{String, Any}("type" => ComponentTypes.MENTIONABLE_SELECT, "custom_id" => custom_id, "min_values" => min_values, "max_values" => max_values)
     !isempty(placeholder) && (sel["placeholder"] = placeholder)
@@ -88,7 +133,9 @@ function mentionable_select(; custom_id::String, placeholder::String="", min_val
     sel
 end
 
-"""Create a Channel Select Menu."""
+"""Use this to create a dropdown for selecting channels.
+
+Create a Channel Select Menu."""
 function channel_select(; custom_id::String, channel_types::Vector{Int}=Int[], placeholder::String="", min_values::Int=1, max_values::Int=1, disabled::Bool=false)
     sel = Dict{String, Any}("type" => ComponentTypes.CHANNEL_SELECT, "custom_id" => custom_id, "min_values" => min_values, "max_values" => max_values)
     !isempty(channel_types) && (sel["channel_types"] = channel_types)
@@ -97,7 +144,20 @@ function channel_select(; custom_id::String, channel_types::Vector{Int}=Int[], p
     sel
 end
 
-"""Create a Text Input component (for modals)."""
+"""Use this to create text input fields inside modal dialogs.
+
+Create a Text Input component (for modals).
+
+# Example
+```julia
+input = text_input(
+    custom_id="reason",
+    label="Reason for report",
+    style=TextInputStyles.PARAGRAPH,
+    placeholder="Describe what happened..."
+)
+```
+"""
 function text_input(;
     custom_id::String,
     label::String,
@@ -122,7 +182,20 @@ function text_input(;
     ti
 end
 
-"""Create an Embed dict."""
+"""Use this to create rich embedded messages with formatted content.
+
+Create an Embed dict.
+
+# Example
+```julia
+e = embed(
+    title="Hello",
+    description="This is an embed",
+    color=0x5865F2,
+    fields=[embed_field("Name", "Accord.jl")]
+)
+```
+"""
 function embed(;
     title::String = "",
     description::String = "",
@@ -152,6 +225,8 @@ end
 """
     embed_field(name, value; inline=false)
 
+Use this to add labeled fields to your embed messages.
+
 Create an embed field dict. Use with the `embed()` builder's `fields` parameter.
 
 # Example
@@ -171,6 +246,8 @@ end
 """
     embed_footer(text; icon_url="")
 
+Use this to add a footer with optional icon to your embed messages.
+
 Create an embed footer dict. Use with the `embed()` builder's `footer` parameter.
 """
 function embed_footer(text::String; icon_url::String="")
@@ -181,6 +258,8 @@ end
 
 """
     embed_author(name; url="", icon_url="")
+
+Use this to add an author section with optional link and icon to your embed messages.
 
 Create an embed author dict. Use with the `embed()` builder's `author` parameter.
 """
@@ -193,6 +272,8 @@ end
 
 """
     activity(name, type=ActivityTypes.GAME; url="")
+
+Use this to set your bot's status activity that appears below its name.
 
 Create an activity dict for use with `update_presence`. The `type` should be a constant
 from `ActivityTypes` (e.g. `GAME`, `STREAMING`, `LISTENING`, `WATCHING`, `COMPETING`).
@@ -208,7 +289,9 @@ function activity(name::String, type::Int=ActivityTypes.GAME; url::String="")
     d
 end
 
-"""Create a command option dict."""
+"""Use this internal function to build command option dictionaries.
+
+Create a command option dict."""
 function command_option(;
     type::Int,
     name::String,
@@ -242,7 +325,9 @@ end
 
 # === Components V2 Builders ===
 
-"""Create a Container component (top-level v2 wrapper)."""
+"""Use this to create a container for organizing components in v2 messages.
+
+Create a Container component (top-level v2 wrapper)."""
 function container(components::Vector; color::Integer=0, spoiler::Bool=false)
     c = Dict{String, Any}("type" => ComponentTypes.CONTAINER, "components" => components)
     color > 0 && (c["accent_color"] = color)
@@ -250,19 +335,25 @@ function container(components::Vector; color::Integer=0, spoiler::Bool=false)
     c
 end
 
-"""Create a Section component with text and optional accessory."""
+"""Use this to group text and accessory components in v2 messages.
+
+Create a Section component with text and optional accessory."""
 function section(components::Vector; accessory=nothing)
     s = Dict{String, Any}("type" => ComponentTypes.SECTION, "components" => components)
     !isnothing(accessory) && (s["accessory"] = accessory)
     s
 end
 
-"""Create a Text Display component."""
+"""Use this to display plain text in v2 messages.
+
+Create a Text Display component."""
 function text_display(content::String)
     Dict{String, Any}("type" => ComponentTypes.TEXT_DISPLAY, "content" => content)
 end
 
-"""Create a Thumbnail component."""
+"""Use this to display small preview images in v2 messages.
+
+Create a Thumbnail component."""
 function thumbnail(; media::Dict, description::String="", spoiler::Bool=false)
     t = Dict{String, Any}("type" => ComponentTypes.THUMBNAIL, "media" => media)
     !isempty(description) && (t["description"] = description)
@@ -270,12 +361,16 @@ function thumbnail(; media::Dict, description::String="", spoiler::Bool=false)
     t
 end
 
-"""Create a Media Gallery component."""
+"""Use this to display collections of images or videos in v2 messages.
+
+Create a Media Gallery component."""
 function media_gallery(items::Vector)
     Dict{String, Any}("type" => ComponentTypes.MEDIA_GALLERY, "items" => items)
 end
 
-"""Create a media gallery item."""
+"""Use this to add individual items to a media gallery.
+
+Create a media gallery item."""
 function media_gallery_item(; media::Dict, description::String="", spoiler::Bool=false)
     item = Dict{String, Any}("media" => media)
     !isempty(description) && (item["description"] = description)
@@ -283,21 +378,27 @@ function media_gallery_item(; media::Dict, description::String="", spoiler::Bool
     item
 end
 
-"""Create a File component."""
+"""Use this to attach downloadable files to v2 messages.
+
+Create a File component."""
 function file_component(; media::Dict, spoiler::Bool=false)
     f = Dict{String, Any}("type" => ComponentTypes.FILE, "file" => media)
     spoiler && (f["spoiler"] = true)
     f
 end
 
-"""Create a Separator component."""
+"""Use this to add visual separation between components in v2 messages.
+
+Create a Separator component."""
 function separator(; divider::Bool=true, spacing::Int=1)
     s = Dict{String, Any}("type" => ComponentTypes.SEPARATOR, "divider" => divider)
     spacing != 1 && (s["spacing"] = spacing)
     s
 end
 
-"""Create an unfurled media object (used by thumbnail, media_gallery, file)."""
+"""Use this to create media references for thumbnails, galleries, and file attachments.
+
+Create an unfurled media object (used by thumbnail, media_gallery, file)."""
 function unfurled_media(url::String)
     Dict{String, Any}("url" => url)
 end

@@ -1,6 +1,8 @@
 """
     Snowflake
 
+Use this type to work with Discord's unique identifier format for all Discord objects.
+
 Discord Snowflake ID type — a UInt64 wrapper with timestamp extraction.
 Discord sends snowflakes as JSON strings; we parse them to UInt64.
 """
@@ -14,16 +16,24 @@ Snowflake(s::Snowflake) = s
 
 const DISCORD_EPOCH = 1420070400000  # ms since Unix epoch (2015-01-01T00:00:00Z)
 
-"""Extract the creation timestamp from a Snowflake."""
+"""Use this to find out when a Discord object was created based on its ID.
+
+Extract the creation timestamp from a Snowflake."""
 timestamp(s::Snowflake) = Dates.unix2datetime(((s.value >> 22) + DISCORD_EPOCH) / 1000)
 
-"""Extract the internal worker ID."""
+"""Use this for debugging or analyzing how Discord distributes ID generation across workers.
+
+Extract the internal worker ID."""
 worker_id(s::Snowflake) = (s.value >> 17) & 0x1F
 
-"""Extract the internal process ID."""
+"""Use this for debugging or analyzing how Discord distributes ID generation across processes.
+
+Extract the internal process ID."""
 process_id(s::Snowflake) = (s.value >> 12) & 0x1F
 
-"""Extract the increment."""
+"""Use this for debugging or understanding the sequence of IDs generated within the same millisecond.
+
+Extract the increment."""
 increment(s::Snowflake) = s.value & 0xFFF
 
 Base.:(==)(a::Snowflake, b::Snowflake) = a.value == b.value

@@ -3,6 +3,8 @@
 """
     VoiceGatewaySession
 
+Use this internal struct to manage the voice gateway WebSocket connection state.
+
 State for a voice gateway WebSocket connection.
 """
 mutable struct VoiceGatewaySession
@@ -37,6 +39,8 @@ end
 
 """
     voice_gateway_connect(session::VoiceGatewaySession) -> Task
+
+Use this internal function to establish the voice gateway connection.
 
 Connect to the voice gateway WebSocket and complete the handshake.
 """
@@ -140,7 +144,9 @@ function _voice_heartbeat(ws, interval_ms::Float64, session::VoiceGatewaySession
     end
 end
 
-"""Send Speaking opcode to the voice gateway."""
+"""Use this internal function to signal when your bot starts or stops speaking.
+
+Send Speaking opcode to the voice gateway."""
 function send_speaking(session::VoiceGatewaySession, speaking::Bool; microphone::Bool=true)
     flags = microphone ? 1 : 0
     if !speaking
@@ -157,7 +163,9 @@ function send_speaking(session::VoiceGatewaySession, speaking::Bool; microphone:
     HTTP.WebSockets.send(session.ws, JSON3.write(payload))
 end
 
-"""Send Select Protocol to the voice gateway after IP discovery."""
+"""Use this internal function to complete the voice connection handshake after IP discovery.
+
+Send Select Protocol to the voice gateway after IP discovery."""
 function send_select_protocol(session::VoiceGatewaySession, our_ip::String, our_port::Int, mode::String)
     payload = Dict(
         "op" => VoiceOpcodes.SELECT_PROTOCOL,

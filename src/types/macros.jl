@@ -5,6 +5,8 @@
         ...
     end
 
+Use this macro when defining new Discord API data structures to automatically handle optional fields and JSON serialization.
+
 Generate a Discord API struct with:
 - Mutable struct with keyword constructor
 - All Optional{T} fields default to `missing`
