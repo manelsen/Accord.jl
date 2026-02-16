@@ -3,6 +3,8 @@
 """
     VoiceClient
 
+Use this to connect your bot to voice channels and play audio.
+
 Manages a voice connection to a Discord voice channel.
 Handles the full connection flow: gateway → voice WS → UDP → audio.
 """
@@ -38,12 +40,20 @@ end
 """
     connect!(vc::VoiceClient) -> VoiceClient
 
+Use this to establish a connection to a voice channel before playing audio.
+
 Connect to the voice channel. This performs the full handshake:
 1. Send VOICE_STATE_UPDATE to gateway
 2. Wait for VOICE_STATE_UPDATE and VOICE_SERVER_UPDATE events
 3. Connect to voice WebSocket
 4. Perform IP discovery
 5. Select protocol and establish session
+
+# Example
+```julia
+vc = VoiceClient(client, guild_id, channel_id)
+connect!(vc)
+```
 """
 function connect!(vc::VoiceClient)
     # Register temporary event handlers to capture voice events
@@ -114,6 +124,8 @@ end
 """
     disconnect!(vc::VoiceClient)
 
+Use this to leave a voice channel and clean up resources.
+
 Disconnect from the voice channel.
 """
 function disconnect!(vc::VoiceClient)
@@ -145,7 +157,15 @@ end
 """
     play!(vc::VoiceClient, source::AbstractAudioSource)
 
+Use this to start playing audio in a connected voice channel.
+
 Play audio from the given source.
+
+# Example
+```julia
+source = FFmpegSource("music.mp3")
+play!(vc, source)
+```
 """
 function play!(vc::VoiceClient, source::AbstractAudioSource)
     !vc.connected && error("Not connected to voice")
@@ -163,6 +183,8 @@ end
 
 """
     stop!(vc::VoiceClient)
+
+Use this to stop playing audio in a voice channel.
 
 Stop audio playback.
 """

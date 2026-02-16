@@ -19,7 +19,9 @@ const OPUS_FRAME_DURATION_MS = 20
 const OPUS_FRAME_SIZE = div(OPUS_SAMPLE_RATE * OPUS_FRAME_DURATION_MS, 1000)  # 960 samples
 const OPUS_MAX_PACKET_SIZE = 4000
 
-"""Opus encoder handle."""
+"""Use this to encode PCM audio to Opus format for voice transmission.
+
+Opus encoder handle."""
 mutable struct OpusEncoder
     ptr::Ptr{Cvoid}
     sample_rate::Int32
@@ -46,7 +48,9 @@ mutable struct OpusEncoder
     end
 end
 
-"""Opus decoder handle."""
+"""Use this to decode Opus audio back to PCM format.
+
+Opus decoder handle."""
 mutable struct OpusDecoder
     ptr::Ptr{Cvoid}
     sample_rate::Int32
@@ -76,6 +80,8 @@ end
 """
     opus_encode(encoder, pcm) -> Vector{UInt8}
 
+Use this to compress PCM audio into Opus format for efficient voice transmission.
+
 Encode PCM audio (Int16 samples) to Opus.
 `pcm` should contain `frame_size * channels` samples.
 """
@@ -95,6 +101,8 @@ end
 """
     opus_decode(decoder, data, frame_size) -> Vector{Int16}
 
+Use this to decompress Opus audio back into PCM format for playback or processing.
+
 Decode Opus data to PCM audio (Int16 samples).
 """
 function opus_decode(dec::OpusDecoder, data::Vector{UInt8}, frame_size::Int=OPUS_FRAME_SIZE)
@@ -109,7 +117,9 @@ function opus_decode(dec::OpusDecoder, data::Vector{UInt8}, frame_size::Int=OPUS
     return pcm[1:(nsamples * dec.channels)]
 end
 
-"""Set the bitrate for an Opus encoder."""
+"""Use this to adjust the audio quality and bandwidth usage of the Opus encoder.
+
+Set the bitrate for an Opus encoder."""
 function set_bitrate!(enc::OpusEncoder, bitrate::Int)
     ret = ccall((:opus_encoder_ctl, Opus_jll.libopus),
         Cint,
@@ -118,7 +128,9 @@ function set_bitrate!(enc::OpusEncoder, bitrate::Int)
     ret == OPUS_OK || error("opus_encoder_ctl SET_BITRATE failed: $ret")
 end
 
-"""Set the signal type for an Opus encoder (OPUS_SIGNAL_MUSIC or OPUS_SIGNAL_VOICE)."""
+"""Use this to optimize the encoder for either music or voice content.
+
+Set the signal type for an Opus encoder (OPUS_SIGNAL_MUSIC or OPUS_SIGNAL_VOICE)."""
 function set_signal!(enc::OpusEncoder, signal::Int)
     ret = ccall((:opus_encoder_ctl, Opus_jll.libopus),
         Cint,

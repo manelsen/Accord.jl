@@ -3,7 +3,9 @@
 """
     parse_event(event_name::String, data::Dict) -> AbstractEvent
 
-Parse a raw gateway dispatch payload into a typed event struct.
+Use this internal function to convert raw gateway payloads into typed event structures for processing.
+
+Parse a raw gateway dispatch payload into a typed [`AbstractEvent`](@ref) struct.
 """
 function parse_event(event_name::String, data::Dict{String, Any})
     # Look up event type

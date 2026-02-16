@@ -3,6 +3,8 @@
 """
     Route
 
+Use this struct when making REST API calls to properly handle Discord's rate limiting per endpoint.
+
 Represents a Discord REST API route with method, path, and bucket key.
 The bucket key groups routes that share a rate limit.
 """
@@ -15,7 +17,9 @@ end
 """
     Route(method, path; major_params...)
 
-Create a Route with automatic bucket key generation.
+Use this constructor when building REST API routes to ensure proper rate limit bucket assignment.
+
+Create a [`Route`](@ref) with automatic bucket key generation.
 Major parameters (channel_id, guild_id, webhook_id) are part of the bucket.
 """
 function Route(method::String, path_template::String, params::Pair{String,String}...)
@@ -33,5 +37,7 @@ function Route(method::String, path_template::String, params::Pair{String,String
     Route(method, path, bucket_key)
 end
 
-"""Full URL for this route."""
+"""Use this to get the complete URL for making HTTP requests to this route.
+
+Full URL for this route."""
 url(r::Route) = API_BASE * r.path

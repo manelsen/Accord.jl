@@ -18,6 +18,8 @@ end
 """
     Guild
 
+Use this struct to access information about a Discord server (guild), including channels, roles, and member counts.
+
 Represents a Discord guild (server).
 
 # Fields
