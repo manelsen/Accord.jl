@@ -15,9 +15,15 @@ Permissions are a layered system:
 2. **Channel overwrites** — @everyone overwrite → role overwrites → member-specific overwrite
 3. **Special cases** — guild owner gets all permissions; `Administrator` bypasses everything
 
+!!! warning "ADMINISTRATOR Permission Bypass"
+    The `PermAdministrator` permission bypasses **all** permission checks, including channel overwrites. A user with this permission can perform any action regardless of explicit denials.
+
+!!! note "Guild Owner Always Has All Permissions"
+    The guild owner implicitly has every permission, including `Administrator`, regardless of their roles. Permission checks should always account for this using `is_owner()`.
+
 ## 2. Permission Flags Reference
 
-Accord.jl defines permissions as a `Permissions` bitfield type:
+Accord.jl defines permissions as a [`Permissions`](@ref) bitfield type:
 
 | Flag | Bit | Description |
 |------|-----|-------------|
@@ -50,7 +56,7 @@ Accord.jl defines permissions as a `Permissions` bitfield type:
 ### Checking Flags
 
 ```julia
-perms = Permissions(0x00000800)  # PermSendMessages
+perms = [`Permissions`](@ref)(0x00000800)  # PermSendMessages
 has_flag(perms, PermSendMessages)  # true
 has_flag(perms, PermBanMembers)    # false
 ```
@@ -70,16 +76,16 @@ function get_member_permissions(client, guild_id, user_id)
 
     # Get member's roles
     member_store = get(client.state.members, guild_id, nothing)
-    isnothing(member_store) && return Permissions(0)
+    isnothing(member_store) && return [`Permissions`](@ref)(0)
     member = get(member_store, user_id)
-    isnothing(member) && return Permissions(0)
+    isnothing(member) && return [`Permissions`](@ref)(0)
 
     # Get guild roles from cache
     role_store = get(client.state.roles, guild_id, nothing)
-    isnothing(role_store) && return Permissions(0)
+    isnothing(role_store) && return [`Permissions`](@ref)(0)
     guild_roles = collect(values(role_store))
 
-    member_roles = ismissing(member.roles) ? Snowflake[] : member.roles
+    member_roles = ismissing(member.roles) ? [`Snowflake`](@ref)[] : member.roles
     owner_id = guild.owner_id
 
     return compute_base_permissions(member_roles, guild_roles, owner_id, user_id)
@@ -110,7 +116,7 @@ end
 
 ### Using `@check` Guards (Recommended)
 
-The cleanest way to protect commands — stack `@check` macros before `@slash_command`:
+The cleanest way to protect commands — stack [`@check`](@ref) macros before [`@slash_command`](@ref):
 
 ```julia
 # Only users with BAN_MEMBERS permission can use this
@@ -146,7 +152,7 @@ All checks must pass. If any fails, subsequent checks and the handler are skippe
 
 | Check | Description |
 |-------|-------------|
-| `has_permissions(perms...)` | Require Discord permissions. Accepts `Permissions` constants or symbols (`:ADMINISTRATOR`, `:BAN_MEMBERS`). |
+| `has_permissions(perms...)` | Require Discord permissions. Accepts [`Permissions`](@ref) constants or symbols (`:ADMINISTRATOR`, `:BAN_MEMBERS`). |
 | `is_owner()` | Require the guild owner. |
 | `is_in_guild()` | Require guild context (deny DMs). |
 
@@ -273,7 +279,7 @@ create_message(client, channel.id; content="This channel is private to <@$(user_
 Ensure the bot has the permissions it needs:
 
 ```julia
-on(client, GuildCreate) do c, event
+on(client, [`GuildCreate`](@ref)) do c, event
     guild = event.guild
     me_id = c.state.me.id
 

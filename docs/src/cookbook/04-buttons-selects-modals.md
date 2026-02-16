@@ -13,10 +13,10 @@
 
 | Style | Constant | Color | Requires |
 |-------|----------|-------|----------|
-| Primary | `ButtonStyles.PRIMARY` | Blurple | `custom_id` |
-| Secondary | `ButtonStyles.SECONDARY` | Grey | `custom_id` |
-| Success | `ButtonStyles.SUCCESS` | Green | `custom_id` |
-| Danger | `ButtonStyles.DANGER` | Red | `custom_id` |
+| Primary | `ButtonStyles.PRIMARY` | Blurple | [`custom_id`](@ref) |
+| Secondary | `ButtonStyles.SECONDARY` | Grey | [`custom_id`](@ref) |
+| Success | `ButtonStyles.SUCCESS` | Green | [`custom_id`](@ref) |
+| Danger | `ButtonStyles.DANGER` | Red | [`custom_id`](@ref) |
 | Link | `ButtonStyles.LINK` | Grey | `url` (no handler) |
 
 ### Sending Buttons
@@ -35,6 +35,9 @@ end
 ```
 
 ### Handling Button Clicks
+
+!!! warning "3-Second Interaction Response Deadline"
+    Discord requires an initial response to button clicks, select menu choices, and modal submissions within **3 seconds**. If your handler performs slow operations, call `defer(ctx)` first to acknowledge the interaction, then follow up with the actual response.
 
 ```julia
 @button_handler client "btn_click" function(ctx)
@@ -125,12 +128,12 @@ respond(ctx; content="Pick someone:", components=[action_row([sel])])
 sel = channel_select(
     custom_id="pick_channel",
     placeholder="Select a channel",
-    channel_types=[ChannelTypes.GUILD_TEXT, ChannelTypes.GUILD_VOICE]
+    channel_types=[[`ChannelTypes`](@ref).GUILD_TEXT, [`ChannelTypes`](@ref).GUILD_VOICE]
 )
 respond(ctx; content="Pick a channel:", components=[action_row([sel])])
 ```
 
-All specialized selects use `@select_handler` and `selected_values(ctx)` returns Snowflake ID strings.
+All specialized selects use [`@select_handler`](@ref) and [`selected_values`](@ref) returns [`Snowflake`](@ref) ID strings.
 
 ## 4. Modals (Popup Forms)
 
@@ -224,6 +227,9 @@ end
     respond(ctx; content="Bug report submitted!", embeds=[e])
 end
 ```
+
+!!! note "Custom ID 100-Character Limit"
+    Discord limits [`custom_id`](@ref) to **100 characters**. Keep IDs short and use prefixes/suffixes efficiently. For complex state, store data in your bot's memory and reference it with a short ID.
 
 ## 6. Dynamic Custom IDs
 
@@ -325,7 +331,7 @@ end
 end
 
 # Wiring
-on(client, ReadyEvent) do c, event
+on(client, [`ReadyEvent`](@ref)) do c, event
     sync_commands!(c, c.command_tree)
     @info "Ticket bot ready!"
 end

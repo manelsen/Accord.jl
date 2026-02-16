@@ -3,7 +3,10 @@
 """
     discord_request(rl::RateLimiter, route::Route; kwargs...) -> HTTP.Response
 
-Execute a Discord REST API request through the rate limiter.
+Use this function when you need full control over Discord API requests with custom headers and body.
+
+Execute a Discord REST API request through the [`RateLimiter`](@ref).
+Uses a [`Route`](@ref) to track rate limits.
 
 # Keyword arguments
 - `token::String` — Bot token for Authorization header
@@ -67,6 +70,8 @@ end
 """
     discord_get(rl, path; token, query=nothing, kwargs...) -> HTTP.Response
 
+Use this convenience function when you need to fetch data from the Discord API.
+
 Convenience for GET requests.
 """
 function discord_get(rl::RateLimiter, path::String; token::String, query=nothing, major_params=Pair{String,String}[])
@@ -76,6 +81,8 @@ end
 
 """
     discord_post(rl, path; token, body=nothing, kwargs...) -> HTTP.Response
+
+Use this convenience function when you need to create new resources in the Discord API.
 
 Convenience for POST requests.
 """
@@ -87,6 +94,8 @@ end
 """
     discord_put(rl, path; token, body=nothing, kwargs...) -> HTTP.Response
 
+Use this convenience function when you need to update or replace resources in the Discord API.
+
 Convenience for PUT requests.
 """
 function discord_put(rl::RateLimiter, path::String; token::String, body=nothing, reason=nothing, major_params=Pair{String,String}[])
@@ -96,6 +105,8 @@ end
 
 """
     discord_patch(rl, path; token, body=nothing, kwargs...) -> HTTP.Response
+
+Use this convenience function when you need to partially update resources in the Discord API.
 
 Convenience for PATCH requests.
 """
@@ -107,6 +118,8 @@ end
 """
     discord_delete(rl, path; token, kwargs...) -> HTTP.Response
 
+Use this convenience function when you need to delete resources from the Discord API.
+
 Convenience for DELETE requests.
 """
 function discord_delete(rl::RateLimiter, path::String; token::String, body=nothing, reason=nothing, major_params=Pair{String,String}[])
@@ -114,7 +127,9 @@ function discord_delete(rl::RateLimiter, path::String; token::String, body=nothi
     discord_request(rl, route; token, body, reason)
 end
 
-"""Parse a JSON response body into type T."""
+"""Use this helper function to deserialize Discord API responses into Julia structs.
+
+Parse a JSON response body into type T."""
 function parse_response(::Type{T}, resp::HTTP.Response) where T
     if resp.status >= 400
         error("Discord API error ($(resp.status)): $(String(resp.body))")
@@ -122,7 +137,9 @@ function parse_response(::Type{T}, resp::HTTP.Response) where T
     JSON3.read(resp.body, T)
 end
 
-"""Parse a JSON response body into a Vector of type T."""
+"""Use this helper function to deserialize Discord API array responses into Julia vectors.
+
+Parse a JSON response body into a Vector of type T."""
 function parse_response_array(::Type{T}, resp::HTTP.Response) where T
     if resp.status >= 400
         error("Discord API error ($(resp.status)): $(String(resp.body))")

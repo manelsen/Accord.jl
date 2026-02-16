@@ -67,7 +67,14 @@ const COLORS = Dict(
 
 ## 3. Multiple Embeds
 
-Send up to 10 embeds per message:
+!!! note "Embed Limits"
+    Discord imposes limits on embeds:
+    - **Total characters**: 6000 across all embeds in a message
+    - **Fields**: Maximum 25 per embed
+    - **Field name**: 256 characters maximum
+    - **Field value**: 1024 characters maximum
+    - **Description**: 4096 characters maximum
+    - **Up to 10 embeds per message**
 
 ```julia
 embeds = [
@@ -94,14 +101,14 @@ create_reaction(client, channel_id, message_id, "custom_emoji:123456789012345678
 ```julia
 # Map emoji to role IDs
 const REACTION_ROLES = Dict(
-    "🎮" => Snowflake(111111111111111111),  # Gamer role
-    "🎨" => Snowflake(222222222222222222),  # Artist role
-    "🎵" => Snowflake(333333333333333333),  # Music role
+    "🎮" => [`Snowflake`](@ref)(111111111111111111),  # Gamer role
+    "🎨" => [`Snowflake`](@ref)(222222222222222222),  # Artist role
+    "🎵" => [`Snowflake`](@ref)(333333333333333333),  # Music role
 )
 
-const ROLE_MESSAGE_ID = Snowflake(444444444444444444)  # the message to watch
+const ROLE_MESSAGE_ID = [`Snowflake`](@ref)(444444444444444444)  # the message to watch
 
-on(client, MessageReactionAdd) do c, event
+on(client, [`MessageReactionAdd`](@ref)) do c, event
     event.message_id != ROLE_MESSAGE_ID && return
     ismissing(event.member) && return
 
@@ -118,7 +125,7 @@ on(client, MessageReactionAdd) do c, event
     @info "Added role" role=role_id user=event.member.user.id
 end
 
-on(client, MessageReactionRemove) do c, event
+on(client, [`MessageReactionRemove`](@ref)) do c, event
     event.message_id != ROLE_MESSAGE_ID && return
 
     emoji_name = event.emoji.name
@@ -146,10 +153,15 @@ edit_message(client, channel_id, message_id;
 # Delete a single message
 delete_message(client, channel_id, message_id)
 
-# Bulk delete messages (2-100 messages, < 14 days old)
+# Bulk delete messages
 message_ids = [Snowflake(id1), Snowflake(id2), Snowflake(id3)]
 bulk_delete_messages(client.ratelimiter, channel_id;
     token=client.token, message_ids=message_ids)
+
+!!! warning "bulk_delete_messages Constraints"
+    - Must delete between **2 and 100 messages** at a time
+    - Messages must be **less than 14 days old**
+    - Messages older than 14 days must be deleted individually with [`delete_message`](@ref)
 ```
 
 ## 6. File Attachments

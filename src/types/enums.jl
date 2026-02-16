@@ -1,6 +1,13 @@
 # All Discord API v10 enums
 
 # --- Channel Types ---
+"""
+    ChannelTypes
+
+Constants for the various types of channels in Discord.
+
+[Discord docs](https://discord.com/developers/docs/resources/channel#channel-object-channel-types)
+"""
 module ChannelTypes
     const GUILD_TEXT           = 0
     const DM                   = 1
@@ -18,6 +25,13 @@ module ChannelTypes
 end
 
 # --- Message Types ---
+"""
+    MessageTypes
+
+Constants for the various types of messages in Discord.
+
+[Discord docs](https://discord.com/developers/docs/resources/message#message-object-message-types)
+"""
 module MessageTypes
     const DEFAULT                                      = 0
     const RECIPIENT_ADD                                = 1
@@ -59,6 +73,13 @@ module MessageTypes
 end
 
 # --- Interaction Types ---
+"""
+    InteractionTypes
+
+Constants for the various types of interactions in Discord.
+
+[Discord docs](https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-object-interaction-type)
+"""
 module InteractionTypes
     const PING                             = 1
     const APPLICATION_COMMAND              = 2
@@ -68,6 +89,13 @@ module InteractionTypes
 end
 
 # --- Interaction Callback Types ---
+"""
+    InteractionCallbackTypes
+
+Constants for the various ways to respond to an interaction.
+
+[Discord docs](https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-response-object-interaction-callback-type)
+"""
 module InteractionCallbackTypes
     const PONG                                    = 1
     const CHANNEL_MESSAGE_WITH_SOURCE             = 4
@@ -81,6 +109,13 @@ module InteractionCallbackTypes
 end
 
 # --- Application Command Types ---
+"""
+    ApplicationCommandTypes
+
+Constants for the various types of application commands.
+
+[Discord docs](https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-types)
+"""
 module ApplicationCommandTypes
     const CHAT_INPUT = 1
     const USER       = 2
@@ -89,6 +124,13 @@ module ApplicationCommandTypes
 end
 
 # --- Application Command Option Types ---
+"""
+    ApplicationCommandOptionTypes
+
+Constants for the various types of options for application commands.
+
+[Discord docs](https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-type)
+"""
 module ApplicationCommandOptionTypes
     const SUB_COMMAND       = 1
     const SUB_COMMAND_GROUP = 2
@@ -104,6 +146,13 @@ module ApplicationCommandOptionTypes
 end
 
 # --- Component Types ---
+"""
+    ComponentTypes
+
+Constants for the various types of message components.
+
+[Discord docs](https://discord.com/developers/docs/interactions/message-components#component-object-component-types)
+"""
 module ComponentTypes
     const ACTION_ROW         = 1
     const BUTTON             = 2
@@ -124,6 +173,13 @@ module ComponentTypes
 end
 
 # --- Button Styles ---
+"""
+    ButtonStyles
+
+Constants for the various visual styles of buttons.
+
+[Discord docs](https://discord.com/developers/docs/interactions/message-components#button-object-button-styles)
+"""
 module ButtonStyles
     const PRIMARY   = 1
     const SECONDARY = 2
@@ -134,12 +190,26 @@ module ButtonStyles
 end
 
 # --- Text Input Styles ---
+"""
+    TextInputStyles
+
+Constants for the various visual styles of text inputs in modals.
+
+[Discord docs](https://discord.com/developers/docs/interactions/message-components#text-input-object-text-input-styles)
+"""
 module TextInputStyles
     const SHORT     = 1
     const PARAGRAPH = 2
 end
 
 # --- Verification Levels ---
+"""
+    VerificationLevels
+
+Constants for the various guild verification levels.
+
+[Discord docs](https://discord.com/developers/docs/resources/guild#guild-object-verification-level)
+"""
 module VerificationLevels
     const NONE      = 0
     const LOW       = 1
@@ -149,12 +219,26 @@ module VerificationLevels
 end
 
 # --- Default Message Notification Levels ---
+"""
+    DefaultMessageNotificationLevels
+
+Constants for the various guild default message notification levels.
+
+[Discord docs](https://discord.com/developers/docs/resources/guild#guild-object-default-message-notification-level)
+"""
 module DefaultMessageNotificationLevels
     const ALL_MESSAGES  = 0
     const ONLY_MENTIONS = 1
 end
 
 # --- Explicit Content Filter Levels ---
+"""
+    ExplicitContentFilterLevels
+
+Constants for the various guild explicit content filter levels.
+
+[Discord docs](https://discord.com/developers/docs/resources/guild#guild-object-explicit-content-filter-level)
+"""
 module ExplicitContentFilterLevels
     const DISABLED              = 0
     const MEMBERS_WITHOUT_ROLES = 1
@@ -162,12 +246,26 @@ module ExplicitContentFilterLevels
 end
 
 # --- MFA Levels ---
+"""
+    MFALevels
+
+Constants for the various guild multi-factor authentication levels.
+
+[Discord docs](https://discord.com/developers/docs/resources/guild#guild-object-mfa-level)
+"""
 module MFALevels
     const NONE     = 0
     const ELEVATED = 1
 end
 
 # --- NSFW Levels ---
+"""
+    NSFWLevels
+
+Constants for the various guild NSFW levels.
+
+[Discord docs](https://discord.com/developers/docs/resources/guild#guild-object-nsfw-level)
+"""
 module NSFWLevels
     const DEFAULT        = 0
     const EXPLICIT       = 1
@@ -176,6 +274,13 @@ module NSFWLevels
 end
 
 # --- Premium Tiers ---
+"""
+    PremiumTiers
+
+Constants for the various guild premium (Boost) tiers.
+
+[Discord docs](https://discord.com/developers/docs/resources/guild#guild-object-premium-tier)
+"""
 module PremiumTiers
     const NONE   = 0
     const TIER_1 = 1
@@ -184,6 +289,13 @@ module PremiumTiers
 end
 
 # --- Premium Types ---
+"""
+    PremiumTypes
+
+Constants for the various user premium (Nitro) types.
+
+[Discord docs](https://discord.com/developers/docs/resources/user#user-object-premium-types)
+"""
 module PremiumTypes
     const NONE          = 0
     const NITRO_CLASSIC = 1
@@ -192,6 +304,13 @@ module PremiumTypes
 end
 
 # --- Activity Types ---
+"""
+    ActivityTypes
+
+Constants for the various types of presence activities.
+
+[Discord docs](https://discord.com/developers/docs/topics/gateway-events#activity-object-activity-types)
+"""
 module ActivityTypes
     const GAME      = 0
     const STREAMING = 1
@@ -202,6 +321,13 @@ module ActivityTypes
 end
 
 # --- Status Types ---
+"""
+    StatusTypes
+
+Constants for the various presence status strings.
+
+[Discord docs](https://discord.com/developers/docs/topics/gateway-events#update-presence-status-types)
+"""
 module StatusTypes
     const ONLINE    = "online"
     const DND       = "dnd"
@@ -211,6 +337,13 @@ module StatusTypes
 end
 
 # --- Webhook Types ---
+"""
+    WebhookTypes
+
+Constants for the various types of webhooks.
+
+[Discord docs](https://discord.com/developers/docs/resources/webhook#webhook-object-webhook-types)
+"""
 module WebhookTypes
     const INCOMING         = 1
     const CHANNEL_FOLLOWER = 2
@@ -218,6 +351,13 @@ module WebhookTypes
 end
 
 # --- Audit Log Event Types ---
+"""
+    AuditLogEventTypes
+
+Constants for the various types of events recorded in the audit log.
+
+[Discord docs](https://discord.com/developers/docs/resources/audit-log#audit-log-entry-object-audit-log-events)
+"""
 module AuditLogEventTypes
     const GUILD_UPDATE             = 1
     const CHANNEL_CREATE           = 10
@@ -288,6 +428,13 @@ module AuditLogEventTypes
 end
 
 # --- Auto Moderation ---
+"""
+    AutoModTriggerTypes
+
+Constants for the various types of triggers for auto moderation rules.
+
+[Discord docs](https://discord.com/developers/docs/resources/auto-moderation#auto-moderation-rule-object-trigger-types)
+"""
 module AutoModTriggerTypes
     const KEYWORD        = 1
     const SPAM           = 3
@@ -296,11 +443,25 @@ module AutoModTriggerTypes
     const MEMBER_PROFILE = 6
 end
 
+"""
+    AutoModEventTypes
+
+Constants for the various event contexts where auto moderation rules are checked.
+
+[Discord docs](https://discord.com/developers/docs/resources/auto-moderation#auto-moderation-rule-object-event-types)
+"""
 module AutoModEventTypes
     const MESSAGE_SEND  = 1
     const MEMBER_UPDATE = 2
 end
 
+"""
+    AutoModActionTypes
+
+Constants for the various actions that auto moderation rules can take.
+
+[Discord docs](https://discord.com/developers/docs/resources/auto-moderation#auto-moderation-action-object-action-types)
+"""
 module AutoModActionTypes
     const BLOCK_MESSAGE      = 1
     const SEND_ALERT_MESSAGE = 2
@@ -308,6 +469,13 @@ module AutoModActionTypes
     const BLOCK_MEMBER_INTERACTION = 4
 end
 
+"""
+    AutoModKeywordPresetTypes
+
+Constants for the various built-in word lists for auto moderation.
+
+[Discord docs](https://discord.com/developers/docs/resources/auto-moderation#auto-moderation-rule-object-keyword-preset-types)
+"""
 module AutoModKeywordPresetTypes
     const PROFANITY      = 1
     const SEXUAL_CONTENT = 2
@@ -315,16 +483,37 @@ module AutoModKeywordPresetTypes
 end
 
 # --- Scheduled Event ---
+"""
+    ScheduledEventPrivacyLevels
+
+Constants for the various privacy levels of guild scheduled events.
+
+[Discord docs](https://discord.com/developers/docs/resources/guild-scheduled-event#guild-scheduled-event-object-guild-scheduled-event-privacy-level)
+"""
 module ScheduledEventPrivacyLevels
     const GUILD_ONLY = 2
 end
 
+"""
+    ScheduledEventEntityTypes
+
+Constants for the various types of entities associated with guild scheduled events.
+
+[Discord docs](https://discord.com/developers/docs/resources/guild-scheduled-event#guild-scheduled-event-object-guild-scheduled-event-entity-types)
+"""
 module ScheduledEventEntityTypes
     const STAGE_INSTANCE = 1
     const VOICE          = 2
     const EXTERNAL       = 3
 end
 
+"""
+    ScheduledEventStatuses
+
+Constants for the various statuses of guild scheduled events.
+
+[Discord docs](https://discord.com/developers/docs/resources/guild-scheduled-event#guild-scheduled-event-object-guild-scheduled-event-status)
+"""
 module ScheduledEventStatuses
     const SCHEDULED = 1
     const ACTIVE    = 2
@@ -333,17 +522,38 @@ module ScheduledEventStatuses
 end
 
 # --- Stage Instance ---
+"""
+    StageInstancePrivacyLevels
+
+Constants for the various privacy levels of Stage instances.
+
+[Discord docs](https://discord.com/developers/docs/resources/stage-instance#stage-instance-object-privacy-level)
+"""
 module StageInstancePrivacyLevels
     const PUBLIC     = 1
     const GUILD_ONLY = 2
 end
 
 # --- Sticker ---
+"""
+    StickerTypes
+
+Constants for the various types of stickers.
+
+[Discord docs](https://discord.com/developers/docs/resources/sticker#sticker-object-sticker-types)
+"""
 module StickerTypes
     const STANDARD = 1
     const GUILD    = 2
 end
 
+"""
+    StickerFormatTypes
+
+Constants for the various formats of stickers.
+
+[Discord docs](https://discord.com/developers/docs/resources/sticker#sticker-object-sticker-format-types)
+"""
 module StickerFormatTypes
     const PNG    = 1
     const APNG   = 2
@@ -352,12 +562,26 @@ module StickerFormatTypes
 end
 
 # --- Invite Target Types ---
+"""
+    InviteTargetTypes
+
+Constants for the various types of targets for voice channel invites.
+
+[Discord docs](https://discord.com/developers/docs/resources/invite#invite-object-invite-target-types)
+"""
 module InviteTargetTypes
     const STREAM                     = 1
-    const EMBEDDED_APPLICATION       = 2
+    const EMBED_APPLICATION       = 2
 end
 
 # --- Guild Features (as string constants) ---
+"""
+    GuildFeatures
+
+String constants for the various features a guild can have enabled.
+
+[Discord docs](https://discord.com/developers/docs/resources/guild#guild-object-guild-features)
+"""
 module GuildFeatures
     const ANIMATED_BANNER                  = "ANIMATED_BANNER"
     const ANIMATED_ICON                    = "ANIMATED_ICON"
@@ -389,6 +613,13 @@ module GuildFeatures
 end
 
 # --- Locale ---
+"""
+    Locales
+
+Constants for the various supported locales in Discord.
+
+[Discord docs](https://discord.com/developers/docs/reference#locales)
+"""
 module Locales
     const INDONESIAN    = "id"
     const DANISH        = "da"
@@ -425,6 +656,13 @@ module Locales
 end
 
 # --- SKU Types ---
+"""
+    SKUTypes
+
+Constants for the various types of SKUs.
+
+[Discord docs](https://discord.com/developers/docs/resources/sku#sku-object-sku-types)
+"""
 module SKUTypes
     const DURABLE          = 2
     const CONSUMABLE       = 3
@@ -433,6 +671,13 @@ module SKUTypes
 end
 
 # --- Entitlement Types ---
+"""
+    EntitlementTypes
+
+Constants for the various types of entitlements.
+
+[Discord docs](https://discord.com/developers/docs/resources/entitlement#entitlement-object-entitlement-types)
+"""
 module EntitlementTypes
     const PURCHASE                = 1
     const PREMIUM_SUBSCRIPTION    = 2
@@ -445,12 +690,26 @@ module EntitlementTypes
 end
 
 # --- Sort Order Types ---
+"""
+    SortOrderTypes
+
+Constants for the various sort orders for forum and media channels.
+
+[Discord docs](https://discord.com/developers/docs/resources/channel#channel-object-sort-order-types)
+"""
 module SortOrderTypes
     const LATEST_ACTIVITY = 0
     const CREATION_DATE   = 1
 end
 
 # --- Forum Layout Types ---
+"""
+    ForumLayoutTypes
+
+Constants for the various forum layout views.
+
+[Discord docs](https://discord.com/developers/docs/resources/channel#channel-object-forum-layout-types)
+"""
 module ForumLayoutTypes
     const NOT_SET      = 0
     const LIST_VIEW    = 1
@@ -458,12 +717,26 @@ module ForumLayoutTypes
 end
 
 # --- Onboarding Mode ---
+"""
+    OnboardingModes
+
+Constants for the various guild onboarding modes.
+
+[Discord docs](https://discord.com/developers/docs/resources/guild#guild-onboarding-object-onboarding-mode)
+"""
 module OnboardingModes
     const ONBOARDING_DEFAULT  = 0
     const ONBOARDING_ADVANCED = 1
 end
 
 # --- Allowed Mention Types ---
+"""
+    AllowedMentionTypes
+
+Constants for the various types of allowed mentions.
+
+[Discord docs](https://discord.com/developers/docs/resources/message#allowed-mentions-object-allowed-mention-types)
+"""
 module AllowedMentionTypes
     const ROLES    = "roles"
     const USERS    = "users"

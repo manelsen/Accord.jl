@@ -3,7 +3,17 @@
 """
     CommandDefinition
 
-A registered application command with its handler.
+Internal struct to store registered slash commands and their associated handlers.
+This is used by [`CommandTree`](@ref) to track available commands.
+
+# Fields
+- `name::String`: Name of the command (1-32 characters).
+- `description::String`: Description of the command (1-100 characters).
+- `type::Int`: The [`ApplicationCommandType`](@ref) (e.g., CHAT_INPUT, USER, MESSAGE).
+- `options::Vector{Dict{String, Any}}`: List of parameters/options for the command.
+- `handler::Function`: The function to execute when the command is triggered.
+- `guild_id::Optional{Snowflake}`: If set, the command is specific to this guild.
+- `checks::Vector{Function}`: List of check functions that must pass for the command to run.
 """
 struct CommandDefinition
     name::String
@@ -18,7 +28,16 @@ end
 """
     CommandTree
 
-Manages application command registration and dispatch.
+Organizes and routes slash commands, components, and modal handlers.
+The `client.command_tree` field holds the instance used by the bot.
+
+# Fields
+- `commands::Dict{String, CommandDefinition}`: Map of command names to definitions.
+- `component_handlers::Dict{String, Function}`: Map of custom_ids to component handlers.
+- `modal_handlers::Dict{String, Function}`: Map of custom_ids to modal handlers.
+- `autocomplete_handlers::Dict{String, Function}`: Map of command names to autocomplete handlers.
+
+See [`register_command!`](@ref), [`sync_commands!`](@ref).
 """
 mutable struct CommandTree
     commands::Dict{String, CommandDefinition}
@@ -35,9 +54,31 @@ CommandTree() = CommandTree(
 )
 
 """
-    register_command!(tree, name, description, handler; type=1, options=[], guild_id=missing)
+    register_command!(tree::CommandTree, name::String, description::String, handler::Function; type=1, options=[], guild_id=missing, checks=[])
 
-Register a slash command.
+Register a new application command (slash command).
+
+Use this to define a command that users can invoke via `/name`. The handler function
+should accept a single argument: the [`InteractionContext`](@ref).
+
+# Arguments
+- `tree::CommandTree`: The command tree to register into (usually `client.command_tree`).
+- `name::String`: The command name (lowercase, no spaces).
+- `description::String`: Help text shown to the user.
+- `handler::Function`: Function called when command is invoked.
+
+# Keyword Arguments
+- `type::Int`: Command type (default: `1` for Chat Input). See [`ApplicationCommandTypes`](@ref).
+- `options::Vector`: List of arguments/parameters for the command.
+- `guild_id::Optional{Snowflake}`: If provided, registers as a guild-specific command (faster updates) instead of global.
+- `checks::Vector{Function}`: List of functions `ctx -> Bool` that must return true for the command to run.
+
+# Example
+```julia
+register_command!(client.command_tree, "ping", "Checks latency", ctx -> begin
+    reply(ctx, "Pong!")
+end)
+```
 """
 function register_command!(tree::CommandTree, name::String, description::String, handler::Function;
     type::Int = ApplicationCommandTypes.CHAT_INPUT,
@@ -49,39 +90,99 @@ function register_command!(tree::CommandTree, name::String, description::String,
 end
 
 """
-    register_component!(tree, custom_id, handler)
+    register_component!(tree::CommandTree, custom_id::String, handler::Function)
 
-Register a handler for a component interaction (button, select menu).
+Register a handler for a Message Component (button or select menu).
+
+Use this to handle interactions from buttons or dropdowns. The `custom_id` can be
+an exact match or a prefix (if no exact match is found).
+
+# Arguments
+- `tree::CommandTree`: The command tree.
+- `custom_id::String`: The identifier string assigned to the component.
+- `handler::Function`: Function `ctx -> Any` called when the component is used.
+
+# Example
+```julia
+# Register a button handler
+register_component!(client.command_tree, "click_one", ctx -> begin
+    reply(ctx, "Button clicked!")
+end)
+```
 """
 function register_component!(tree::CommandTree, custom_id::String, handler::Function)
     tree.component_handlers[custom_id] = handler
 end
 
 """
-    register_modal!(tree, custom_id, handler)
+    register_modal!(tree::CommandTree, custom_id::String, handler::Function)
 
-Register a handler for a modal submission.
+Register a handler for a Modal submission.
+
+Use this to process form data submitted by users via Modals.
+
+# Arguments
+- `tree::CommandTree`: The command tree.
+- `custom_id::String`: The identifier string assigned to the modal.
+- `handler::Function`: Function `ctx -> Any` called when the modal is submitted.
+
+# Example
+```julia
+register_modal!(client.command_tree, "feedback_form", ctx -> begin
+    input = ctx.interaction.data.components[1].components[1].value
+    reply(ctx, "Received: \$input")
+end)
+```
 """
 function register_modal!(tree::CommandTree, custom_id::String, handler::Function)
     tree.modal_handlers[custom_id] = handler
 end
 
 """
-    register_autocomplete!(tree, command_name, handler)
+    register_autocomplete!(tree::CommandTree, command_name::String, handler::Function)
 
-Register an autocomplete handler for a command.
+Register an autocomplete handler for a slash command option.
+
+Use this to provide dynamic choices as the user types an argument.
+
+# Arguments
+- `tree::CommandTree`: The command tree.
+- `command_name::String`: The name of the command to attach autocomplete to.
+- `handler::Function`: Function `ctx -> Any` called on autocomplete interaction.
+
+# Example
+```julia
+register_autocomplete!(client.command_tree, "search", ctx -> begin
+    # ... logic to return choices ...
+end)
+```
 """
 function register_autocomplete!(tree::CommandTree, command_name::String, handler::Function)
     tree.autocomplete_handlers[command_name] = handler
 end
 
 """
-    sync_commands!(client, tree; guild_id=nothing)
+    sync_commands!(client, tree::CommandTree; guild_id=nothing)
 
-Sync registered commands with Discord.
-`client` should be an `Accord.Client` instance.
-If guild_id is provided, syncs as guild commands (instant).
-Otherwise syncs as global commands (up to 1h propagation).
+Upload registered commands to Discord.
+
+Use this to update the command list visible to users. Global commands can take up to
+1 hour to propagate, while guild commands are instant.
+
+# Arguments
+- `client`: The [`Client`](@ref) instance.
+- `tree::CommandTree`: The command tree containing commands to sync.
+
+# Keyword Arguments
+- `guild_id::Optional{Snowflake}`: If provided, only sync commands for this specific guild.
+  If omitted, syncs global commands AND all guild-specific commands registered in the tree.
+
+# Example
+```julia
+on(client, ReadyEvent) do c, event
+    sync_commands!(c, c.command_tree)
+end
+```
 """
 function sync_commands!(client, tree::CommandTree; guild_id=nothing)
     app_id = client.application_id
@@ -133,10 +234,20 @@ function sync_commands!(client, tree::CommandTree; guild_id=nothing)
 end
 
 """
-    dispatch_interaction!(tree, client, interaction)
+    dispatch_interaction!(tree::CommandTree, client, interaction::Interaction)
 
-Route an interaction to the appropriate handler.
-`client` should be an `Accord.Client` instance.
+Route an incoming interaction to the appropriate handler.
+
+Internal function called by the `InteractionCreate` event handler.
+It matches the interaction type and ID to a registered handler in the tree.
+
+# Arguments
+- `tree::CommandTree`: The command tree.
+- `client`: The [`Client`](@ref) instance.
+- `interaction::Interaction`: The interaction object received from the gateway.
+
+# Returns
+- The result of the handler function, or `nothing` if no handler was found.
 """
 function dispatch_interaction!(tree::CommandTree, client, interaction::Interaction)
     ctx = InteractionContext(client, interaction)

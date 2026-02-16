@@ -7,11 +7,17 @@
 
 ---
 
-## 1. Prerequisites
+!!! warning "System Dependencies for Voice"
+    Accord.jl's voice support requires:
+    - **Opus_jll** and **libsodium_jll** — bundled automatically via JLL packages
+    - **FFmpeg** — must be installed on your system and available in PATH for [`FFmpegSource`](@ref)
+    
+    Install FFmpeg:
+    - Ubuntu/Debian: `sudo apt-get install ffmpeg`
+    - macOS: `brew install ffmpeg`
+    - Windows: Download from https://ffmpeg.org/download.html
 
-Accord.jl's voice support uses:
-- **Opus_jll** and **libsodium_jll** — bundled automatically
-- **ffmpeg** — must be in your PATH for `FFmpegSource`
+## 1. Prerequisites
 
 ```julia
 client = Client(token;
@@ -19,12 +25,22 @@ client = Client(token;
 )
 ```
 
+!!! note "Voice Connection Timeout Behavior"
+    Voice connections may take several seconds to establish as they require:
+    1. Gateway handshake (VOICE_STATE_UPDATE)
+    2. Voice server assignment (VoiceServerUpdate event)
+    3. Voice WebSocket connection
+    4. UDP IP discovery
+    5. Encryption negotiation
+    
+    If [`connect!`](@ref) hangs, verify `IntentGuildVoiceStates` is enabled and the bot has permission to connect to the voice channel.
+
 ## 2. Connecting to Voice
 
 ```julia
 using Accord
 
-vc = VoiceClient(client, guild_id, voice_channel_id)
+vc = [`VoiceClient`](@ref)(client, guild_id, voice_channel_id)
 
 # Full handshake: gateway → voice WS → UDP → ready
 connect!(vc)
@@ -33,9 +49,9 @@ connect!(vc)
 disconnect!(vc)
 ```
 
-The `connect!` flow:
+The [`connect!`](@ref) flow:
 1. Sends `VOICE_STATE_UPDATE` to the gateway
-2. Waits for `VoiceStateUpdateEvent` and `VoiceServerUpdate` events
+2. Waits for [`VoiceStateUpdateEvent`](@ref) and `VoiceServerUpdate` events
 3. Connects to the voice WebSocket
 4. Performs IP discovery via UDP
 5. Selects encryption mode and establishes the session
@@ -45,19 +61,19 @@ The `connect!` flow:
 ### From Any File (via FFmpeg)
 
 ```julia
-source = FFmpegSource("song.mp3")
+source = [`FFmpegSource`](@ref)("song.mp3")
 play!(vc, source)
 ```
 
-`FFmpegSource` handles any format ffmpeg supports: MP3, FLAC, OGG, WAV, M4A, URLs, etc.
+[`FFmpegSource`](@ref) handles any format ffmpeg supports: MP3, FLAC, OGG, WAV, M4A, URLs, etc.
 
 ```julia
 # Play from a URL
-source = FFmpegSource("https://example.com/stream.mp3")
+source = [`FFmpegSource`](@ref)("https://example.com/stream.mp3")
 play!(vc, source)
 
 # Adjust volume at the ffmpeg level
-source = FFmpegSource("song.mp3"; volume=0.5)
+source = [`FFmpegSource`](@ref)("song.mp3"; volume=0.5)
 play!(vc, source)
 ```
 
@@ -66,7 +82,7 @@ play!(vc, source)
 ```julia
 # Raw PCM Int16, 48kHz stereo
 pcm_data = zeros(Int16, 48000 * 2 * 5)  # 5 seconds of silence
-source = PCMSource(pcm_data)
+source = [`PCMSource`](@ref)(pcm_data)
 play!(vc, source)
 ```
 
@@ -74,7 +90,7 @@ play!(vc, source)
 
 ```julia
 # File must be: 48kHz, 16-bit signed little-endian, stereo
-source = FileSource("audio.raw")
+source = [`FileSource`](@ref)("audio.raw")
 play!(vc, source)
 ```
 
@@ -82,7 +98,7 @@ play!(vc, source)
 
 ```julia
 # 5 seconds of silence to keep the voice connection alive
-source = SilenceSource(5000)
+source = [`SilenceSource`](@ref)(5000)
 play!(vc, source)
 ```
 
@@ -114,16 +130,16 @@ Discord requires Opus-encoded audio:
 - **Frame duration:** 20 ms
 - **Frame size:** 960 samples per channel (1,920 total)
 
-Accord.jl handles this automatically when you use `play!`. For manual encoding:
+Accord.jl handles this automatically when you use [`play!`](@ref). For manual encoding:
 
 ```julia
-encoder = OpusEncoder()  # defaults: 48kHz, stereo, AUDIO application
+encoder = [`OpusEncoder`](@ref)()  # defaults: 48kHz, stereo, AUDIO application
 
 pcm_frame = rand(Int16, 960 * 2)  # one 20ms frame
 opus_data = opus_encode(encoder, pcm_frame)
 
 # Decoding
-decoder = OpusDecoder()
+decoder = [`OpusDecoder`](@ref)()
 pcm_out = opus_decode(decoder, opus_data)
 ```
 

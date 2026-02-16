@@ -8,6 +8,8 @@
 """
     _PENDING_CHECKS
 
+Use this internal accumulator to collect checks before they're applied to the next command.
+
 Module-level accumulator for `@check` macro. Each `@check` pushes a check
 function here, and the next `@slash_command` drains it.
 """
@@ -16,6 +18,8 @@ const _CHECKS_LOCK = ReentrantLock()
 
 """
     drain_pending_checks!() -> Vector{Function}
+
+Use this internal function to retrieve and clear accumulated permission checks.
 
 Drain all pending checks accumulated by `@check` macros.
 Called internally by `@slash_command`.
@@ -95,8 +99,10 @@ end
 """
     has_permissions(perms...) -> Function
 
+Use this check to restrict commands to users with specific Discord permissions.
+
 Create a check that verifies the invoking user has all specified permissions.
-Accepts `Permissions` values or symbols (`:MANAGE_GUILD`, `:BAN_MEMBERS`, etc.).
+Accepts [`Permissions`](@ref) values or symbols (`:MANAGE_GUILD`, `:BAN_MEMBERS`, etc.).
 
 # Examples
 ```julia
@@ -142,6 +148,8 @@ end
 """
     is_owner() -> Function
 
+Use this check to restrict commands to only the server owner.
+
 Create a check that verifies the invoking user is the guild owner.
 
 # Example
@@ -171,6 +179,8 @@ end
 """
     is_in_guild() -> Function
 
+Use this check to ensure commands can only be used in servers, not in direct messages.
+
 Create a check that verifies the interaction was triggered inside a guild (not DMs).
 
 # Example
@@ -190,6 +200,8 @@ end
 
 """
     cooldown(seconds::Real; per::Symbol=:user) -> Function
+
+Use this check to rate-limit command usage and prevent spam.
 
 Create a cooldown check. If the cooldown has not expired, sends an ephemeral
 message with the remaining time and blocks execution.
@@ -252,6 +264,8 @@ end
 """
     CheckFailedError
 
+Use this error type to identify when a permission check has prevented command execution.
+
 Error thrown internally when a pre-execution check fails.
 Contains the name of the failed check for diagnostics.
 """
@@ -264,6 +278,8 @@ CheckFailedError(name::String) = CheckFailedError(name, "Check '$name' failed.")
 
 """
     run_checks(checks::Vector{Function}, ctx::InteractionContext) -> Bool
+
+Use this internal function to execute all permission checks before running a command handler.
 
 Run all check functions against a context. Returns `true` if all pass.
 If a check fails and the interaction hasn't been responded to, sends

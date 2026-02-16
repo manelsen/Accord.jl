@@ -74,6 +74,14 @@ end
 start(client)
 ```
 
+!!! note "Optional vs Nullable"
+    Accord.jl uses two distinct type aliases for Discord's optional fields:
+    
+    - **`Optional{T}`** (`Union{T, Missing}`): Field may be absent from the JSON entirely. Check with `ismissing()`. Default value is `missing`.
+    - **`Nullable{T}`** (`Union{T, Nothing}`): Field is present but may be JSON `null`. Check with `isnothing()`. Default value is `nothing`.
+    
+    This distinction mirrors Discord's API: some fields are omitted when not applicable, others are explicitly set to `null`.
+
 ### Type Aliases
 
 ```julia
@@ -165,6 +173,13 @@ on_error(handler::Function, client)     # (client, event, error) -> nothing
 
 Handlers receive `(client, event)`. Multiple handlers per event type are supported; all run independently.
 
+!!! warning "Permissions Required"
+    REST endpoints require specific Discord permissions:
+    - `create_message` requires `SEND_MESSAGES` in the channel
+    - `delete_message` requires `MANAGE_MESSAGES` (or be the message author)
+    - `create_reaction` requires `ADD_REACTIONS` (but this is usually granted by default)
+    - Most moderation actions require `KICK_MEMBERS`, `BAN_MEMBERS`, or `MANAGE_GUILD`
+
 ### Convenience REST (on Client)
 
 ```julia
@@ -200,6 +215,13 @@ request_guild_members(client, guild_id; query="", limit=0, presences=false, user
 | `client.running`   | `Bool`                | Whether the client is running   |
 
 ---
+
+!!! note "Intents Required for Events"
+    To receive gateway events, you must:
+    1. Declare the intent when creating the `Client` (e.g., `IntentGuildMessages`)
+    2. Enable privileged intents in the Discord Developer Portal (for `IntentMessageContent`, `IntentGuildMembers`, `IntentGuildPresences`)
+    
+    Without the proper intent, events will not be sent to your bot even if you register handlers for them.
 
 ## 3. Events
 
@@ -448,6 +470,14 @@ unpin_message(rl, channel_id, message_id; token, reason=nothing)
 
 ---
 
+!!! warning "Guild Management Permissions"
+    Guild operations require elevated permissions:
+    - `modify_guild`, `delete_guild`: `MANAGE_GUILD` (delete requires owner)
+    - `create_guild_channel`: `MANAGE_CHANNELS`
+    - `create_guild_ban`, `remove_guild_ban`, `bulk_guild_ban`: `BAN_MEMBERS`
+    - `get_guild_bans`: `BAN_MEMBERS`
+    - `get_guild_invites`: `MANAGE_GUILD`
+
 ## 7. REST — Guilds
 
 ```julia
@@ -466,6 +496,13 @@ bulk_guild_ban(rl, guild_id; token, body) -> Dict
 ```
 
 ---
+
+!!! warning "Member and Role Management Permissions"
+    - `modify_guild_member`: `MANAGE_NICKNAMES` (for nicknames) or `MODERATE_MEMBERS` (for timeouts)
+    - `add_guild_member_role`, `remove_guild_member_role`: `MANAGE_ROLES` (and bot's highest role must be above the target role)
+    - `remove_guild_member` (kick): `KICK_MEMBERS`
+    - `get_guild_member`: No special permission required
+    - `list_guild_members`, `search_guild_members`: Requires privileged `GUILD_MEMBERS` intent
 
 ## 8. REST — Members & Roles
 

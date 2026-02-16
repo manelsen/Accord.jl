@@ -17,7 +17,8 @@ Your `Project.toml` now tracks Accord.jl as a dependency.
 
 ## 2. Token Management
 
-Create a `.env` file (add it to `.gitignore` immediately):
+!!! tip "Token Security"
+    Never commit your Discord token to version control. Create a `.env` file and add it to `.gitignore` immediately.
 
 ```env
 # .env
@@ -61,13 +62,16 @@ client = Client(token;
     intents = IntentGuilds | IntentGuildMessages | IntentMessageContent
 )
 
+!!! note "Intents"
+    Gateway intents control which events your bot receives. You must declare both `IntentGuildMessages` (for message events) and `IntentMessageContent` (to read actual message text). Without these, your bot won't see message content!
+
 # Log when connected
-on(client, ReadyEvent) do c, event
+on(client, [`ReadyEvent`](@ref)) do c, event
     @info "Bot online!" user=event.user.username guilds=length(event.guilds)
 end
 
 # Respond to messages
-on(client, MessageCreate) do c, event
+on(client, [`MessageCreate`](@ref)) do c, event
     msg = event.message
     ismissing(msg.author) && return
     ismissing(msg.content) && return
@@ -134,13 +138,13 @@ client = Client(token;
 | `IntentGuildInvites` | 6 | No | InviteCreate/Delete |
 | `IntentGuildVoiceStates` | 7 | No | VoiceStateUpdateEvent |
 | `IntentGuildPresences` | 8 | **Yes** | PresenceUpdate |
-| `IntentGuildMessages` | 9 | No | MessageCreate/Update/Delete in guilds |
+| [`IntentGuildMessages`](@ref) | 9 | No | MessageCreate/Update/Delete in guilds |
 | `IntentGuildMessageReactions` | 10 | No | MessageReactionAdd/Remove |
 | `IntentGuildMessageTyping` | 11 | No | TypingStart |
 | `IntentDirectMessages` | 12 | No | MessageCreate/Update/Delete in DMs |
 | `IntentDirectMessageReactions` | 13 | No | MessageReactionAdd/Remove in DMs |
 | `IntentDirectMessageTyping` | 14 | No | TypingStart in DMs |
-| `IntentMessageContent` | 15 | **Yes** | Populates `message.content`, `embeds`, `attachments` |
+| [`IntentMessageContent`](@ref) | 15 | **Yes** | Populates `message.content`, `embeds`, `attachments` |
 | `IntentGuildScheduledEvents` | 16 | No | ScheduledEvent events |
 | `IntentAutoModerationConfiguration` | 20 | No | AutoModerationRuleCreate/Update/Delete |
 | `IntentAutoModerationExecution` | 21 | No | AutoModerationActionExecution |
@@ -148,6 +152,9 @@ client = Client(token;
 | `IntentDirectMessagePolls` | 25 | No | MessagePollVoteAdd/Remove in DMs |
 
 Privileged intents must be enabled in the Discord Developer Portal under **Bot > Privileged Gateway Intents**.
+
+!!! warning "MESSAGE_CONTENT Intent Required"
+    As of 2022, Discord requires the privileged [`IntentMessageContent`](@ref) intent to receive message content. Without this intent, `message.content` will be empty or missing. You must enable this in the Developer Portal AND pass it in the [`Client`](@ref) constructor.
 
 Shortcuts:
 
@@ -168,7 +175,7 @@ wait_until_ready(client)
 @info "Bot user: $(client.state.me.username)"
 
 # Send a message from the REPL
-create_message(client, Snowflake(123456789); content="Hello from the REPL!")
+create_message(client, [`Snowflake`](@ref)(123456789); content="Hello from the REPL!")
 
 # Inspect cached state
 @info "Guilds cached: $(length(client.state.guilds))"
@@ -191,19 +198,19 @@ You can register multiple handlers for the same event:
 
 ```julia
 # Analytics handler
-on(client, MessageCreate) do c, event
+on(client, [`MessageCreate`](@ref)) do c, event
     @debug "Message received" channel=event.message.channel_id
 end
 
 # Command handler (both run independently)
-on(client, MessageCreate) do c, event
+on(client, [`MessageCreate`](@ref)) do c, event
     msg = event.message
     ismissing(msg.content) && return
     msg.content == "!ping" && create_message(c, msg.channel_id; content="Pong!")
 end
 
 # Catch-all: log every event type
-on(client, AbstractEvent) do c, event
+on(client, [`AbstractEvent`](@ref)) do c, event
     @debug "Event" type=typeof(event)
 end
 ```
@@ -211,11 +218,11 @@ end
 ## 9. Logging Guild Activity
 
 ```julia
-on(client, GuildCreate) do c, event
+on(client, [`GuildCreate`](@ref)) do c, event
     @info "Guild available" name=event.guild.name id=event.guild.id
 end
 
-on(client, GuildMemberAdd) do c, event
+on(client, [`GuildMemberAdd`](@ref)) do c, event
     @info "Member joined" guild_id=event.guild_id
     # Note: requires IntentGuildMembers (privileged)
 end

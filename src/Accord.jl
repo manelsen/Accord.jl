@@ -29,6 +29,7 @@ include("types/macros.jl")
 include("types/snowflake.jl")
 include("types/enums.jl")
 include("types/flags.jl")
+include("types/flags_docs.jl")
 
 # Base types (no dependencies on other discord types)
 include("types/user.jl")
@@ -156,9 +157,18 @@ export GuildIntegrationsUpdate
 export GuildMemberAdd, GuildMemberRemove, GuildMemberUpdate, GuildMembersChunk
 export GuildRoleCreate, GuildRoleUpdate, GuildRoleDelete
 export GuildScheduledEventCreate, GuildScheduledEventUpdate, GuildScheduledEventDelete
+export GuildScheduledEventUserAdd, GuildScheduledEventUserRemove
+export GuildSoundboardSoundCreate, GuildSoundboardSoundUpdate, GuildSoundboardSoundDelete
+export GuildSoundboardSoundsUpdate, SoundboardSounds
+export IntegrationCreate, IntegrationUpdate, IntegrationDelete
 export InteractionCreate, MessageCreate, MessageUpdate, MessageDelete, MessageDeleteBulk
 export MessageReactionAdd, MessageReactionRemove, MessageReactionRemoveAll, MessageReactionRemoveEmoji
-export VoiceStateUpdateEvent, VoiceServerUpdate, WebhooksUpdate
+export MessagePollVoteAdd, MessagePollVoteRemove
+export PresenceUpdate, TypingStart, UserUpdate
+export VoiceStateUpdateEvent, VoiceServerUpdate, VoiceChannelEffectSend, WebhooksUpdate
+export EntitlementCreate, EntitlementUpdate, EntitlementDelete
+export SubscriptionCreate, SubscriptionUpdate, SubscriptionDelete
+export AutoModerationRuleCreate, AutoModerationRuleUpdate, AutoModerationRuleDelete
 export AutoModerationActionExecution
 
 # State & Cache
@@ -172,7 +182,8 @@ export @on_message, @option, @check
 # Interactions Helpers
 export get_options, get_option, custom_id, selected_values, modal_values, target
 export respond, defer, edit_response, followup, show_modal
-export sync_commands!, register_command!, register_component!, register_modal!
+export sync_commands!, register_command!, register_component!, register_modal!, dispatch_interaction!
+export CommandTree
 
 # Check guards
 export has_permissions, is_owner, is_in_guild, cooldown

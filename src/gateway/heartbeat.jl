@@ -16,8 +16,10 @@ HeartbeatState(interval_ms::Int) = HeartbeatState(
 """
     start_heartbeat(ws, interval_ms, seq_ref, stop_event) -> Task
 
+Use this internal function to maintain the gateway connection by sending periodic heartbeats.
+
 Launch a heartbeat actor that sends OP 1 Heartbeat at the given interval.
-Returns the Task. Set `stop_event` to signal shutdown.
+Returns the `Task`. Set `stop_event` to signal shutdown.
 
 `seq_ref` is a `Ref{Union{Int,Nothing}}` tracking the last sequence number.
 """
@@ -62,18 +64,24 @@ function start_heartbeat(ws, interval_ms::Int, seq_ref::Ref, stop_event::Base.Ev
     return task, state
 end
 
-"""Mark that a heartbeat ACK was received."""
+"""Use this to acknowledge receipt of a heartbeat ACK from the gateway.
+
+Mark that a heartbeat ACK was received."""
 function heartbeat_ack!(state::HeartbeatState)
     state.last_ack = time()
     state.ack_received = true
 end
 
-"""Stop the heartbeat loop."""
+"""Use this to terminate the heartbeat task gracefully.
+
+Stop the heartbeat loop."""
 function stop_heartbeat!(state::HeartbeatState)
     state.running = false
 end
 
-"""Calculate the current latency in milliseconds."""
+"""Use this to measure the round-trip time between your bot and Discord's gateway.
+
+Calculate the current latency in milliseconds."""
 function heartbeat_latency(state::HeartbeatState)
     if state.last_ack > 0 && state.last_send > 0
         return (state.last_ack - state.last_send) * 1000

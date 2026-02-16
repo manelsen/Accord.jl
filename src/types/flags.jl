@@ -1,6 +1,8 @@
 # Bitfield flag types for Discord API v10
 
-"""Check if `a` has all flags in `b` set."""
+"""Use this to verify if a user has specific permissions or if certain flags are enabled.
+
+Check if `a` has all flags in `b` set."""
 function has_flag end
 
 """
@@ -8,6 +10,8 @@ function has_flag end
         FLAG_NAME = value
         ...
     end
+
+Use this macro when creating new bitfield flag types for Discord API features.
 
 Define a flags type backed by UInt64 with bitwise operations.
 """
@@ -46,7 +50,9 @@ macro discord_flags(name, block)
     end
 end
 
-"""Register integer-based StructTypes for a flags type."""
+"""Use this macro internally to enable JSON serialization for flag types.
+
+Register integer-based StructTypes for a flags type."""
 macro _flags_structtypes_int(name)
     quote
         $StructTypes.StructType(::Type{$(esc(name))}) = $StructTypes.CustomStruct()
@@ -81,7 +87,25 @@ end
     IntentDirectMessagePolls          = 1 << 25
 end
 
-"""All non-privileged intents."""
+"""
+    Intents
+
+Gateway intents allow you to subscribe to specific buckets of events sent by Discord.
+Privileged intents (Members, Presences, MessageContent) must be enabled in the Developer Portal.
+
+[Discord docs](https://discord.com/developers/docs/topics/gateway#gateway-intents)
+
+# Example
+```julia
+# Combine intents using the | operator
+intents = IntentGuilds | IntentGuildMessages | IntentMessageContent
+```
+"""
+Intents
+
+"""Use this constant to request all standard gateway intents when connecting your bot.
+
+All non-privileged intents."""
 const IntentAllNonPrivileged = IntentGuilds | IntentGuildModeration | IntentGuildExpressions |
     IntentGuildIntegrations | IntentGuildWebhooks | IntentGuildInvites |
     IntentGuildVoiceStates | IntentGuildMessages | IntentGuildMessageReactions |
@@ -90,7 +114,9 @@ const IntentAllNonPrivileged = IntentGuilds | IntentGuildModeration | IntentGuil
     IntentAutoModerationConfiguration | IntentAutoModerationExecution |
     IntentGuildMessagePolls | IntentDirectMessagePolls
 
-"""All intents including privileged (GuildMembers, GuildPresences, MessageContent)."""
+"""Use this constant to request all gateway intents including privileged ones (requires enabling in Discord Developer Portal).
+
+All intents including privileged (GuildMembers, GuildPresences, MessageContent)."""
 const IntentAll = IntentAllNonPrivileged | IntentGuildMembers | IntentGuildPresences | IntentMessageContent
 
 @_flags_structtypes_int Intents
@@ -148,6 +174,27 @@ const IntentAll = IntentAllNonPrivileged | IntentGuildMembers | IntentGuildPrese
     PermUseExternalApps      = 1 << 50
 end
 
+"""
+    Permissions
+
+Discord permissions are stored as a bitmask. Accord.jl provides constant values for each permission.
+Use [`has_flag`](@ref) to check if a set of permissions contains a specific one.
+
+[Discord docs](https://discord.com/developers/docs/topics/permissions#permissions-bitwise-value-flags)
+
+# Example
+```julia
+# Check for a specific permission
+if has_flag(member_perms, PermAdministrator)
+    println("User is an admin")
+end
+
+# Combine permissions
+required = PermSendMessages | PermEmbedLinks
+```
+"""
+Permissions
+
 # Permissions come as strings in JSON (to handle >64-bit in future)
 StructTypes.StructType(::Type{Permissions}) = StructTypes.CustomStruct()
 StructTypes.lower(p::Permissions) = string(p.value)
@@ -169,6 +216,16 @@ StructTypes.construct(::Type{Permissions}, v::Integer) = Permissions(UInt64(v))
     MsgFlagSuppressNotifications              = 1 << 12
     MsgFlagIsVoiceMessage                     = 1 << 13
 end
+
+"""
+    MessageFlags
+
+Bitfield representing extra attributes of a message, such as whether it is ephemeral or crossposted.
+
+[Discord docs](https://discord.com/developers/docs/resources/message#message-object-message-flags)
+"""
+MessageFlags
+
 @_flags_structtypes_int MessageFlags
 
 # --- User Flags ---
@@ -189,6 +246,16 @@ end
     UserFlagBotHTTPInteractions   = 1 << 19
     UserFlagActiveDeveloper       = 1 << 22
 end
+
+"""
+    UserFlags
+
+Bitfield representing public flags on a user's account, such as whether they are a Discord employee or a partner.
+
+[Discord docs](https://discord.com/developers/docs/resources/user#user-object-user-flags)
+"""
+UserFlags
+
 @_flags_structtypes_int UserFlags
 
 # --- System Channel Flags ---
@@ -200,6 +267,16 @@ end
     SysChanSuppressRoleSubscriptionPurchaseNotifications       = 1 << 4
     SysChanSuppressRoleSubscriptionPurchaseNotificationReplies = 1 << 5
 end
+
+"""
+    SystemChannelFlags
+
+Bitfield representing which standard system notifications are disabled in a guild's system channel.
+
+[Discord docs](https://discord.com/developers/docs/resources/guild#guild-object-system-channel-flags)
+"""
+SystemChannelFlags
+
 @_flags_structtypes_int SystemChannelFlags
 
 # --- Channel Flags ---
@@ -208,6 +285,16 @@ end
     ChanFlagRequireTag             = 1 << 4
     ChanFlagHideMediaDownloadOptions = 1 << 15
 end
+
+"""
+    ChannelFlags
+
+Bitfield representing extra attributes of a channel, such as whether it is pinned in a forum.
+
+[Discord docs](https://discord.com/developers/docs/resources/channel#channel-object-channel-flags)
+"""
+ChannelFlags
+
 @_flags_structtypes_int ChannelFlags
 
 # --- Guild Member Flags ---
@@ -222,18 +309,48 @@ end
     MemberFlagAutomodQuarantinedUsername = 1 << 7
     MemberFlagDMSettingsUpsellAcknowledged = 1 << 9
 end
+
+"""
+    GuildMemberFlags
+
+Bitfield representing attributes of a guild member, such as whether they have completed onboarding.
+
+[Discord docs](https://discord.com/developers/docs/resources/guild#guild-member-object-guild-member-flags)
+"""
+GuildMemberFlags
+
 @_flags_structtypes_int GuildMemberFlags
 
 # --- Role Flags ---
 @discord_flags RoleFlags begin
     RoleFlagInPrompt = 1 << 0
 end
+
+"""
+    RoleFlags
+
+Bitfield representing attributes of a role, such as whether it is displayed in an onboarding prompt.
+
+[Discord docs](https://discord.com/developers/docs/topics/permissions#role-object-role-flags)
+"""
+RoleFlags
+
 @_flags_structtypes_int RoleFlags
 
 # --- Attachment Flags ---
 @discord_flags AttachmentFlags begin
     AttachFlagIsRemix = 1 << 2
 end
+
+"""
+    AttachmentFlags
+
+Bitfield representing attributes of an attachment, such as whether it is a remix.
+
+[Discord docs](https://discord.com/developers/docs/resources/message#attachment-object-attachment-flags)
+"""
+AttachmentFlags
+
 @_flags_structtypes_int AttachmentFlags
 
 # --- SKU Flags ---
@@ -242,4 +359,14 @@ end
     SKUFlagGuildSubscription = 1 << 7
     SKUFlagUserSubscription  = 1 << 8
 end
+
+"""
+    SKUFlags
+
+Bitfield representing attributes of a SKU, such as whether it is a user or guild subscription.
+
+[Discord docs](https://discord.com/developers/docs/resources/sku#sku-object-sku-flags)
+"""
+SKUFlags
+
 @_flags_structtypes_int SKUFlags

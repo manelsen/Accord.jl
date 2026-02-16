@@ -37,6 +37,8 @@ end
 """
     Message
 
+Use this struct to work with messages sent in Discord channels, including content, attachments, and reactions.
+
 Represents a message sent in a channel within Discord.
 
 # Fields
@@ -44,7 +46,7 @@ Represents a message sent in a channel within Discord.
 - `channel_id`: The channel ID.
 - `author`: The user who sent the message (optional).
 - `content`: The message text content.
-- `timestamp`: The time the message was sent.
+- [`timestamp`](@ref): The time the message was sent.
 - `attachments`: Vector of attachments.
 - `embeds`: Vector of embeds.
 - `reactions`: Vector of reactions.
