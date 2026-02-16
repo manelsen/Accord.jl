@@ -4,7 +4,7 @@ Practical, copy-paste-ready recipes for building Discord bots in Julia with [Acc
 
 ## Prerequisites
 
-- **Julia 1.10+** ([download](https://julialang.org/downloads/))
+- **Julia 1.11+** ([download](https://julialang.org/downloads/))
 - **Discord bot token** — create one at the [Discord Developer Portal](https://discord.com/developers/applications)
 - **Accord.jl** installed: `] add Accord`
 

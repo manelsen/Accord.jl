@@ -4,11 +4,11 @@
 
 ## Overview
 
-**Accord.jl** is a Discord API v10 library for Julia 1.10+. It provides a complete bot framework: typed Discord structs, gateway WebSocket with zlib-stream compression, REST with per-bucket rate limiting, slash commands with macro-based DSL, interactive components (buttons, selects, modals), voice with Opus/libsodium encryption, and pluggable caching.
+**Accord.jl** is a Discord API v10 library for Julia 1.11+. It provides a complete bot framework: typed Discord structs, gateway WebSocket with zlib-stream compression, REST with per-bucket rate limiting, slash commands with macro-based DSL, interactive components (buttons, selects, modals), voice with Opus/libsodium encryption, and pluggable caching.
 
 - **Version**: 0.1.0
 - **License**: MIT
-- **Min Julia**: 1.10
+- **Min Julia**: 1.11
 - **Discord API**: v10
 
 ---
@@ -97,7 +97,7 @@ Accord.jl/
 ├── Project.toml                # Package metadata, dependencies, compat
 ├── KANBAN.md                   # Development progress tracker
 ├── README.md                   # Project overview and quick start
-└── .github/workflows/ci.yml   # CI: Julia 1.10 + latest, ubuntu-latest
+└── .github/workflows/ci.yml   # CI: Julia 1.11 + latest, ubuntu-latest
 ```
 
 ---
