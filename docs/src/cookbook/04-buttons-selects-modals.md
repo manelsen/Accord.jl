@@ -13,11 +13,11 @@
 
 | Style | Constant | Color | Requires |
 |-------|----------|-------|----------|
-| Primary | `ButtonStyles.PRIMARY` | Blurple | [`custom_id`](@ref) |
-| Secondary | `ButtonStyles.SECONDARY` | Grey | [`custom_id`](@ref) |
-| Success | `ButtonStyles.SUCCESS` | Green | [`custom_id`](@ref) |
-| Danger | `ButtonStyles.DANGER` | Red | [`custom_id`](@ref) |
-| Link | `ButtonStyles.LINK` | Grey | `url` (no handler) |
+| Primary | [`ButtonStyles`](@ref)`.PRIMARY` | Blurple | `custom_id` |
+| Secondary | [`ButtonStyles`](@ref)`.SECONDARY` | Grey | `custom_id` |
+| Success | [`ButtonStyles`](@ref)`.SUCCESS` | Green | `custom_id` |
+| Danger | [`ButtonStyles`](@ref)`.DANGER` | Red | `custom_id` |
+| Link | [`ButtonStyles`](@ref)`.LINK` | Grey | `url` (no handler) |
 
 ### Sending Buttons
 

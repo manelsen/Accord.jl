@@ -63,7 +63,7 @@ client = Client(token;
 )
 
 !!! note "Intents"
-    Gateway intents control which events your bot receives. You must declare both `IntentGuildMessages` (for message events) and `IntentMessageContent` (to read actual message text). Without these, your bot won't see message content!
+    Gateway intents control which events your bot receives. You must declare both [`IntentGuildMessages`](@ref) (for message events) and [`IntentMessageContent`](@ref) (to read actual message text). Without these, your bot won't see message content!
 
 # Log when connected
 on(client, [`ReadyEvent`](@ref)) do c, event
@@ -129,27 +129,27 @@ client = Client(token;
 
 | Intent | Bit | Privileged | Events |
 |--------|-----|------------|--------|
-| `IntentGuilds` | 0 | No | GuildCreate, GuildUpdate, GuildDelete, channels, roles |
-| `IntentGuildMembers` | 1 | **Yes** | GuildMemberAdd/Remove/Update |
-| `IntentGuildModeration` | 2 | No | GuildBanAdd/Remove, GuildAuditLogEntryCreate |
-| `IntentGuildExpressions` | 3 | No | GuildEmojisUpdate, GuildStickersUpdate |
-| `IntentGuildIntegrations` | 4 | No | IntegrationCreate/Update/Delete |
-| `IntentGuildWebhooks` | 5 | No | WebhooksUpdate |
-| `IntentGuildInvites` | 6 | No | InviteCreate/Delete |
-| `IntentGuildVoiceStates` | 7 | No | VoiceStateUpdateEvent |
-| `IntentGuildPresences` | 8 | **Yes** | PresenceUpdate |
+| [`IntentGuilds`](@ref) | 0 | No | GuildCreate, GuildUpdate, GuildDelete, channels, roles |
+| [`IntentGuildMembers`](@ref) | 1 | **Yes** | GuildMemberAdd/Remove/Update |
+| [`IntentGuildModeration`](@ref) | 2 | No | GuildBanAdd/Remove, GuildAuditLogEntryCreate |
+| [`IntentGuildExpressions`](@ref) | 3 | No | GuildEmojisUpdate, GuildStickersUpdate |
+| [`IntentGuildIntegrations`](@ref) | 4 | No | IntegrationCreate/Update/Delete |
+| [`IntentGuildWebhooks`](@ref) | 5 | No | WebhooksUpdate |
+| [`IntentGuildInvites`](@ref) | 6 | No | InviteCreate/Delete |
+| [`IntentGuildVoiceStates`](@ref) | 7 | No | VoiceStateUpdateEvent |
+| [`IntentGuildPresences`](@ref) | 8 | **Yes** | PresenceUpdate |
 | [`IntentGuildMessages`](@ref) | 9 | No | MessageCreate/Update/Delete in guilds |
-| `IntentGuildMessageReactions` | 10 | No | MessageReactionAdd/Remove |
-| `IntentGuildMessageTyping` | 11 | No | TypingStart |
-| `IntentDirectMessages` | 12 | No | MessageCreate/Update/Delete in DMs |
-| `IntentDirectMessageReactions` | 13 | No | MessageReactionAdd/Remove in DMs |
-| `IntentDirectMessageTyping` | 14 | No | TypingStart in DMs |
+| [`IntentGuildMessageReactions`](@ref) | 10 | No | MessageReactionAdd/Remove |
+| [`IntentGuildMessageTyping`](@ref) | 11 | No | TypingStart |
+| [`IntentDirectMessages`](@ref) | 12 | No | MessageCreate/Update/Delete in DMs |
+| [`IntentDirectMessageReactions`](@ref) | 13 | No | MessageReactionAdd/Remove in DMs |
+| [`IntentDirectMessageTyping`](@ref) | 14 | No | TypingStart in DMs |
 | [`IntentMessageContent`](@ref) | 15 | **Yes** | Populates `message.content`, `embeds`, `attachments` |
-| `IntentGuildScheduledEvents` | 16 | No | ScheduledEvent events |
-| `IntentAutoModerationConfiguration` | 20 | No | AutoModerationRuleCreate/Update/Delete |
-| `IntentAutoModerationExecution` | 21 | No | AutoModerationActionExecution |
-| `IntentGuildMessagePolls` | 24 | No | MessagePollVoteAdd/Remove |
-| `IntentDirectMessagePolls` | 25 | No | MessagePollVoteAdd/Remove in DMs |
+| [`IntentGuildScheduledEvents`](@ref) | 16 | No | ScheduledEvent events |
+| [`IntentAutoModerationConfiguration`](@ref) | 20 | No | AutoModerationRuleCreate/Update/Delete |
+| [`IntentAutoModerationExecution`](@ref) | 21 | No | AutoModerationActionExecution |
+| [`IntentGuildMessagePolls`](@ref) | 24 | No | MessagePollVoteAdd/Remove |
+| [`IntentDirectMessagePolls`](@ref) | 25 | No | MessagePollVoteAdd/Remove in DMs |
 
 Privileged intents must be enabled in the Discord Developer Portal under **Bot > Privileged Gateway Intents**.
 
@@ -157,6 +157,8 @@ Privileged intents must be enabled in the Discord Developer Portal under **Bot >
     As of 2022, Discord requires the privileged [`IntentMessageContent`](@ref) intent to receive message content. Without this intent, `message.content` will be empty or missing. You must enable this in the Developer Portal AND pass it in the [`Client`](@ref) constructor.
 
 Shortcuts:
+
+[`IntentAllNonPrivileged`](@ref) and [`IntentAll`](@ref):
 
 ```julia
 IntentAllNonPrivileged  # all non-privileged intents (default)

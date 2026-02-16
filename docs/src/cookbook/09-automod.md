@@ -35,19 +35,19 @@ client = Client(token;
 
 | Type | Constant | Description |
 |------|----------|-------------|
-| Keyword | `AutoModTriggerTypes.KEYWORD` (1) | Match custom keywords/regex |
-| Spam | `AutoModTriggerTypes.SPAM` (3) | Generic spam detection |
-| Keyword Preset | `AutoModTriggerTypes.KEYWORD_PRESET` (4) | Discord's built-in word lists |
-| Mention Spam | `AutoModTriggerTypes.MENTION_SPAM` (5) | Too many mentions |
-| Member Profile | `AutoModTriggerTypes.MEMBER_PROFILE` (6) | Profile content match |
+| Keyword | [`AutoModTriggerTypes`](@ref)`.KEYWORD` (1) | Match custom keywords/regex |
+| Spam | [`AutoModTriggerTypes`](@ref)`.SPAM` (3) | Generic spam detection |
+| Keyword Preset | [`AutoModTriggerTypes`](@ref)`.KEYWORD_PRESET` (4) | Discord's built-in word lists |
+| Mention Spam | [`AutoModTriggerTypes`](@ref)`.MENTION_SPAM` (5) | Too many mentions |
+| Member Profile | [`AutoModTriggerTypes`](@ref)`.MEMBER_PROFILE` (6) | Profile content match |
 
 ## 3. Action Types
 
 | Type | Constant | Description |
 |------|----------|-------------|
-| Block Message | `AutoModActionTypes.BLOCK_MESSAGE` (1) | Prevent the message from being sent |
-| Send Alert | `AutoModActionTypes.SEND_ALERT_MESSAGE` (2) | Send alert to a channel |
-| Timeout | `AutoModActionTypes.TIMEOUT` (3) | Timeout the user |
+| Block Message | [`AutoModActionTypes`](@ref)`.BLOCK_MESSAGE` (1) | Prevent the message from being sent |
+| Send Alert | [`AutoModActionTypes`](@ref)`.SEND_ALERT_MESSAGE` (2) | Send alert to a channel |
+| Timeout | [`AutoModActionTypes`](@ref)`.TIMEOUT` (3) | Timeout the user |
 
 ## 4. Creating a Keyword Filter
 
@@ -154,7 +154,7 @@ create_auto_moderation_rule(client.ratelimiter, guild_id;
 
 ## 7. Listening for AutoMod Actions
 
-When an [`AutoModRule`](@ref) triggers, you get an `AutoModerationActionExecution` event:
+When an [`AutoModRule`](@ref) triggers, you get an [`AutoModerationActionExecution`](@ref) event:
 
 ```julia
 on(client, AutoModerationActionExecution) do c, event

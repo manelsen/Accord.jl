@@ -9,7 +9,7 @@ This is used by [`CommandTree`](@ref) to track available commands.
 # Fields
 - `name::String`: Name of the command (1-32 characters).
 - `description::String`: Description of the command (1-100 characters).
-- `type::Int`: The [`ApplicationCommandType`](@ref) (e.g., CHAT_INPUT, USER, MESSAGE).
+- `type::Int`: The [`ApplicationCommandTypes`](@ref) (e.g., CHAT_INPUT, USER, MESSAGE).
 - `options::Vector{Dict{String, Any}}`: List of parameters/options for the command.
 - `handler::Function`: The function to execute when the command is triggered.
 - `guild_id::Optional{Snowflake}`: If set, the command is specific to this guild.

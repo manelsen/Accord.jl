@@ -29,6 +29,10 @@ on
 on_error
 wait_until_ready
 wait_for
+reply
+update_presence
+request_guild_members
+activity
 ```
 
 ## 2. Events
@@ -143,24 +147,39 @@ delete_all_reactions_for_emoji
 get_reactions
 get_answer_voters
 end_poll
+pin_message
+unpin_message
+get_pinned_messages
 ```
 
 ### Channels & Guilds
 ```@docs
 get_channel
 modify_channel
+delete_channel
+edit_channel_permissions
+delete_channel_permission
+get_channel_invites
+create_channel_invite
+follow_announcement_channel
+trigger_typing_indicator
 get_guild
 modify_guild
 delete_guild
 get_guild_channels
 create_guild_channel
 modify_guild_channel_positions
+get_guild_preview
 list_guild_members
+search_guild_members
 get_guild_member
 add_guild_member
 modify_guild_member
 modify_current_member
 remove_guild_member
+add_guild_member_role
+remove_guild_member_role
+leave_guild
 get_guild_bans
 get_guild_ban
 create_guild_ban
@@ -222,6 +241,7 @@ bulk_overwrite_guild_application_commands
 get_guild_application_command_permissions
 get_application_command_permissions
 edit_application_command_permissions
+create_interaction_response
 get_original_interaction_response
 edit_original_interaction_response
 delete_original_interaction_response
@@ -231,12 +251,13 @@ edit_followup_message
 delete_followup_message
 ```
 
-### Other REST
+### Users & Webhooks
 ```@docs
 get_current_user
 get_user
 modify_current_user
 get_current_user_guilds
+get_current_user_guild_member
 create_dm
 get_current_user_connections
 get_current_user_application_role_connection
@@ -255,6 +276,10 @@ execute_webhook
 get_webhook_message
 edit_webhook_message
 delete_webhook_message
+```
+
+### Emoji & Stickers
+```@docs
 list_guild_emojis
 get_guild_emoji
 create_guild_emoji
@@ -269,8 +294,13 @@ get_sticker
 list_sticker_packs
 list_guild_stickers
 get_guild_sticker
+create_guild_sticker
 modify_guild_sticker
 delete_guild_sticker
+```
+
+### Invites, Audit Log & AutoMod
+```@docs
 get_invite
 delete_invite
 get_guild_audit_log
@@ -279,6 +309,10 @@ get_auto_moderation_rule
 create_auto_moderation_rule
 modify_auto_moderation_rule
 delete_auto_moderation_rule
+```
+
+### Other REST
+```@docs
 list_scheduled_events
 create_guild_scheduled_event
 get_guild_scheduled_event
@@ -303,6 +337,8 @@ create_test_entitlement
 delete_test_entitlement
 consume_entitlement
 get_entitlement
+list_sku_subscriptions
+get_sku_subscription
 get_guild_templates
 create_guild_template
 sync_guild_template
@@ -319,6 +355,7 @@ update_application_role_connection_metadata_records
 
 ```@docs
 InteractionContext
+Base.getproperty(::InteractionContext, ::Symbol)
 CommandTree
 sync_commands!
 register_command!
@@ -349,6 +386,39 @@ modal_values
 target
 run_checks
 drain_pending_checks!
+cooldown
+is_owner
+is_in_guild
+has_permissions
+CheckFailedError
+```
+
+### Component & Embed Builders
+
+```@docs
+button
+string_select
+user_select
+role_select
+mentionable_select
+channel_select
+select_option
+text_input
+action_row
+embed
+embed_footer
+embed_author
+embed_field
+thumbnail
+command_option
+container
+section
+text_display
+separator
+media_gallery
+media_gallery_item
+file_component
+unfurled_media
 ```
 
 ## 6. Voice
@@ -364,10 +434,13 @@ stop!
 pause!
 resume!
 is_playing
+AbstractAudioSource
 PCMSource
 FileSource
 FFmpegSource
 SilenceSource
+close_source
+read_frame
 OpusEncoder
 OpusDecoder
 opus_encode
@@ -402,8 +475,147 @@ Presence
 Attachment
 ```
 
+### Channel Types
+```@docs
+ThreadMetadata
+ThreadMember
+ForumTag
+DefaultReaction
+Overwrite
+```
+
+### Embed Types
+```@docs
+EmbedFooter
+EmbedImage
+EmbedThumbnail
+EmbedVideo
+EmbedField
+EmbedAuthor
+EmbedProvider
+```
+
+### Interaction & Command Types
+```@docs
+InteractionData
+InteractionDataOption
+ResolvedData
+ApplicationCommand
+ApplicationCommandOption
+ApplicationCommandOptionChoice
+CommandDefinition
+```
+
+### Component Types
+```@docs
+Component
+SelectOption
+```
+
+### Guild Types
+```@docs
+GuildFeatures
+RoleTags
+Ban
+GuildTemplate
+```
+
+### Activity & Presence Types
+```@docs
+Activity
+ActivityTimestamps
+ActivityEmoji
+ActivityParty
+ActivityAssets
+ActivitySecrets
+ActivityButton
+ClientStatus
+```
+
+### Poll Types
+```@docs
+Poll
+PollMedia
+PollAnswer
+PollAnswerCount
+PollResults
+RecurrenceRule
+RecurrenceRuleNWeekday
+```
+
+### Audit Log Types
+```@docs
+AuditLog
+AuditLogEntry
+AuditLogEntryInfo
+AuditLogChange
+```
+
+### AutoMod Types
+```@docs
+AutoModAction
+AutoModActionMetadata
+AutoModTriggerMetadata
+```
+
+### Sticker Types
+```@docs
+Sticker
+StickerItem
+StickerPack
+```
+
+### Invite & Webhook Types
+```@docs
+Invite
+InviteMetadata
+Webhook
+```
+
+### Voice Types
+```@docs
+VoiceState
+VoiceRegion
+```
+
+### Stage, Sound & Connection Types
+```@docs
+StageInstance
+SoundboardSound
+Connection
+ReactionCountDetails
+```
+
+### Monetization Types
+```@docs
+SKU
+Entitlement
+Subscription
+```
+
+### Scheduled Event Types
+```@docs
+ScheduledEvent
+EntityMetadata
+```
+
+### Integration Types
+```@docs
+Integration
+IntegrationAccount
+IntegrationApplication
+```
+
+### Onboarding Types
+```@docs
+Onboarding
+OnboardingPrompt
+OnboardingPromptOption
+```
+
 ## 8. Enums, Flags & Permissions
 
+### Enums
 ```@docs
 ChannelTypes
 InteractionTypes
@@ -441,6 +653,12 @@ StageInstancePrivacyLevels
 OnboardingModes
 SKUTypes
 EntitlementTypes
+AllowedMentionTypes
+Locales
+```
+
+### Intents
+```@docs
 Intents
 IntentGuilds
 IntentGuildMembers
@@ -465,18 +683,207 @@ IntentGuildMessagePolls
 IntentDirectMessagePolls
 IntentAllNonPrivileged
 IntentAll
+```
+
+### Permissions Utilities
+```@docs
 Permissions
 has_flag
+compute_base_permissions
+compute_channel_permissions
+```
+
+### Message Flags
+```@docs
 MessageFlags
+MsgFlagCrossposted
+MsgFlagIsCrosspost
+MsgFlagSuppressEmbeds
+MsgFlagSourceMessageDeleted
+MsgFlagUrgent
+MsgFlagHasThread
+MsgFlagEphemeral
+MsgFlagLoading
+MsgFlagFailedToMentionSomeRolesInThread
+MsgFlagSuppressNotifications
+MsgFlagIsVoiceMessage
+```
+
+### User Flags
+```@docs
 UserFlags
-SystemChannelFlags
+UserFlagStaff
+UserFlagPartner
+UserFlagHypeSquad
+UserFlagBugHunterLevel1
+UserFlagHypeSquadBravery
+UserFlagHypeSquadBrilliance
+UserFlagHypeSquadBalance
+UserFlagEarlyNitroSupporter
+UserFlagTeamPseudoUser
+UserFlagBugHunterLevel2
+UserFlagVerifiedBot
+UserFlagVerifiedDeveloper
+UserFlagCertifiedModerator
+UserFlagBotHTTPInteractions
+UserFlagActiveDeveloper
+```
+
+### Channel Flags
+```@docs
 ChannelFlags
+ChanFlagPinned
+ChanFlagRequireTag
+ChanFlagHideMediaDownloadOptions
+```
+
+### Guild Member Flags
+```@docs
 GuildMemberFlags
+MemberFlagDidRejoin
+MemberFlagCompletedOnboarding
+MemberFlagBypassesVerification
+MemberFlagStartedOnboarding
+MemberFlagIsGuest
+MemberFlagStartedHomeActions
+MemberFlagCompletedHomeActions
+MemberFlagAutomodQuarantinedUsername
+MemberFlagDMSettingsUpsellAcknowledged
+```
+
+### System Channel Flags
+```@docs
+SystemChannelFlags
+SysChanSuppressJoinNotifications
+SysChanSuppressJoinNotificationReplies
+SysChanSuppressPremiumSubscriptions
+SysChanSuppressGuildReminderNotifications
+SysChanSuppressRoleSubscriptionPurchaseNotifications
+SysChanSuppressRoleSubscriptionPurchaseNotificationReplies
+```
+
+### Role Flags
+```@docs
 RoleFlags
+RoleFlagInPrompt
+```
+
+### Attachment Flags
+```@docs
 AttachmentFlags
+AttachFlagIsRemix
+```
+
+### SKU Flags
+```@docs
 SKUFlags
+SKUFlagAvailable
+SKUFlagGuildSubscription
+SKUFlagUserSubscription
+```
+
+### Macros
+```@docs
+@discord_struct
+@discord_flags
+@_flags_structtypes_int
 ```
 
 ---
 
-## 9. Gateway Internals
+## 9. Event System
+
+```@docs
+EventHandler
+EventWaiter
+register_handler!
+register_middleware!
+dispatch_event!
+parse_event
+```
+
+## 10. Gateway & Internals
+
+### Gateway
+```@docs
+GatewaySession
+ShardInfo
+GatewayCommand
+GatewayCloseCodes.can_reconnect
+start_shard
+stop_shard
+send_to_shard
+gateway_connect
+shard_for_guild
+```
+
+### Rate Limiter
+```@docs
+RateLimiter
+BucketState
+RestJob
+Route
+url
+start_ratelimiter!
+stop_ratelimiter!
+submit_rest
+```
+
+### HTTP Methods
+```@docs
+discord_get
+discord_post
+discord_put
+discord_patch
+discord_delete
+discord_request
+```
+
+### Response Parsing
+```@docs
+parse_response
+parse_response_array
+```
+
+### Voice Gateway
+```@docs
+VoiceGatewaySession
+voice_gateway_connect
+send_select_protocol
+send_speaking
+create_voice_udp
+ip_discovery
+select_encryption_mode
+ENCRYPTION_MODES
+send_voice_packet
+```
+
+### RTP & Codec
+```@docs
+rtp_header
+parse_rtp_header
+RTPPacket
+```
+
+### Encryption
+```@docs
+xsalsa20_poly1305_encrypt
+xsalsa20_poly1305_decrypt
+aead_xchacha20_poly1305_encrypt
+aead_xchacha20_poly1305_decrypt
+```
+
+### Heartbeat
+```@docs
+start_heartbeat
+stop_heartbeat!
+heartbeat_ack!
+heartbeat_latency
+```
+
+### Private Helpers
+```@docs
+_notify_waiters!
+_PENDING_CHECKS
+_resolve_perm
+```

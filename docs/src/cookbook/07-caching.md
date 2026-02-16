@@ -19,10 +19,10 @@ But caching everything wastes memory. Accord.jl lets you choose per resource typ
 
 | Strategy | Constructor | Behavior |
 |----------|-----------|----------|
-| **CacheForever** | `CacheForever()` | Keep everything, never evict |
-| **CacheNever** | `CacheNever()` | Never cache, always fetch from API |
-| **CacheLRU** | `CacheLRU(n)` | Keep the `n` most recently used entries |
-| **CacheTTL** | `CacheTTL(seconds)` | Expire entries after `seconds` |
+| **CacheForever** | [`CacheForever`](@ref)`()` | Keep everything, never evict |
+| **CacheNever** | [`CacheNever`](@ref)`()` | Never cache, always fetch from API |
+| **CacheLRU** | [`CacheLRU`](@ref)`(n)` | Keep the `n` most recently used entries |
+| **CacheTTL** | [`CacheTTL`](@ref)`(seconds)` | Expire entries after `seconds` |
 
 ## 3. Per-Resource Configuration
 
@@ -111,8 +111,8 @@ The cache updates automatically from gateway events:
 | [`GuildCreate`](@ref) | Caches guild, channels, roles, emojis, members |
 | [`GuildUpdate`](@ref) | Updates guild |
 | [`GuildDelete`](@ref) | Removes guild and all associated data |
-| `ChannelCreate/Update` | Caches channel |
-| `ChannelDelete` | Removes channel |
+| [`ChannelCreate`](@ref)/[`ChannelUpdate`](@ref) | Caches channel |
+| [`ChannelDelete`](@ref) | Removes channel |
 | [`GuildMemberAdd`](@ref) | Caches member and user |
 | [`GuildMemberRemove`](@ref) | Removes member |
 | [`GuildMemberUpdate`](@ref) | Updates member fields |
