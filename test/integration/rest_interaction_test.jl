@@ -1,6 +1,7 @@
 @testitem "REST Interaction Endpoints" tags=[:integration] begin
     include("rest_test_utils.jl")
-    using Accord, HTTP
+    using Accord, HTTP, JSON3
+    using Accord: Connection, Integration, WelcomeScreen, Onboarding, SoundboardSound, SKU, Entitlement, Subscription, parse_response, parse_response_array, url, API_BASE
 
     @testset "Interaction Endpoints" begin
         app_id = Snowflake(1000)
