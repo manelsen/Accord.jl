@@ -20,8 +20,8 @@ lcov.info
 # OS
 .DS_Store
 Thumbs.db
-bot.log
 KANBAN.md
 
 # Integration test fixtures (manifest only by default, but we need the files for CI)
 # test/integration/fixtures/
+*.log
