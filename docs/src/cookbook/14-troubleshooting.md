@@ -7,6 +7,13 @@
 
 ---
 
+!!! warning "Common Pitfalls"
+    Most bot issues fall into these categories:
+    - **Wrong intents**: Missing [`IntentMessageContent`](@ref) for reading messages, missing privileged intents
+    - **Missing permissions**: Bot lacks required Discord permissions for actions
+    - **Token issues**: Wrong token format, expired tokens, or missing "Bot " prefix
+    - **Timing**: Interaction responses taking longer than 3 seconds
+
 ## 1. Common Error Table
 
 | Error | Cause | Fix |
@@ -17,12 +24,19 @@
 | HTTP 403 | Missing permissions | Check bot's role permissions in server |
 | HTTP 429 | Rate limited | Reduce request rate; Accord.jl handles this automatically |
 | HTTP 400 | Bad request body | Check payload format; log the body before sending |
-| `content` is empty | Missing `IntentMessageContent` | Enable Message Content intent |
-| No message events | Missing `IntentGuildMessages` | Add `IntentGuildMessages` to intents |
+| `content` is empty | Missing [`IntentMessageContent`](@ref) | Enable Message Content intent |
+| No message events | Missing [`IntentGuildMessages`](@ref) | Add [`IntentGuildMessages`](@ref) to intents |
 | No member events | Missing `IntentGuildMembers` | Enable privileged intent + add to intents |
 | Interaction failed | Response took >3 seconds | Use `defer(ctx)` before slow operations |
 | "Unknown interaction" | Double response or expired | Don't respond twice; respond within 15 minutes |
-| "Interaction already acknowledged" | Called `respond` after `defer` + `respond` | Use `edit_response` after `defer`, not `respond` (note: Accord.jl handles this — `respond` auto-detects deferred state) |
+| "Interaction already acknowledged" | Called [`respond`](@ref) after [`defer`](@ref) + [`respond`](@ref) | Use [`edit_response`](@ref) after [`defer`](@ref), not [`respond`](@ref) (note: Accord.jl handles this — [`respond`](@ref) auto-detects deferred state) |
+
+!!! tip "Enable Debug Logging"
+    When troubleshooting, enable debug logging to see detailed event and request information:
+    ```julia
+    ENV["JULIA_DEBUG"] = "Accord"  # Accord.jl specific
+    ENV["JULIA_DEBUG"] = "all"     # All packages (very verbose)
+    ```
 
 ## 2. Debug Logging
 
@@ -100,7 +114,7 @@ on(client, ReadyEvent) do c, event
 end
 ```
 
-If you see many `ReadyEvent`s but few `ResumedEvent`s, the bot may be losing its session (network issues, too slow to heartbeat).
+If you see many [`ReadyEvent`](@ref)s but few `ResumedEvent`s, the bot may be losing its session (network issues, too slow to heartbeat).
 
 ## 4. Interaction Failures
 
@@ -142,7 +156,7 @@ end
 
 ### Component Interaction Response Types
 
-When handling button/select interactions, `respond` auto-selects `UPDATE_MESSAGE` (updates the original message). If you want a new message instead:
+When handling button/select interactions, [`respond`](@ref) auto-selects `UPDATE_MESSAGE` (updates the original message). If you want a new message instead:
 
 ```julia
 register_component!(tree, "my_btn", function(ctx)
@@ -203,7 +217,7 @@ end
 
 | Issue | Cause | Fix |
 |-------|-------|-----|
-| `connect!` hangs | Missing `IntentGuildVoiceStates` | Add intent |
+| [`connect!`](@ref) hangs | Missing `IntentGuildVoiceStates` | Add intent |
 | No audio output | Missing ffmpeg | Install ffmpeg |
 | "No encryption key" | Session not fully established | Wait longer after connect |
 | Audio cuts out | Network jitter | Check server connection |
@@ -246,13 +260,13 @@ create_message(client, Snowflake(123456789); embeds=[e])
 1. Token starts with `Bot ` (Accord.jl adds this automatically)
 2. Bot is invited with correct permissions (use OAuth2 URL generator)
 3. Required intents are enabled in Developer Portal
-4. Required intents are passed to `Client()`
-5. `IntentMessageContent` is enabled if reading message content
-6. `InteractionCreate` handler calls `dispatch_interaction!`
-7. `ReadyEvent` handler calls `sync_commands!`
-8. Command responses happen within 3 seconds (or use `defer`)
+4. Required intents are passed to [`Client`](@ref)`()`
+5. [`IntentMessageContent`](@ref) is enabled if reading message content
+6. [`InteractionCreate`](@ref) handler calls [`dispatch_interaction!`](@ref)
+7. [`ReadyEvent`](@ref) handler calls [`sync_commands!`](@ref)
+8. Command responses happen within 3 seconds (or use [`defer`](@ref))
 9. `.env` file is in `.gitignore`
-10. Error handler is registered with `on_error`
+10. Error handler is registered with [`on_error`](@ref)
 
 ---
 

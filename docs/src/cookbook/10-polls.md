@@ -9,7 +9,7 @@
 
 ## 1. How Discord Polls Work
 
-Polls are sent as part of a message via the `poll` field. Users vote using Discord's native UI — no buttons needed.
+Polls are sent as part of a [`Message`](@ref) via the `poll` field. Users vote using Discord's native UI — no buttons needed.
 
 Required intent for vote events:
 
@@ -21,7 +21,14 @@ client = Client(token;
 
 ## 2. Creating a Poll
 
-Polls use the `poll` body in `create_message`:
+!!! note "Poll Duration and Answer Limits"
+    Discord imposes limits on polls:
+    - **Duration**: 1 to 336 hours (14 days maximum)
+    - **Answers**: Maximum 10 answer choices per poll
+    - **Question**: Maximum 300 characters
+    - **Answer text**: Maximum 55 characters
+
+Polls use the `poll` body in [`create_message`](@ref):
 
 ```julia
 body = Dict{String, Any}(
@@ -64,11 +71,11 @@ Dict(
 ## 3. Listening for Votes
 
 ```julia
-on(client, MessagePollVoteAdd) do c, event
+on(client, [`MessagePollVoteAdd`](@ref)) do c, event
     @info "Vote added" user=event.user_id message=event.message_id answer=event.answer_id
 end
 
-on(client, MessagePollVoteRemove) do c, event
+on(client, [`MessagePollVoteRemove`](@ref)) do c, event
     @info "Vote removed" user=event.user_id message=event.message_id answer=event.answer_id
 end
 ```
@@ -77,9 +84,9 @@ end
 
 ```julia
 # Simple in-memory vote tracker
-const vote_counts = Dict{Snowflake, Dict{Int, Int}}()  # message_id → answer_id → count
+const vote_counts = Dict{[`Snowflake`](@ref), Dict{Int, Int}}()  # message_id → answer_id → count
 
-on(client, MessagePollVoteAdd) do c, event
+on(client, [`MessagePollVoteAdd`](@ref)) do c, event
     msg_votes = get!(vote_counts, event.message_id, Dict{Int, Int}())
     msg_votes[event.answer_id] = get(msg_votes, event.answer_id, 0) + 1
 end
@@ -185,7 +192,7 @@ on(client, MessagePollVoteAdd) do c, event
     @info "Vote" user=event.user_id answer=event.answer_id message=event.message_id
 end
 
-on(client, ReadyEvent) do c, event
+on(client, [`ReadyEvent`](@ref)) do c, event
     sync_commands!(c, c.command_tree)
     @info "Poll bot ready!"
 end

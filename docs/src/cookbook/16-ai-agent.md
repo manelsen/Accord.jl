@@ -16,6 +16,18 @@ User message → Discord → Accord.jl → LLM API → Discord
                       Tool execution         Followup messages
 ```
 
+!!! warning "API Key Management"
+    **Never hardcode API keys** in your source code. Use environment variables:
+    ```julia
+    api_key = ENV["OPENAI_API_KEY"]  # Not a literal string!
+    ```
+    
+    If you accidentally commit an API key:
+    1. Revoke the key immediately via the provider's dashboard
+    2. Generate a new key
+    3. Update your `.env` file
+    4. Add `.env` to `.gitignore` if not already there
+
 ## 2. Calling LLM APIs from Julia
 
 All three major providers work via HTTP.jl.
@@ -89,6 +101,9 @@ function ollama_chat(messages::Vector{Dict}; model="llama3.1", base_url="http://
     return data["message"]["content"]
 end
 ```
+
+!!! tip "Streaming Response Pattern"
+    For better UX, stream LLM responses by editing the Discord message as tokens arrive. Throttle edits to ~1 per second to avoid rate limits and reduce visual flicker. Always truncate to 2000 characters (Discord's message limit).
 
 ## 3. Streaming Responses
 
@@ -285,15 +300,15 @@ Per-channel conversation history with a sliding window:
 
 ```julia
 const MAX_HISTORY = 20
-const conversations = Dict{Snowflake, Vector{Dict{String,String}}}()
+const conversations = Dict{[`Snowflake`](@ref), Vector{Dict{String,String}}}()
 
-function get_history(channel_id::Snowflake)
+function get_history(channel_id::[`Snowflake`](@ref))
     get!(conversations, channel_id) do
         Dict{String,String}[]
     end
 end
 
-function add_message!(channel_id::Snowflake, role::String, content::String)
+function add_message!(channel_id::[`Snowflake`](@ref), role::String, content::String)
     history = get_history(channel_id)
     push!(history, Dict("role" => role, "content" => content))
 
@@ -487,11 +502,11 @@ end
 end
 
 # --- Wiring ---
-on(client, InteractionCreate) do c, event
+on(client, [`InteractionCreate`](@ref)) do c, event
     dispatch_interaction!(tree, c, event.interaction)
 end
 
-on(client, ReadyEvent) do c, event
+on(client, [`ReadyEvent`](@ref)) do c, event
     sync_commands!(c, tree)
     @info "AI Agent bot ready!" user=event.user.username
 end
@@ -534,8 +549,8 @@ end
 
 | Provider | Strengths | Cost | Local? |
 |----------|-----------|------|--------|
-| OpenAI GPT-4o | Tool calling, streaming, function calling | $$$ | No |
-| Anthropic Claude | Long context, careful reasoning | $$$ | No |
+| OpenAI GPT-4o | Tool calling, streaming, function calling | \$\$\$ | No |
+| Anthropic Claude | Long context, careful reasoning | \$\$\$ | No |
 | Ollama (Llama 3) | Free, private, no rate limits | Free | Yes |
 | Ollama (Mistral) | Fast, good quality/speed ratio | Free | Yes |
 
