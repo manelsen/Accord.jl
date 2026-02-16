@@ -24,7 +24,7 @@ create_message(client, channel_id;
 
 ## 2. Building Embeds
 
-The `embed()` helper returns a `Dict` ready for the API:
+The [`embed`](@ref)`()` helper returns a `Dict` ready for the API:
 
 ```julia
 e = embed(

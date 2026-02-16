@@ -26,7 +26,7 @@
 | HTTP 400 | Bad request body | Check payload format; log the body before sending |
 | `content` is empty | Missing [`IntentMessageContent`](@ref) | Enable Message Content intent |
 | No message events | Missing [`IntentGuildMessages`](@ref) | Add [`IntentGuildMessages`](@ref) to intents |
-| No member events | Missing `IntentGuildMembers` | Enable privileged intent + add to intents |
+| No member events | Missing [`IntentGuildMembers`](@ref) | Enable privileged intent + add to intents |
 | Interaction failed | Response took >3 seconds | Use `defer(ctx)` before slow operations |
 | "Unknown interaction" | Double response or expired | Don't respond twice; respond within 15 minutes |
 | "Interaction already acknowledged" | Called [`respond`](@ref) after [`defer`](@ref) + [`respond`](@ref) | Use [`edit_response`](@ref) after [`defer`](@ref), not [`respond`](@ref) (note: Accord.jl handles this — [`respond`](@ref) auto-detects deferred state) |
@@ -114,7 +114,7 @@ on(client, ReadyEvent) do c, event
 end
 ```
 
-If you see many [`ReadyEvent`](@ref)s but few `ResumedEvent`s, the bot may be losing its session (network issues, too slow to heartbeat).
+If you see many [`ReadyEvent`](@ref)s but few [`ResumedEvent`](@ref)s, the bot may be losing its session (network issues, too slow to heartbeat).
 
 ## 4. Interaction Failures
 
@@ -217,7 +217,7 @@ end
 
 | Issue | Cause | Fix |
 |-------|-------|-----|
-| [`connect!`](@ref) hangs | Missing `IntentGuildVoiceStates` | Add intent |
+| [`connect!`](@ref) hangs | Missing [`IntentGuildVoiceStates`](@ref) | Add intent |
 | No audio output | Missing ffmpeg | Install ffmpeg |
 | "No encryption key" | Session not fully established | Wait longer after connect |
 | Audio cuts out | Network jitter | Check server connection |

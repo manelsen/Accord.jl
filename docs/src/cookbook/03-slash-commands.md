@@ -42,7 +42,7 @@ Note that [`Client`](@ref) automatically handles interaction dispatch to its int
 
 ## 3. Commands with Options
 
-Use `command_option()` to define typed parameters:
+Use [`command_option`](@ref)`()` to define typed parameters:
 
 ```julia
 options = [
@@ -74,15 +74,15 @@ end
 
 | Constant | Value | Julia type returned |
 |----------|-------|-------------------|
-| `ApplicationCommandOptionTypes.STRING` | 3 | `String` |
-| `ApplicationCommandOptionTypes.INTEGER` | 4 | `Int` |
-| `ApplicationCommandOptionTypes.BOOLEAN` | 5 | `Bool` |
-| `ApplicationCommandOptionTypes.USER` | 6 | Snowflake string |
-| `ApplicationCommandOptionTypes.CHANNEL` | 7 | Snowflake string |
-| `ApplicationCommandOptionTypes.ROLE` | 8 | Snowflake string |
-| `ApplicationCommandOptionTypes.MENTIONABLE` | 9 | Snowflake string |
-| `ApplicationCommandOptionTypes.NUMBER` | 10 | `Float64` |
-| `ApplicationCommandOptionTypes.ATTACHMENT` | 11 | Attachment ID |
+| [`ApplicationCommandOptionTypes`](@ref)`.STRING` | 3 | `String` |
+| [`ApplicationCommandOptionTypes`](@ref)`.INTEGER` | 4 | `Int` |
+| [`ApplicationCommandOptionTypes`](@ref)`.BOOLEAN` | 5 | `Bool` |
+| [`ApplicationCommandOptionTypes`](@ref)`.USER` | 6 | Snowflake string |
+| [`ApplicationCommandOptionTypes`](@ref)`.CHANNEL` | 7 | Snowflake string |
+| [`ApplicationCommandOptionTypes`](@ref)`.ROLE` | 8 | Snowflake string |
+| [`ApplicationCommandOptionTypes`](@ref)`.MENTIONABLE` | 9 | Snowflake string |
+| [`ApplicationCommandOptionTypes`](@ref)`.NUMBER` | 10 | `Float64` |
+| [`ApplicationCommandOptionTypes`](@ref)`.ATTACHMENT` | 11 | Attachment ID |
 
 ## 4. Static Choices
 
