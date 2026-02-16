@@ -2,7 +2,15 @@
 
 """Use this to verify if a user has specific permissions or if certain flags are enabled.
 
-Check if `a` has all flags in `b` set."""
+Check if `a` has all flags in `b` set.
+
+# Example
+```julia
+perms = PermSendMessages | PermEmbedLinks
+has_flag(perms, PermSendMessages)   # => true
+has_flag(perms, PermAdministrator)  # => false
+```
+"""
 function has_flag end
 
 """
@@ -52,7 +60,13 @@ end
 
 """Use this macro internally to enable JSON serialization for flag types.
 
-Register integer-based StructTypes for a flags type."""
+Register integer-based StructTypes for a flags type.
+
+# Example
+```julia
+@_flags_structtypes_int MyFlagsType
+```
+"""
 macro _flags_structtypes_int(name)
     quote
         $StructTypes.StructType(::Type{$(esc(name))}) = $StructTypes.CustomStruct()
@@ -105,7 +119,13 @@ Intents
 
 """Use this constant to request all standard gateway intents when connecting your bot.
 
-All non-privileged intents."""
+All non-privileged intents.
+
+# Example
+```julia
+client = Client("Bot my_token"; intents=IntentAllNonPrivileged)
+```
+"""
 const IntentAllNonPrivileged = IntentGuilds | IntentGuildModeration | IntentGuildExpressions |
     IntentGuildIntegrations | IntentGuildWebhooks | IntentGuildInvites |
     IntentGuildVoiceStates | IntentGuildMessages | IntentGuildMessageReactions |
@@ -116,7 +136,13 @@ const IntentAllNonPrivileged = IntentGuilds | IntentGuildModeration | IntentGuil
 
 """Use this constant to request all gateway intents including privileged ones (requires enabling in Discord Developer Portal).
 
-All intents including privileged (GuildMembers, GuildPresences, MessageContent)."""
+All intents including privileged (GuildMembers, GuildPresences, MessageContent).
+
+# Example
+```julia
+client = Client("Bot my_token"; intents=IntentAll)
+```
+"""
 const IntentAll = IntentAllNonPrivileged | IntentGuildMembers | IntentGuildPresences | IntentMessageContent
 
 @_flags_structtypes_int Intents

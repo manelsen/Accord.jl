@@ -30,7 +30,14 @@ module GatewayCloseCodes
     const INVALID_INTENTS       = 4013
     const DISALLOWED_INTENTS    = 4014
 
-    """Check if a close code allows reconnection."""
+    """Check if a close code allows reconnection.
+
+    # Example
+    ```julia
+    GatewayCloseCodes.can_reconnect(4000)  # => true (unknown error)
+    GatewayCloseCodes.can_reconnect(4004)  # => false (auth failed)
+    ```
+    """
     function can_reconnect(code::Integer)
         code ∉ (AUTHENTICATION_FAILED, INVALID_SHARD, SHARDING_REQUIRED,
                 INVALID_API_VERSION, INVALID_INTENTS, DISALLOWED_INTENTS)

@@ -6,6 +6,9 @@
 Use this in your slash command handlers to access interaction data and send responses.
 
 Wraps an [`Interaction`](@ref) with convenience methods for responding. Holds a reference to the [`Client`](@ref).
+
+!!! compat "Accord 0.1.0"
+    `InteractionContext` and all interaction helpers are available since Accord 0.1.0.
 """
 struct InteractionContext
     client::Client

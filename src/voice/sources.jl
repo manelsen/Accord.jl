@@ -74,6 +74,10 @@ Use this to play audio files in any format supported by FFmpeg.
 Audio source that uses FFmpeg to decode any audio format to PCM.
 Requires `ffmpeg` to be available in PATH.
 
+!!! compat "Accord 0.1.0"
+    Audio sources (`FFmpegSource`, `PCMSource`, `FileSource`, `SilenceSource`)
+    are available since Accord 0.1.0.
+
 # Example
 ```julia
 source = FFmpegSource("song.mp3")

@@ -9,6 +9,11 @@
 Use this internal struct to manage event handlers and middleware for the client.
 
 Stores registered event handlers for the client.
+
+# Example
+```julia
+eh = EventHandler()  # fresh handler with no handlers registered
+```
 """
 mutable struct EventHandler
     handlers::Dict{Type{<:AbstractEvent}, Vector{Function}}
@@ -35,6 +40,11 @@ Use this internal function to add an event handler for a specific gateway event 
 
 Register a handler function for a specific event type.
 The handler should accept (client, event).
+
+# Example
+```julia
+register_handler!(eh, MessageCreate, (client, event) -> println(event.message.content))
+```
 """
 function register_handler!(eh::EventHandler, ::Type{T}, handler::Function) where T <: AbstractEvent
     handlers = get!(eh.handlers, T, Function[])
@@ -48,6 +58,14 @@ Use this internal function to add middleware that processes events before handle
 
 Register middleware that runs before event handlers.
 Middleware should accept (client, event) and return the event (or nothing to cancel).
+
+# Example
+```julia
+register_middleware!(eh, (client, event) -> begin
+    @info "Event received" type=typeof(event)
+    event  # return event to continue, or nothing to cancel
+end)
+```
 """
 function register_middleware!(eh::EventHandler, middleware::Function)
     push!(eh.middleware, middleware)
@@ -59,6 +77,12 @@ end
 Use this internal function to route an incoming event to all applicable handlers.
 
 Dispatch an event to all registered handlers.
+
+# Example
+```julia
+event = MessageCreate(message)
+dispatch_event!(client.event_handler, client, event)
+```
 """
 function dispatch_event!(eh::EventHandler, client, event::AbstractEvent)
     # Run middleware

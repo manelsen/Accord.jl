@@ -82,7 +82,13 @@ end
 
 """Use this to define individual options within a string select menu.
 
-Create a select option for string select menus."""
+Create a select option for string select menus.
+
+# Example
+```julia
+opt = select_option(label="Pizza", value="pizza"; description="Classic choice", default=true)
+```
+"""
 function select_option(;
     label::String,
     value::String,
@@ -309,7 +315,14 @@ end
 
 """Use this internal function to build command option dictionaries.
 
-Create a command option dict."""
+Create a command option dict.
+
+# Example
+```julia
+opt = command_option(type=ApplicationCommandOptionTypes.STRING,
+    name="query", description="Search term", required=true)
+```
+"""
 function command_option(;
     type::Int,
     name::String,
@@ -346,6 +359,10 @@ end
 """Use this to create a container for organizing components in v2 messages.
 
 Create a Container component (top-level v2 wrapper).
+
+!!! compat "Accord 0.1.0"
+    Components V2 builders (`container`, `section`, `text_display`, `separator`,
+    `media_gallery`, `file_component`, `unfurled_media`) are available since Accord 0.1.0.
 
 # Example
 ```julia

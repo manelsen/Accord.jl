@@ -77,6 +77,13 @@ end
 Use this convenience function when you need to fetch data from the Discord API.
 
 Convenience for GET requests.
+
+# Example
+```julia
+resp = discord_get(client.ratelimiter, "/channels/\$(channel_id)/messages";
+    token=client.token, query=Dict("limit" => 10))
+messages = parse_response_array(Message, resp)
+```
 """
 function discord_get(rl::RateLimiter, path::String; token::String, query=nothing, major_params=Pair{String,String}[])
     route = Route("GET", path, major_params...)
@@ -89,6 +96,12 @@ end
 Use this convenience function when you need to create new resources in the Discord API.
 
 Convenience for POST requests.
+
+# Example
+```julia
+resp = discord_post(client.ratelimiter, "/channels/\$(channel_id)/messages";
+    token=client.token, body=Dict("content" => "Hello!"))
+```
 """
 function discord_post(rl::RateLimiter, path::String; token::String, body=nothing, files=nothing, reason=nothing, major_params=Pair{String,String}[])
     route = Route("POST", path, major_params...)
@@ -101,6 +114,12 @@ end
 Use this convenience function when you need to update or replace resources in the Discord API.
 
 Convenience for PUT requests.
+
+# Example
+```julia
+resp = discord_put(client.ratelimiter, "/channels/\$(channel_id)/pins/\$(msg_id)";
+    token=client.token)
+```
 """
 function discord_put(rl::RateLimiter, path::String; token::String, body=nothing, reason=nothing, major_params=Pair{String,String}[])
     route = Route("PUT", path, major_params...)
@@ -113,6 +132,12 @@ end
 Use this convenience function when you need to partially update resources in the Discord API.
 
 Convenience for PATCH requests.
+
+# Example
+```julia
+resp = discord_patch(client.ratelimiter, "/channels/\$(channel_id)";
+    token=client.token, body=Dict("name" => "new-name"))
+```
 """
 function discord_patch(rl::RateLimiter, path::String; token::String, body=nothing, files=nothing, reason=nothing, major_params=Pair{String,String}[])
     route = Route("PATCH", path, major_params...)
@@ -125,6 +150,12 @@ end
 Use this convenience function when you need to delete resources from the Discord API.
 
 Convenience for DELETE requests.
+
+# Example
+```julia
+resp = discord_delete(client.ratelimiter, "/channels/\$(channel_id)/messages/\$(msg_id)";
+    token=client.token, reason="Cleanup")
+```
 """
 function discord_delete(rl::RateLimiter, path::String; token::String, body=nothing, reason=nothing, major_params=Pair{String,String}[])
     route = Route("DELETE", path, major_params...)
@@ -133,7 +164,15 @@ end
 
 """Use this helper function to deserialize Discord API responses into Julia structs.
 
-Parse a JSON response body into type T."""
+Parse a JSON response body into type T.
+
+# Example
+```julia
+resp = discord_get(rl, "/users/@me"; token=token)
+user = parse_response(User, resp)
+println(user.username)
+```
+"""
 function parse_response(::Type{T}, resp::HTTP.Response) where T
     if resp.status >= 400
         error("Discord API error ($(resp.status)): $(String(resp.body))")
@@ -143,7 +182,14 @@ end
 
 """Use this helper function to deserialize Discord API array responses into Julia vectors.
 
-Parse a JSON response body into a Vector of type T."""
+Parse a JSON response body into a Vector of type T.
+
+# Example
+```julia
+resp = discord_get(rl, "/guilds/\$(guild_id)/roles"; token=token)
+roles = parse_response_array(Role, resp)
+```
+"""
 function parse_response_array(::Type{T}, resp::HTTP.Response) where T
     if resp.status >= 400
         error("Discord API error ($(resp.status)): $(String(resp.body))")
