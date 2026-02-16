@@ -127,6 +127,12 @@ end
 Use this to leave a voice channel and clean up resources.
 
 Disconnect from the voice channel.
+
+# Example
+```julia
+# Leave the voice channel and clean up
+disconnect!(vc)
+```
 """
 function disconnect!(vc::VoiceClient)
     vc.connected = false
@@ -187,6 +193,14 @@ end
 Use this to stop playing audio in a voice channel.
 
 Stop audio playback.
+
+# Example
+```julia
+# Stop the current track without disconnecting
+stop!(vc)
+# Play something else
+play!(vc, FFmpegSource("next_song.mp3"))
+```
 """
 function stop!(vc::VoiceClient)
     stop!(vc.player)

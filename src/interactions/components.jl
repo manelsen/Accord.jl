@@ -115,7 +115,13 @@ end
 
 """Use this to create a dropdown for selecting server roles.
 
-Create a Role Select Menu."""
+Create a Role Select Menu.
+
+# Example
+```julia
+sel = role_select(custom_id="assign_role", placeholder="Pick a role", max_values=3)
+```
+"""
 function role_select(; custom_id::String, placeholder::String="", min_values::Int=1, max_values::Int=1, disabled::Bool=false)
     sel = Dict{String, Any}("type" => ComponentTypes.ROLE_SELECT, "custom_id" => custom_id, "min_values" => min_values, "max_values" => max_values)
     !isempty(placeholder) && (sel["placeholder"] = placeholder)
@@ -125,7 +131,13 @@ end
 
 """Use this to create a dropdown for selecting users or roles.
 
-Create a Mentionable Select Menu."""
+Create a Mentionable Select Menu.
+
+# Example
+```julia
+sel = mentionable_select(custom_id="mention_target", placeholder="Pick a user or role")
+```
+"""
 function mentionable_select(; custom_id::String, placeholder::String="", min_values::Int=1, max_values::Int=1, disabled::Bool=false)
     sel = Dict{String, Any}("type" => ComponentTypes.MENTIONABLE_SELECT, "custom_id" => custom_id, "min_values" => min_values, "max_values" => max_values)
     !isempty(placeholder) && (sel["placeholder"] = placeholder)
@@ -135,7 +147,13 @@ end
 
 """Use this to create a dropdown for selecting channels.
 
-Create a Channel Select Menu."""
+Create a Channel Select Menu.
+
+# Example
+```julia
+sel = channel_select(custom_id="log_channel", placeholder="Pick a text channel", channel_types=[0])
+```
+"""
 function channel_select(; custom_id::String, channel_types::Vector{Int}=Int[], placeholder::String="", min_values::Int=1, max_values::Int=1, disabled::Bool=false)
     sel = Dict{String, Any}("type" => ComponentTypes.CHANNEL_SELECT, "custom_id" => custom_id, "min_values" => min_values, "max_values" => max_values)
     !isempty(channel_types) && (sel["channel_types"] = channel_types)
@@ -327,7 +345,17 @@ end
 
 """Use this to create a container for organizing components in v2 messages.
 
-Create a Container component (top-level v2 wrapper)."""
+Create a Container component (top-level v2 wrapper).
+
+# Example
+```julia
+msg = container([
+    text_display("Welcome to the server!"),
+    separator(),
+    section([text_display("Click to learn more")]; accessory=button(label="Info", custom_id="info"))
+]; color=0x5865F2)
+```
+"""
 function container(components::Vector; color::Integer=0, spoiler::Bool=false)
     c = Dict{String, Any}("type" => ComponentTypes.CONTAINER, "components" => components)
     color > 0 && (c["accent_color"] = color)
@@ -337,7 +365,13 @@ end
 
 """Use this to group text and accessory components in v2 messages.
 
-Create a Section component with text and optional accessory."""
+Create a Section component with text and optional accessory.
+
+# Example
+```julia
+sec = section([text_display("Server stats")]; accessory=thumbnail(media=unfurled_media("https://example.com/icon.png")))
+```
+"""
 function section(components::Vector; accessory=nothing)
     s = Dict{String, Any}("type" => ComponentTypes.SECTION, "components" => components)
     !isnothing(accessory) && (s["accessory"] = accessory)
@@ -346,7 +380,13 @@ end
 
 """Use this to display plain text in v2 messages.
 
-Create a Text Display component."""
+Create a Text Display component.
+
+# Example
+```julia
+td = text_display("**Bold** and *italic* markdown supported")
+```
+"""
 function text_display(content::String)
     Dict{String, Any}("type" => ComponentTypes.TEXT_DISPLAY, "content" => content)
 end
@@ -363,14 +403,29 @@ end
 
 """Use this to display collections of images or videos in v2 messages.
 
-Create a Media Gallery component."""
+Create a Media Gallery component.
+
+# Example
+```julia
+gallery = media_gallery([
+    media_gallery_item(media=unfurled_media("https://example.com/img1.png")),
+    media_gallery_item(media=unfurled_media("https://example.com/img2.png"); description="Photo 2")
+])
+```
+"""
 function media_gallery(items::Vector)
     Dict{String, Any}("type" => ComponentTypes.MEDIA_GALLERY, "items" => items)
 end
 
 """Use this to add individual items to a media gallery.
 
-Create a media gallery item."""
+Create a media gallery item.
+
+# Example
+```julia
+item = media_gallery_item(media=unfurled_media("https://example.com/photo.png"); description="A nice photo", spoiler=true)
+```
+"""
 function media_gallery_item(; media::Dict, description::String="", spoiler::Bool=false)
     item = Dict{String, Any}("media" => media)
     !isempty(description) && (item["description"] = description)
@@ -380,7 +435,13 @@ end
 
 """Use this to attach downloadable files to v2 messages.
 
-Create a File component."""
+Create a File component.
+
+# Example
+```julia
+f = file_component(media=unfurled_media("attachment://report.pdf"))
+```
+"""
 function file_component(; media::Dict, spoiler::Bool=false)
     f = Dict{String, Any}("type" => ComponentTypes.FILE, "file" => media)
     spoiler && (f["spoiler"] = true)
@@ -389,7 +450,13 @@ end
 
 """Use this to add visual separation between components in v2 messages.
 
-Create a Separator component."""
+Create a Separator component.
+
+# Example
+```julia
+sep = separator(divider=true, spacing=2)
+```
+"""
 function separator(; divider::Bool=true, spacing::Int=1)
     s = Dict{String, Any}("type" => ComponentTypes.SEPARATOR, "divider" => divider)
     spacing != 1 && (s["spacing"] = spacing)
@@ -398,7 +465,14 @@ end
 
 """Use this to create media references for thumbnails, galleries, and file attachments.
 
-Create an unfurled media object (used by thumbnail, media_gallery, file)."""
+Create an unfurled media object (used by thumbnail, media_gallery, file).
+
+# Example
+```julia
+media = unfurled_media("https://example.com/image.png")
+thumb = thumbnail(media=media)
+```
+"""
 function unfurled_media(url::String)
     Dict{String, Any}("url" => url)
 end

@@ -73,6 +73,14 @@ end
 Use this to retrieve a specific command option value by its name.
 
 Get a specific option value by name from the interaction data.
+
+# Example
+```julia
+@slash_command client "greet" "Greet someone" options=[command_option(type=6, name="user", description="Who to greet", required=true)] function(ctx)
+    user_id = get_option(ctx, "user")
+    respond(ctx; content="Hello, <@\$user_id>!")
+end
+```
 """
 function get_option(ctx::InteractionContext, name::String, default=nothing)
     opts = get_options(ctx)
@@ -85,6 +93,14 @@ end
 Use this to identify which button, select menu, or modal was interacted with.
 
 Get the [`custom_id`](@ref) for component interactions (buttons, selects) or modal submissions.
+
+# Example
+```julia
+register_component!(client.command_tree, "action_", ctx -> begin
+    id = custom_id(ctx)  # e.g. "action_delete" or "action_ban"
+    respond(ctx; content="You triggered: \$id")
+end)
+```
 """
 function custom_id(ctx::InteractionContext)
     data = ctx.interaction.data
@@ -100,6 +116,14 @@ end
 Use this to retrieve the values selected by the user in a select menu component.
 
 Get the selected values for a select menu interaction.
+
+# Example
+```julia
+register_component!(client.command_tree, "color_select", ctx -> begin
+    colors = selected_values(ctx)  # ["red", "blue"]
+    respond(ctx; content="You picked: \$(join(colors, ", "))")
+end)
+```
 """
 function selected_values(ctx::InteractionContext)
     data = ctx.interaction.data
@@ -115,6 +139,14 @@ end
 Use this to retrieve the values entered by the user in a modal form submission.
 
 Get modal component values as a dictionary mapping [`custom_id`](@ref) to the input value.
+
+# Example
+```julia
+register_modal!(client.command_tree, "feedback_form", ctx -> begin
+    vals = modal_values(ctx)
+    respond(ctx; content="Thanks! You said: \$(vals["message"])")
+end)
+```
 """
 function modal_values(ctx::InteractionContext)
     data = ctx.interaction.data
@@ -148,6 +180,14 @@ Returns the resolved User or Message object, or `nothing` if unavailable.
 
 For User commands (`ApplicationCommandTypes.USER`), returns a [`User`](@ref).
 For Message commands (`ApplicationCommandTypes.MESSAGE`), returns a [`Message`](@ref).
+
+# Example
+```julia
+register_command!(client.command_tree, "User Info", "", ctx -> begin
+    user = target(ctx)
+    respond(ctx; content="User: \$(user.username)#\$(user.discriminator)")
+end; type=ApplicationCommandTypes.USER)
+```
 """
 function target(ctx::InteractionContext)
     data = ctx.interaction.data
@@ -279,6 +319,16 @@ end
 Use this to modify your bot's response after it has already been sent.
 
 Edit the original interaction response.
+
+# Example
+```julia
+@slash_command client "countdown" "Start a countdown" function(ctx)
+    respond(ctx; content="3...")
+    sleep(1); edit_response(ctx; content="2...")
+    sleep(1); edit_response(ctx; content="1...")
+    sleep(1); edit_response(ctx; content="🚀 Go!")
+end
+```
 """
 function edit_response(ctx::InteractionContext;
     content = nothing,
@@ -306,6 +356,15 @@ end
 Use this to send additional messages after the initial response to an interaction.
 
 Send a followup message to an interaction after the initial response.
+
+# Example
+```julia
+@slash_command client "multi" "Send multiple messages" function(ctx)
+    respond(ctx; content="Message 1")
+    followup(ctx; content="Message 2")
+    followup(ctx; content="Secret message", ephemeral=true)
+end
+```
 """
 function followup(ctx::InteractionContext;
     content::String = "",
@@ -335,6 +394,17 @@ end
 Use this to display a popup form for users to input data.
 
 Show a modal dialog to the user.
+
+# Example
+```julia
+@slash_command client "feedback" "Give feedback" function(ctx)
+    show_modal(ctx;
+        title="Feedback Form",
+        custom_id="feedback_form",
+        components=[action_row([text_input(custom_id="message", label="Your feedback", style=TextInputStyles.PARAGRAPH)])]
+    )
+end
+```
 """
 function show_modal(ctx::InteractionContext;
     title::String,
