@@ -1,4 +1,8 @@
 # VoiceClient — high-level voice connection management
+#
+# Internal module: Provides the high-level VoiceClient API for connecting to
+# Discord voice channels, playing audio, and managing the full voice pipeline
+# (gateway → voice WS → UDP → Opus → encrypted RTP).
 
 """
     VoiceClient
@@ -7,6 +11,9 @@ Use this to connect your bot to voice channels and play audio.
 
 Manages a voice connection to a Discord voice channel.
 Handles the full connection flow: gateway → voice WS → UDP → audio.
+
+!!! compat "Accord 0.1.0"
+    Voice support was added in Accord 0.1.0.
 """
 mutable struct VoiceClient
     client::Client
@@ -48,6 +55,10 @@ Connect to the voice channel. This performs the full handshake:
 3. Connect to voice WebSocket
 4. Perform IP discovery
 5. Select protocol and establish session
+
+!!! note
+    Your bot must have the [`IntentGuildVoiceStates`](@ref) intent enabled,
+    otherwise the connection will hang waiting for voice events.
 
 # Example
 ```julia
@@ -166,6 +177,10 @@ end
 Use this to start playing audio in a connected voice channel.
 
 Play audio from the given source.
+
+!!! warning
+    Only one source can play at a time. Calling `play!` while audio is already
+    playing will stop the current source and start the new one.
 
 # Example
 ```julia

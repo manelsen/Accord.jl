@@ -1,4 +1,8 @@
 # Rate limiter actor — manages per-bucket and global rate limits
+#
+# Internal module: Implements Discord's rate limiting protocol. Tracks per-route
+# bucket limits and global rate limits. Automatically retries on 429 responses
+# with the `Retry-After` delay. Uses an actor pattern (async Task + Channel).
 
 """Use this internal struct to track rate limit state for each Discord API bucket.
 
@@ -30,6 +34,10 @@ end
 Use this actor to manage Discord API requests and automatically respect rate limits.
 
 Actor that processes REST requests respecting Discord's rate limits.
+
+!!! note
+    The rate limiter automatically retries on HTTP 429 responses (up to 5 times)
+    using the `Retry-After` header. You do not need to handle rate limiting yourself.
 """
 mutable struct RateLimiter
     buckets::Dict{String, BucketState}

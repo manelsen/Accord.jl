@@ -1,4 +1,7 @@
 # Event handler dispatch system
+#
+# Internal module: Stores and dispatches registered event handlers and middleware.
+# Supports per-event-type handlers and catch-all AbstractEvent handlers.
 
 """
     EventHandler

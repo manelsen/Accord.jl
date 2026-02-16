@@ -169,6 +169,10 @@ Upload registered commands to Discord.
 Use this to update the command list visible to users. Global commands can take up to
 1 hour to propagate, while guild commands are instant.
 
+!!! warning
+    This endpoint is rate-limited. During development, use `guild_id` to sync
+    to a single test server for instant updates. Only sync globally for production.
+
 # Arguments
 - `client`: The [`Client`](@ref) instance.
 - `tree::CommandTree`: The command tree containing commands to sync.

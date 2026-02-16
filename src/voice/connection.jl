@@ -1,4 +1,7 @@
 # Voice gateway WebSocket connection
+#
+# Internal module: Manages the voice-specific WebSocket connection to Discord.
+# Handles voice HELLO, READY, SESSION_DESCRIPTION opcodes and heartbeating.
 
 """
     VoiceGatewaySession

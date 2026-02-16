@@ -1,4 +1,8 @@
 # Gateway WebSocket connection lifecycle
+#
+# Internal module: Manages the WebSocket connection to Discord's gateway, including
+# connect/reconnect logic, zlib decompression, opcode dispatch (HELLO, HEARTBEAT,
+# IDENTIFY, RESUME), and event routing to the client's event channel.
 
 const GATEWAY_URL = "wss://gateway.discord.gg/?v=$(API_VERSION)&encoding=json"
 
@@ -48,6 +52,10 @@ Main gateway connection loop. Runs as a `Task`.
 - Dispatches events to `events_channel` (which receives [`AbstractEvent`](@ref)s)
 - Receives commands from `commands_channel` (which receives [`GatewayCommand`](@ref)s)
 - Auto-reconnects on disconnection
+
+!!! note
+    This function automatically reconnects on network errors and resumable close codes.
+    Fatal close codes (e.g. invalid token, disallowed intents) will stop the loop.
 """
 function gateway_connect(
     token::String,

@@ -1,4 +1,7 @@
 # Audio player — abstract source and playback control
+#
+# Internal module: Defines the AbstractAudioSource interface and AudioPlayer loop.
+# Sources provide PCM frames; the player encodes to Opus and sends via a callback.
 
 """
     AbstractAudioSource

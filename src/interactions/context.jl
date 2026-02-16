@@ -227,7 +227,9 @@ Use this to send an immediate response to a slash command or component interacti
 Send an interaction response. Automatically chooses between creating a new response
 or editing a deferred one.
 
-Must be called within 3 seconds of receiving the interaction, unless [`defer`](@ref) was called.
+!!! warning
+    You must call `respond` within **3 seconds** of receiving the interaction, unless
+    you first call [`defer`](@ref). After deferring, you have up to 15 minutes.
 
 # Example
 ```julia
@@ -282,6 +284,10 @@ Use this when you need more than 3 seconds to process a command before respondin
 
 Acknowledge the interaction and defer the response (shows a "thinking..." indicator).
 This gives you 15 minutes to call [`respond`](@ref) or [`edit_response`](@ref).
+
+!!! warning
+    `defer` must itself be called within 3 seconds of receiving the interaction.
+    Always defer at the top of your handler if the response may take time.
 
 # Example
 ```julia
@@ -394,6 +400,10 @@ end
 Use this to display a popup form for users to input data.
 
 Show a modal dialog to the user.
+
+!!! warning
+    You **cannot** call [`defer`](@ref) before `show_modal`. Modals must be the
+    first and only response to the interaction.
 
 # Example
 ```julia
