@@ -26,3 +26,4 @@ KANBAN.md
 # test/integration/fixtures/
 *.log
 .agent/workflows/docbuild.md
+*audit.md
