@@ -9,7 +9,10 @@
 
 ## 1. Type Stability in Handlers
 
-Julia's JIT compiler generates fast code when types are predictable. The `get_option` function returns `Any` — annotate it:
+!!! tip "Type Stability for Performance"
+    Julia's JIT compiler generates fast code when types are predictable. Always annotate types when extracting options from [`get_option`](@ref), which returns `Any`. Use `@code_warntype` to identify type instabilities (look for red "Any" in the output).
+
+Julia's JIT compiler generates fast code when types are predictable. The [`get_option`](@ref) function returns `Any` — annotate it:
 
 ```julia
 # Slow: compiler doesn't know the type
@@ -121,6 +124,9 @@ julia --threads=4 --project=. bin/run.jl
 ### Avoiding Event Loop Blocking
 
 ```julia
+!!! warning "Global Variables Cause Type Instability"
+    Avoid global mutable state. Global variables have unpredictable types, forcing the compiler to use dynamic dispatch. Instead, inject state through `Client(; state=...)` or use `const` globals with concrete types.
+
 # BAD: blocks the event loop
 on(client, MessageCreate) do c, event
     sleep(10)  # nothing else processes for 10 seconds!

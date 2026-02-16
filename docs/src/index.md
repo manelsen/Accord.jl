@@ -26,20 +26,20 @@ Pkg.add("Accord")
 ```julia
 using Accord
 
-client = Client(ENV["DISCORD_TOKEN"];
-    intents = IntentGuilds | IntentGuildMessages | IntentMessageContent
+client = [`Client`](@ref)(ENV["DISCORD_TOKEN"];
+    intents = [`IntentGuilds`](@ref) | [`IntentGuildMessages`](@ref) | [`IntentMessageContent`](@ref)
 )
 
-on(client, ReadyEvent) do c, event
+on(client, [`ReadyEvent`](@ref)) do c, event
     @info "Bot is online as $(event.user.username)!"
 end
 
 @slash_command client "ping" "Check latency" function(ctx)
-    respond(ctx; content="Pong!")
+    [`respond`](@ref)(ctx; content="Pong!")
 end
 
-on(client, ReadyEvent) do c, event
-    sync_commands!(c, c.command_tree)
+on(client, [`ReadyEvent`](@ref)) do c, event
+    [`sync_commands!`](@ref)(c, c.command_tree)
 end
 
 start(client)

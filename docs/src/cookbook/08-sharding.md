@@ -9,6 +9,9 @@
 
 ## 1. When Do You Need Sharding?
 
+!!! note "Discord's 2500-Guild Shard Requirement"
+    Discord **requires** sharding when your bot joins **2,500 or more guilds**. Each shard handles a subset of guilds. Without sharding, your bot will receive gateway close code 4011 ("Sharding required") and cannot connect.
+
 Discord requires sharding when your bot joins **2,500+ guilds**. Each shard handles a subset of guilds:
 
 ```text
@@ -30,12 +33,12 @@ client = Client(token;
     num_shards = 4,
 )
 
-on(client, ReadyEvent) do c, event
+on(client, [`ReadyEvent`](@ref)) do c, event
     shard_info = ismissing(event.shard) ? "N/A" : "$(event.shard[1])/$(event.shard[2])"
     @info "Shard ready!" shard=shard_info guilds=length(event.guilds)
 end
 
-on(client, MessageCreate) do c, event
+on(client, [`MessageCreate`](@ref)) do c, event
     msg = event.message
     ismissing(msg.content) && return
     msg.content == "!ping" && create_message(c, msg.channel_id; content="Pong!")
@@ -46,23 +49,26 @@ start(client)
 
 Accord.jl starts shards with a 5-second delay between them (Discord's required rate limit).
 
+!!! warning "Shard Count is Immutable After Connection"
+    The number of shards (`num_shards`) cannot be changed while the bot is running. To change shard count, you must restart the bot. Plan your shard count based on current guild count plus expected growth.
+
 ## 3. How Shards Work Internally
 
 ```julia
 struct ShardInfo
     id::Int          # 0-indexed shard ID
     total::Int       # total number of shards
-    task::Task        # the async gateway connection task
-    session::GatewaySession
-    events::Channel{AbstractEvent}   # shared across all shards
-    commands::Channel{GatewayCommand}
+    task::[`Task`](@ref)        # the async gateway connection task
+    session::[`GatewaySession`](@ref)
+    events::Channel{[`AbstractEvent`](@ref)}   # shared across all shards
+    commands::Channel{[`GatewayCommand`](@ref)}
     ready::Base.Event
 end
 ```
 
 Key design:
 - All shards share a **single events channel** — your handlers see events from all shards
-- The `Client` routes gateway commands (voice state, presence) to the correct shard automatically
+- The [`Client`](@ref) routes gateway commands (voice state, presence) to the correct shard automatically
 - Shard assignment: `shard_for_guild(guild_id, num_shards)` uses `(guild_id >> 22) % num_shards`
 
 ## 4. Auto-Detecting Shard Count
@@ -84,7 +90,7 @@ The `session_start_limit` tells you how many session starts you have left (reset
 
 ## 5. Shard-Aware Operations
 
-The `Client` automatically routes to the correct shard:
+The [`Client`](@ref) automatically routes to the correct shard:
 
 ```julia
 # This sends VOICE_STATE_UPDATE to the shard handling this guild
