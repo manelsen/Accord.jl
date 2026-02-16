@@ -19,6 +19,7 @@ import HTTP
 import JSON3
 import StructTypes
 import CodecZlib
+using PrecompileTools
 import LRUCache
 import Opus_jll
 import libsodium_jll
@@ -226,6 +227,39 @@ export RateLimiter, Route
 function __init__()
     init_sodium()
     _init_perm_map!()
+end
+
+# === Precompilation workload ===
+@compile_workload begin
+    # JSON3 round-trips for core types (biggest compilation cost)
+    for T in (User, Guild, DiscordChannel, Message, Member, Role, Emoji,
+              Interaction, Embed, Overwrite, Sticker, StageInstance)
+        json = JSON3.write(T())
+        JSON3.read(json, T)
+    end
+
+    # Vector variants
+    for T in (User, Role, Emoji, DiscordChannel, Member)
+        JSON3.read("[]", Vector{T})
+    end
+
+    # Snowflake serialization
+    s = Snowflake(123456789)
+    JSON3.write(s)
+    JSON3.read("\"123456789\"", Snowflake)
+
+    # parse_event for the most frequent events
+    for (name, data) in [
+        ("GUILD_CREATE", Dict{String,Any}("id" => "1", "name" => "test")),
+        ("MESSAGE_CREATE", Dict{String,Any}("id" => "1", "channel_id" => "1", "type" => 0, "content" => "")),
+        ("CHANNEL_CREATE", Dict{String,Any}("id" => "1", "type" => 0)),
+    ]
+        try; parse_event(name, data); catch; end
+    end
+
+    # Route and URL
+    r = Route("GET", "/channels/{channel_id}/messages", "channel_id" => "1")
+    url(r)
 end
 
 end # module Accord

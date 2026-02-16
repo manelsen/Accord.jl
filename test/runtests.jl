@@ -31,7 +31,7 @@ function run_accord_tests()
     ReTestItems.runtests(
         ti_filter,
         Accord;
-        nworkers = 0, 
+        nworkers = 4,
         report = true,
         verbose_results = true
     )
