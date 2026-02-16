@@ -1,7 +1,7 @@
 # Accord.jl 🎹
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Julia Version](https://img.shields.io/badge/julia-1.10+-blue.svg)](https://julialang.org)
+[![Julia Version](https://img.shields.io/badge/julia-1.11+-blue.svg)](https://julialang.org)
 [![Discord API](https://img.shields.io/badge/Discord%20API-v10-5865F2.svg)](https://discord.com/developers/docs/intro)
 
 **Accord.jl** is a high-performance, ergonomic Discord API library for Julia. Built for speed and developer happiness, it leverages Julia's multiple dispatch and concurrency model to make bot development intuitive and powerful.
