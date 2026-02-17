@@ -123,7 +123,9 @@ include("voice/connection.jl")
 include("voice/client.jl")
 
 # === Utils ===
+# === Utils ===
 include("utils/permissions.jl")
+include("diagnostics/Diagnoser.jl")
 
 # === Exports ===
 

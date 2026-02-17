@@ -30,7 +30,12 @@ function EventHandler()
 end
 
 function _default_error_handler(client, event, error)
-    @error "Error in event handler" event_type=typeof(event) exception=(error, catch_backtrace())
+    # DIAGNOSTICS: Try to present a friendly error report
+    try
+        Diagnoser.report(error, catch_backtrace())
+    catch e
+        @error "Failed to report diagnostic" exception=e
+    end
 end
 
 """

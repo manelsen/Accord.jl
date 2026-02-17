@@ -108,6 +108,8 @@ function gateway_connect(
                     @warn "Gateway WebSocket closed" code
                     if !GatewayCloseCodes.can_reconnect(code)
                         @error "Cannot reconnect — fatal close code" code
+                        # DIAGNOSTICS
+                        Accord.Diagnoser.report(e, catch_backtrace())
                         reconnect = false
                         continue
                     end
