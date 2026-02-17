@@ -99,17 +99,20 @@ include("rest/endpoints/sku.jl")
 include("rest/endpoints/voice.jl")
 include("rest/endpoints/onboarding.jl")
 
-# === Interactions (needed by Client) ===
+# Forward declaration for Client
+abstract type AbstractClient end
+
+# === Interactions (dependencies for Client) ===
+include("interactions/context.jl")
+include("interactions/checks.jl")
 include("interactions/command_tree.jl")
 
 # === Client ===
 include("client/state.jl")
 include("client/event_handler.jl")
-include("client/client.jl")
+include("client/client.jl") # Defines Client <: AbstractClient
 
-# === Interactions (rest) ===
-include("interactions/context.jl")
-include("interactions/checks.jl")
+# === Interactions (Macros & UI) ===
 include("interactions/decorators.jl")
 include("interactions/components.jl")
 
@@ -180,6 +183,7 @@ export State, Store, CacheStrategy, CacheForever, CacheNever, CacheLRU, CacheTTL
 export @slash_command, @user_command, @message_command
 export @button_handler, @select_handler, @modal_handler, @autocomplete
 export @on_message, @option, @check
+export @on, @embed, @group, @subcommand
 
 # Interactions Helpers
 export get_options, get_option, custom_id, selected_values, modal_values, target

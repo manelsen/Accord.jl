@@ -45,7 +45,7 @@ end
 start(client)
 ```
 """
-mutable struct Client
+mutable struct Client <: AbstractClient
     token::String
     application_id::Nullable{Snowflake}
     intents::UInt32

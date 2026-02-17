@@ -1142,4 +1142,47 @@
         dispatch_interaction!(tree, client, slash_interaction(name="pong"))
         @test called_pong[]
     end
+
+    @testset "@group and subcommand routing" begin
+        tree = CommandTree()
+        called_sub = Ref(false)
+        
+        # Simulating @group expansion
+        opts = Dict{String, Any}[]
+        # We need to use the actual constant names or values
+        # ApplicationCommandOptionTypes.SUB_COMMAND is 1
+        push!(opts, Dict{String, Any}(
+            "type" => 1,
+            "name" => "sub",
+            "description" => "Subdesc",
+            "options" => [],
+            "_handler" => ctx -> (called_sub[] = true),
+            "_checks" => Function[]
+        ))
+        register_command!(tree, "parent", "Parentdesc", ctx -> nothing; options=opts)
+
+        client = mock_client()
+        # Interaction for /parent sub
+        interaction = Interaction(
+            id=Snowflake(1),
+            application_id=Snowflake(100),
+            type=InteractionTypes.APPLICATION_COMMAND,
+            data=InteractionData(
+                id=Snowflake(10),
+                name="parent",
+                type=1,
+                options=[
+                    InteractionDataOption(
+                        name="sub",
+                        type=1 # SUB_COMMAND
+                    )
+                ]
+            ),
+            token="tok",
+            version=1
+        )
+        
+        dispatch_interaction!(tree, client, interaction)
+        @test called_sub[]
+    end
 end
