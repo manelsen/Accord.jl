@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Voice · Accord.jl</title><meta name="title" content="Voice · Accord.jl"/><meta property="og:title" content="Voice · Accord.jl"/><meta property="twitter:title" content="Voice · Accord.jl"/><meta name="description" content="Documentation for Accord.jl."/><meta property="og:description" content="Documentation for Accord.jl."/><meta property="twitter:description" content="Documentation for Accord.jl."/><meta property="og:url" content="https://manelsen.github.io/Accord.jl/cookbook/05-voice/"/><meta property="twitter:url" content="https://manelsen.github.io/Accord.jl/cookbook/05-voice/"/><link rel="canonical" href="https://manelsen.github.io/Accord.jl/cookbook/05-voice/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Accord.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Cookbook</span><ul><li><a class="tocitem" href="../">Accord.jl Cookbook</a></li><li><a class="tocitem" href="../01-basic-bot/">Your First Bot</a></li><li><a class="tocitem" href="../02-messages-and-embeds/">Rich Messages</a></li><li><a class="tocitem" href="../03-slash-commands/">Slash Commands</a></li><li><a class="tocitem" href="../04-buttons-selects-modals/">Buttons, Selects &amp; Modals</a></li><li class="is-active"><a class="tocitem" href>Voice</a><ul class="internal"><li><a class="tocitem" href="#1.-Prerequisites"><span>1. Prerequisites</span></a></li><li><a class="tocitem" href="#2.-Connecting-to-Voice"><span>2. Connecting to Voice</span></a></li><li><a class="tocitem" href="#3.-Playing-Audio"><span>3. Playing Audio</span></a></li><li><a class="tocitem" href="#4.-Playback-Control"><span>4. Playback Control</span></a></li><li><a class="tocitem" href="#5.-Opus-Encoding-Details"><span>5. Opus Encoding Details</span></a></li><li><a class="tocitem" href="#6.-Voice-Transcription"><span>6. Voice Transcription</span></a></li><li><a class="tocitem" href="#7.-Slash-Commands-for-Voice"><span>7. Slash Commands for Voice</span></a></li></ul></li><li><a class="tocitem" href="../06-permissions/">Permissions</a></li><li><a class="tocitem" href="../07-caching/">Caching</a></li><li><a class="tocitem" href="../08-sharding/">Sharding</a></li><li><a class="tocitem" href="../09-automod/">Auto-Moderation</a></li><li><a class="tocitem" href="../10-polls/">Polls</a></li><li><a class="tocitem" href="../11-architectural-patterns/">Architectural Patterns</a></li><li><a class="tocitem" href="../12-performance/">Performance</a></li><li><a class="tocitem" href="../13-deploy/">Deployment</a></li><li><a class="tocitem" href="../14-troubleshooting/">Troubleshooting</a></li><li><a class="tocitem" href="../15-why-julia/">Why Julia?</a></li><li><a class="tocitem" href="../16-ai-agent/">AI Agent Bot</a></li></ul></li><li><a class="tocitem" href="../../api/">API Reference</a></li><li><a class="tocitem" href="../../diagnostics/">Diagnostics</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Cookbook</a></li><li class="is-active"><a href>Voice</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Voice</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/manelsen/Accord.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/manelsen/Accord.jl/blob/master/docs/src/cookbook/05-voice.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Recipe-05-—-Voice:-Playback,-Recording-and-Transcription"><a class="docs-heading-anchor" href="#Recipe-05-—-Voice:-Playback,-Recording-and-Transcription">Recipe 05 — Voice: Playback, Recording &amp; Transcription</a><a id="Recipe-05-—-Voice:-Playback,-Recording-and-Transcription-1"></a><a class="docs-heading-anchor-permalink" href="#Recipe-05-—-Voice:-Playback,-Recording-and-Transcription" title="Permalink"></a></h1><p><strong>Difficulty:</strong> Advanced <strong>What you will build:</strong> A voice bot that plays audio, records speech, and transcribes it with the Whisper API.</p><p><strong>Prerequisites:</strong> <a href="../03-slash-commands/">Recipe 03</a>, <code>ffmpeg</code> installed, <code>IntentGuildVoiceStates</code> enabled</p><hr/><div class="admonition is-warning" id="System-Dependencies-for-Voice-ccbea0f30feb6f37"><header class="admonition-header">System Dependencies for Voice<a class="admonition-anchor" href="#System-Dependencies-for-Voice-ccbea0f30feb6f37" title="Permalink"></a></header><div class="admonition-body"><p>Accord.jl&#39;s voice support requires:</p><ul><li><strong>Opus_jll</strong> and <strong>libsodium_jll</strong> — bundled automatically via JLL packages</li><li><strong>FFmpeg</strong> — must be installed on your system and available in PATH for <a href="../../api/#Accord.FFmpegSource"><code>FFmpegSource</code></a></li></ul><p>Install FFmpeg:</p><ul><li>Ubuntu/Debian: <code>sudo apt-get install ffmpeg</code></li><li>macOS: <code>brew install ffmpeg</code></li><li>Windows: Download from https://ffmpeg.org/download.html</li></ul></div></div><h2 id="1.-Prerequisites"><a class="docs-heading-anchor" href="#1.-Prerequisites">1. Prerequisites</a><a id="1.-Prerequisites-1"></a><a class="docs-heading-anchor-permalink" href="#1.-Prerequisites" title="Permalink"></a></h2><pre><code class="language-julia hljs">client = Client(token;
+    intents = IntentGuilds | IntentGuildVoiceStates
+)</code></pre><div class="admonition is-info" id="Voice-Connection-Timeout-Behavior-4b07057797cf5e7e"><header class="admonition-header">Voice Connection Timeout Behavior<a class="admonition-anchor" href="#Voice-Connection-Timeout-Behavior-4b07057797cf5e7e" title="Permalink"></a></header><div class="admonition-body"><p>Voice connections may take several seconds to establish as they require:</p><ol><li>Gateway handshake (VOICE<em>STATE</em>UPDATE)</li><li>Voice server assignment (VoiceServerUpdate event)</li><li>Voice WebSocket connection</li><li>UDP IP discovery</li><li>Encryption negotiation</li></ol><p>If <a href="../../api/#Accord.connect!"><code>connect!</code></a> hangs, verify <code>IntentGuildVoiceStates</code> is enabled and the bot has permission to connect to the voice channel.</p></div></div><h2 id="2.-Connecting-to-Voice"><a class="docs-heading-anchor" href="#2.-Connecting-to-Voice">2. Connecting to Voice</a><a id="2.-Connecting-to-Voice-1"></a><a class="docs-heading-anchor-permalink" href="#2.-Connecting-to-Voice" title="Permalink"></a></h2><pre><code class="language-julia hljs">using Accord
+
+vc = [`VoiceClient`](@ref)(client, guild_id, voice_channel_id)
+
+# Full handshake: gateway → voice WS → UDP → ready
+connect!(vc)
+
+# Later, disconnect
+disconnect!(vc)</code></pre><p>The <a href="../../api/#Accord.connect!"><code>connect!</code></a> flow:</p><ol><li>Sends <code>VOICE_STATE_UPDATE</code> to the gateway</li><li>Waits for <a href="../../api/#Accord.VoiceStateUpdateEvent"><code>VoiceStateUpdateEvent</code></a> and <code>VoiceServerUpdate</code> events</li><li>Connects to the voice WebSocket</li><li>Performs IP discovery via UDP</li><li>Selects encryption mode and establishes the session</li></ol><h2 id="3.-Playing-Audio"><a class="docs-heading-anchor" href="#3.-Playing-Audio">3. Playing Audio</a><a id="3.-Playing-Audio-1"></a><a class="docs-heading-anchor-permalink" href="#3.-Playing-Audio" title="Permalink"></a></h2><h3 id="From-Any-File-(via-FFmpeg)"><a class="docs-heading-anchor" href="#From-Any-File-(via-FFmpeg)">From Any File (via FFmpeg)</a><a id="From-Any-File-(via-FFmpeg)-1"></a><a class="docs-heading-anchor-permalink" href="#From-Any-File-(via-FFmpeg)" title="Permalink"></a></h3><pre><code class="language-julia hljs">source = [`FFmpegSource`](@ref)(&quot;song.mp3&quot;)
+play!(vc, source)</code></pre><p><a href="../../api/#Accord.FFmpegSource"><code>FFmpegSource</code></a> handles any format ffmpeg supports: MP3, FLAC, OGG, WAV, M4A, URLs, etc.</p><pre><code class="language-julia hljs"># Play from a URL
+source = [`FFmpegSource`](@ref)(&quot;https://example.com/stream.mp3&quot;)
+play!(vc, source)
+
+# Adjust volume at the ffmpeg level
+source = [`FFmpegSource`](@ref)(&quot;song.mp3&quot;; volume=0.5)
+play!(vc, source)</code></pre><h3 id="From-Raw-PCM"><a class="docs-heading-anchor" href="#From-Raw-PCM">From Raw PCM</a><a id="From-Raw-PCM-1"></a><a class="docs-heading-anchor-permalink" href="#From-Raw-PCM" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Raw PCM Int16, 48kHz stereo
+pcm_data = zeros(Int16, 48000 * 2 * 5)  # 5 seconds of silence
+source = [`PCMSource`](@ref)(pcm_data)
+play!(vc, source)</code></pre><h3 id="From-a-Raw-PCM-File"><a class="docs-heading-anchor" href="#From-a-Raw-PCM-File">From a Raw PCM File</a><a id="From-a-Raw-PCM-File-1"></a><a class="docs-heading-anchor-permalink" href="#From-a-Raw-PCM-File" title="Permalink"></a></h3><pre><code class="language-julia hljs"># File must be: 48kHz, 16-bit signed little-endian, stereo
+source = [`FileSource`](@ref)(&quot;audio.raw&quot;)
+play!(vc, source)</code></pre><h3 id="Silence-(Keep-Alive)"><a class="docs-heading-anchor" href="#Silence-(Keep-Alive)">Silence (Keep-Alive)</a><a id="Silence-(Keep-Alive)-1"></a><a class="docs-heading-anchor-permalink" href="#Silence-(Keep-Alive)" title="Permalink"></a></h3><pre><code class="language-julia hljs"># 5 seconds of silence to keep the voice connection alive
+source = [`SilenceSource`](@ref)(5000)
+play!(vc, source)</code></pre><h2 id="4.-Playback-Control"><a class="docs-heading-anchor" href="#4.-Playback-Control">4. Playback Control</a><a id="4.-Playback-Control-1"></a><a class="docs-heading-anchor-permalink" href="#4.-Playback-Control" title="Permalink"></a></h2><pre><code class="language-julia hljs">player = vc.player
+
+# Pause/resume
+pause!(player)
+resume!(player)
+
+# Check status
+is_playing(player)  # true/false
+
+# Volume (0.0 to 2.0, applied to PCM before encoding)
+player.volume = 0.5   # 50%
+player.volume = 1.5   # 150%
+
+# Stop playback
+stop!(vc)</code></pre><h2 id="5.-Opus-Encoding-Details"><a class="docs-heading-anchor" href="#5.-Opus-Encoding-Details">5. Opus Encoding Details</a><a id="5.-Opus-Encoding-Details-1"></a><a class="docs-heading-anchor-permalink" href="#5.-Opus-Encoding-Details" title="Permalink"></a></h2><p>Discord requires Opus-encoded audio:</p><ul><li><strong>Sample rate:</strong> 48,000 Hz</li><li><strong>Channels:</strong> 2 (stereo)</li><li><strong>Frame duration:</strong> 20 ms</li><li><strong>Frame size:</strong> 960 samples per channel (1,920 total)</li></ul><p>Accord.jl handles this automatically when you use <a href="../../api/#Accord.play!"><code>play!</code></a>. For manual encoding:</p><pre><code class="language-julia hljs">encoder = [`OpusEncoder`](@ref)()  # defaults: 48kHz, stereo, AUDIO application
+
+pcm_frame = rand(Int16, 960 * 2)  # one 20ms frame
+opus_data = opus_encode(encoder, pcm_frame)
+
+# Decoding
+decoder = [`OpusDecoder`](@ref)()
+pcm_out = opus_decode(decoder, opus_data)</code></pre><h2 id="6.-Voice-Transcription"><a class="docs-heading-anchor" href="#6.-Voice-Transcription">6. Voice Transcription</a><a id="6.-Voice-Transcription-1"></a><a class="docs-heading-anchor-permalink" href="#6.-Voice-Transcription" title="Permalink"></a></h2><p>This recipe captures incoming voice audio and sends it to OpenAI&#39;s Whisper API for transcription.</p><h3 id="Architecture"><a class="docs-heading-anchor" href="#Architecture">Architecture</a><a id="Architecture-1"></a><a class="docs-heading-anchor-permalink" href="#Architecture" title="Permalink"></a></h3><pre><code class="language-text hljs">Discord Voice → UDP packets → Opus decode → PCM buffer
+                                              ↓
+                              Silence detected → WAV file
+                                              ↓
+                              Whisper API → Transcript → Text channel</code></pre><h3 id="PCM-to-WAV-Helper"><a class="docs-heading-anchor" href="#PCM-to-WAV-Helper">PCM to WAV Helper</a><a id="PCM-to-WAV-Helper-1"></a><a class="docs-heading-anchor-permalink" href="#PCM-to-WAV-Helper" title="Permalink"></a></h3><pre><code class="language-julia hljs">function pcm_to_wav(pcm::Vector{Int16}; sample_rate=48000, channels=2)
+    data_size = length(pcm) * sizeof(Int16)
+    file_size = 36 + data_size
+
+    io = IOBuffer()
+    # RIFF header
+    write(io, b&quot;RIFF&quot;)
+    write(io, UInt32(file_size))
+    write(io, b&quot;WAVE&quot;)
+    # fmt chunk
+    write(io, b&quot;fmt &quot;)
+    write(io, UInt32(16))          # chunk size
+    write(io, UInt16(1))           # PCM format
+    write(io, UInt16(channels))
+    write(io, UInt32(sample_rate))
+    write(io, UInt32(sample_rate * channels * sizeof(Int16)))  # byte rate
+    write(io, UInt16(channels * sizeof(Int16)))                 # block align
+    write(io, UInt16(16))          # bits per sample
+    # data chunk
+    write(io, b&quot;data&quot;)
+    write(io, UInt32(data_size))
+    write(io, pcm)
+
+    return take!(io)
+end</code></pre><h3 id="Transcription-with-Whisper-API"><a class="docs-heading-anchor" href="#Transcription-with-Whisper-API">Transcription with Whisper API</a><a id="Transcription-with-Whisper-API-1"></a><a class="docs-heading-anchor-permalink" href="#Transcription-with-Whisper-API" title="Permalink"></a></h3><pre><code class="language-julia hljs">import HTTP
+import JSON3
+
+function transcribe_audio(wav_bytes::Vector{UInt8}; api_key=ENV[&quot;OPENAI_API_KEY&quot;])
+    # Build multipart form
+    body = HTTP.Forms.Form(Dict(
+        &quot;file&quot; =&gt; HTTP.Forms.File(wav_bytes, &quot;audio.wav&quot;, &quot;audio/wav&quot;),
+        &quot;model&quot; =&gt; &quot;whisper-1&quot;,
+        &quot;language&quot; =&gt; &quot;en&quot;,
+    ))
+
+    resp = HTTP.post(
+        &quot;https://api.openai.com/v1/audio/transcriptions&quot;,
+        [&quot;Authorization&quot; =&gt; &quot;Bearer $api_key&quot;],
+        body
+    )
+
+    result = JSON3.read(resp.body)
+    return result[&quot;text&quot;]
+end</code></pre><h3 id="Capture-and-Transcribe-Loop"><a class="docs-heading-anchor" href="#Capture-and-Transcribe-Loop">Capture and Transcribe Loop</a><a id="Capture-and-Transcribe-Loop-1"></a><a class="docs-heading-anchor-permalink" href="#Capture-and-Transcribe-Loop" title="Permalink"></a></h3><p>This is a conceptual pattern for capturing voice data per user (SSRC):</p><pre><code class="language-julia hljs"># Per-user audio buffers
+const audio_buffers = Dict{UInt32, Vector{Int16}}()  # SSRC → PCM samples
+const decoders = Dict{UInt32, OpusDecoder}()
+const silence_counters = Dict{UInt32, Int}()
+
+const SILENCE_THRESHOLD = 50     # ~1 second of silence (50 × 20ms frames)
+const MIN_AUDIO_FRAMES = 25      # at least 0.5s of speech
+
+function process_voice_packet(ssrc::UInt32, opus_data::Vector{UInt8})
+    dec = get!(decoders, ssrc) do; OpusDecoder() end
+    buf = get!(audio_buffers, ssrc) do; Int16[] end
+
+    pcm = opus_decode(dec, opus_data)
+
+    # Simple energy-based silence detection
+    energy = sum(abs.(Float64.(pcm))) / length(pcm)
+    if energy &lt; 100.0
+        silence_counters[ssrc] = get(silence_counters, ssrc, 0) + 1
+
+        if silence_counters[ssrc] &gt;= SILENCE_THRESHOLD &amp;&amp; length(buf) &gt; MIN_AUDIO_FRAMES * 960 * 2
+            # Silence detected after speech — transcribe
+            wav = pcm_to_wav(buf)
+            audio_buffers[ssrc] = Int16[]
+            silence_counters[ssrc] = 0
+
+            @async begin
+                try
+                    text = transcribe_audio(wav)
+                    if !isempty(strip(text))
+                        create_message(client, text_channel_id;
+                            content=&quot;**SSRC $ssrc**: $text&quot;)
+                    end
+                catch e
+                    @error &quot;Transcription failed&quot; exception=e
+                end
+            end
+            return
+        end
+    else
+        silence_counters[ssrc] = 0
+    end
+
+    append!(buf, pcm)
+    audio_buffers[ssrc] = buf
+end</code></pre><h2 id="7.-Slash-Commands-for-Voice"><a class="docs-heading-anchor" href="#7.-Slash-Commands-for-Voice">7. Slash Commands for Voice</a><a id="7.-Slash-Commands-for-Voice-1"></a><a class="docs-heading-anchor-permalink" href="#7.-Slash-Commands-for-Voice" title="Permalink"></a></h2><pre><code class="language-julia hljs">tree = CommandTree()
+
+register_command!(tree, &quot;join&quot;, &quot;Join your voice channel&quot;, function(ctx)
+    defer(ctx)
+
+    guild_id = ctx.interaction.guild_id
+    user_id = ctx.interaction.member.user.id
+
+    # Find user&#39;s voice channel from state
+    guild_vs = get(ctx.client.state.voice_states, guild_id, nothing)
+    if isnothing(guild_vs)
+        respond(ctx; content=&quot;You&#39;re not in a voice channel!&quot;)
+        return
+    end
+    vs = get(guild_vs, user_id, nothing)
+    if isnothing(vs) || isnothing(vs.channel_id)
+        respond(ctx; content=&quot;You&#39;re not in a voice channel!&quot;)
+        return
+    end
+
+    vc = VoiceClient(ctx.client, guild_id, vs.channel_id)
+    connect!(vc)
+    respond(ctx; content=&quot;Joined &lt;#$(vs.channel_id)&gt;!&quot;)
+end)
+
+register_command!(tree, &quot;leave&quot;, &quot;Leave voice channel&quot;, function(ctx)
+    # Assumes you store the VoiceClient somewhere accessible
+    disconnect!(vc)
+    respond(ctx; content=&quot;Disconnected from voice.&quot;)
+end)
+
+register_command!(tree, &quot;play&quot;, &quot;Play audio&quot;, function(ctx)
+    url = get_option(ctx, &quot;url&quot;, &quot;&quot;)
+    defer(ctx)
+
+    source = FFmpegSource(url)
+    play!(vc, source)
+    respond(ctx; content=&quot;Now playing!&quot;)
+end; options=[
+    command_option(type=ApplicationCommandOptionTypes.STRING, name=&quot;url&quot;, description=&quot;Audio URL or path&quot;, required=true),
+])
+
+register_command!(tree, &quot;stop&quot;, &quot;Stop playback&quot;, function(ctx)
+    stop!(vc)
+    respond(ctx; content=&quot;Playback stopped.&quot;)
+end)</code></pre><hr/><p><strong>Next steps:</strong> <a href="../06-permissions/">Recipe 06 — Permissions</a> to add permission checks to your commands.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../04-buttons-selects-modals/">« Buttons, Selects &amp; Modals</a><a class="docs-footer-nextpage" href="../06-permissions/">Permissions »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Tuesday 17 February 2026 05:56">Tuesday 17 February 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

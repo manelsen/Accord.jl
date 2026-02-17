@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Performance · Accord.jl</title><meta name="title" content="Performance · Accord.jl"/><meta property="og:title" content="Performance · Accord.jl"/><meta property="twitter:title" content="Performance · Accord.jl"/><meta name="description" content="Documentation for Accord.jl."/><meta property="og:description" content="Documentation for Accord.jl."/><meta property="twitter:description" content="Documentation for Accord.jl."/><meta property="og:url" content="https://manelsen.github.io/Accord.jl/cookbook/12-performance/"/><meta property="twitter:url" content="https://manelsen.github.io/Accord.jl/cookbook/12-performance/"/><link rel="canonical" href="https://manelsen.github.io/Accord.jl/cookbook/12-performance/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Accord.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Cookbook</span><ul><li><a class="tocitem" href="../">Accord.jl Cookbook</a></li><li><a class="tocitem" href="../01-basic-bot/">Your First Bot</a></li><li><a class="tocitem" href="../02-messages-and-embeds/">Rich Messages</a></li><li><a class="tocitem" href="../03-slash-commands/">Slash Commands</a></li><li><a class="tocitem" href="../04-buttons-selects-modals/">Buttons, Selects &amp; Modals</a></li><li><a class="tocitem" href="../05-voice/">Voice</a></li><li><a class="tocitem" href="../06-permissions/">Permissions</a></li><li><a class="tocitem" href="../07-caching/">Caching</a></li><li><a class="tocitem" href="../08-sharding/">Sharding</a></li><li><a class="tocitem" href="../09-automod/">Auto-Moderation</a></li><li><a class="tocitem" href="../10-polls/">Polls</a></li><li><a class="tocitem" href="../11-architectural-patterns/">Architectural Patterns</a></li><li class="is-active"><a class="tocitem" href>Performance</a><ul class="internal"><li><a class="tocitem" href="#1.-Type-Stability-in-Handlers"><span>1. Type Stability in Handlers</span></a></li><li><a class="tocitem" href="#2.-Precompilation"><span>2. Precompilation</span></a></li><li><a class="tocitem" href="#3.-Async-Patterns"><span>3. Async Patterns</span></a></li><li><a class="tocitem" href="#4.-Memory-Management"><span>4. Memory Management</span></a></li><li><a class="tocitem" href="#5.-Profiling"><span>5. Profiling</span></a></li><li><a class="tocitem" href="#6.-Batch-Operations"><span>6. Batch Operations</span></a></li><li><a class="tocitem" href="#7.-Connection-Pooling-for-External-Services"><span>7. Connection Pooling for External Services</span></a></li><li><a class="tocitem" href="#8.-Benchmark:-Event-Handler-Overhead"><span>8. Benchmark: Event Handler Overhead</span></a></li></ul></li><li><a class="tocitem" href="../13-deploy/">Deployment</a></li><li><a class="tocitem" href="../14-troubleshooting/">Troubleshooting</a></li><li><a class="tocitem" href="../15-why-julia/">Why Julia?</a></li><li><a class="tocitem" href="../16-ai-agent/">AI Agent Bot</a></li></ul></li><li><a class="tocitem" href="../../api/">API Reference</a></li><li><a class="tocitem" href="../../diagnostics/">Diagnostics</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Cookbook</a></li><li class="is-active"><a href>Performance</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Performance</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/manelsen/Accord.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/manelsen/Accord.jl/blob/master/docs/src/cookbook/12-performance.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Recipe-12-—-Performance"><a class="docs-heading-anchor" href="#Recipe-12-—-Performance">Recipe 12 — Performance</a><a id="Recipe-12-—-Performance-1"></a><a class="docs-heading-anchor-permalink" href="#Recipe-12-—-Performance" title="Permalink"></a></h1><p><strong>Difficulty:</strong> Advanced <strong>What you will build:</strong> Optimized bots using Julia-specific techniques: type stability, precompilation, async patterns, and profiling.</p><p><strong>Prerequisites:</strong> <a href="../11-architectural-patterns/">Recipe 11</a></p><hr/><h2 id="1.-Type-Stability-in-Handlers"><a class="docs-heading-anchor" href="#1.-Type-Stability-in-Handlers">1. Type Stability in Handlers</a><a id="1.-Type-Stability-in-Handlers-1"></a><a class="docs-heading-anchor-permalink" href="#1.-Type-Stability-in-Handlers" title="Permalink"></a></h2><div class="admonition is-success" id="Type-Stability-for-Performance-2b607b31c81aa8d3"><header class="admonition-header">Type Stability for Performance<a class="admonition-anchor" href="#Type-Stability-for-Performance-2b607b31c81aa8d3" title="Permalink"></a></header><div class="admonition-body"><p>Julia&#39;s JIT compiler generates fast code when types are predictable. Always annotate types when extracting options from <a href="../../api/#Accord.get_option"><code>get_option</code></a>, which returns <code>Any</code>. Use <code>@code_warntype</code> to identify type instabilities (look for red &quot;Any&quot; in the output).</p></div></div><p>Julia&#39;s JIT compiler generates fast code when types are predictable. The <a href="../../api/#Accord.get_option"><code>get_option</code></a> function returns <code>Any</code> — annotate it:</p><pre><code class="language-julia hljs"># Slow: compiler doesn&#39;t know the type
+@slash_command client &quot;compute&quot; &quot;Do math&quot; function(ctx)
+    x = get_option(ctx, &quot;x&quot;, 0)      # returns Any
+    y = get_option(ctx, &quot;y&quot;, 0)      # returns Any
+    respond(ctx; content=&quot;Result: $(x + y)&quot;)  # dynamic dispatch
+end
+
+# Fast: annotate types
+@slash_command client &quot;compute&quot; &quot;Do math&quot; function(ctx)
+    x = get_option(ctx, &quot;x&quot;, 0)::Number
+    y = get_option(ctx, &quot;y&quot;, 0)::Number
+    respond(ctx; content=&quot;Result: $(x + y)&quot;)  # static dispatch
+end</code></pre><h3 id="Verify-with-@code_warntype"><a class="docs-heading-anchor" href="#Verify-with-@code_warntype">Verify with @code_warntype</a><a id="Verify-with-@code_warntype-1"></a><a class="docs-heading-anchor-permalink" href="#Verify-with-@code_warntype" title="Permalink"></a></h3><pre><code class="language-julia hljs">function handle_compute(ctx)
+    x = get_option(ctx, &quot;x&quot;, 0)::Number
+    y = get_option(ctx, &quot;y&quot;, 0)::Number
+    return x + y
+end
+
+# In the REPL (with a mock context):
+# @code_warntype handle_compute(ctx)
+# Look for red &quot;Any&quot; — those are type instabilities</code></pre><h2 id="2.-Precompilation"><a class="docs-heading-anchor" href="#2.-Precompilation">2. Precompilation</a><a id="2.-Precompilation-1"></a><a class="docs-heading-anchor-permalink" href="#2.-Precompilation" title="Permalink"></a></h2><h3 id="SnoopCompile-for-Precompile-Statements"><a class="docs-heading-anchor" href="#SnoopCompile-for-Precompile-Statements">SnoopCompile for Precompile Statements</a><a id="SnoopCompile-for-Precompile-Statements-1"></a><a class="docs-heading-anchor-permalink" href="#SnoopCompile-for-Precompile-Statements" title="Permalink"></a></h3><pre><code class="language-julia hljs"># precompile_script.jl
+using SnoopCompile
+
+tinf = @snoopi_deep begin
+    using Accord
+
+    # Simulate typical operations
+    client = Client(&quot;Bot fake_token&quot;; intents=IntentGuilds)
+    tree = CommandTree()
+    embed(title=&quot;Test&quot;, color=0x5865F2)
+    button(label=&quot;Test&quot;, custom_id=&quot;test&quot;)
+    action_row([button(label=&quot;X&quot;, custom_id=&quot;x&quot;)])
+    command_option(type=3, name=&quot;test&quot;, description=&quot;test&quot;)
+end
+
+# Generate precompile statements
+pc = SnoopCompile.parcel(tinf)
+SnoopCompile.write(&quot;precompile&quot;, pc)</code></pre><h3 id="PackageCompiler.jl-System-Image"><a class="docs-heading-anchor" href="#PackageCompiler.jl-System-Image">PackageCompiler.jl System Image</a><a id="PackageCompiler.jl-System-Image-1"></a><a class="docs-heading-anchor-permalink" href="#PackageCompiler.jl-System-Image" title="Permalink"></a></h3><p>Create a custom sysimage for near-instant startup:</p><pre><code class="language-julia hljs">using PackageCompiler
+
+create_sysimage(
+    [&quot;Accord&quot;, &quot;HTTP&quot;, &quot;JSON3&quot;],
+    sysimage_path=&quot;bot_sysimage.so&quot;,
+    precompile_execution_file=&quot;precompile_script.jl&quot;,
+)</code></pre><p>Run with the sysimage:</p><pre><code class="language-bash hljs">julia --sysimage=bot_sysimage.so --project=. bin/run.jl</code></pre><p>Startup goes from ~10s to ~1s.</p><h2 id="3.-Async-Patterns"><a class="docs-heading-anchor" href="#3.-Async-Patterns">3. Async Patterns</a><a id="3.-Async-Patterns-1"></a><a class="docs-heading-anchor-permalink" href="#3.-Async-Patterns" title="Permalink"></a></h2><h3 id="@async-vs-Threads.@spawn"><a class="docs-heading-anchor" href="#@async-vs-Threads.@spawn">@async vs Threads.@spawn</a><a id="@async-vs-Threads.@spawn-1"></a><a class="docs-heading-anchor-permalink" href="#@async-vs-Threads.@spawn" title="Permalink"></a></h3><pre><code class="language-julia hljs"># @async — runs on the same thread, cooperative multitasking
+# Good for I/O-bound work (API calls, file reads)
+on(client, MessageCreate) do c, event
+    @async begin
+        result = some_api_call()  # yields while waiting
+        create_message(c, event.message.channel_id; content=result)
+    end
+end
+
+# Threads.@spawn — runs on a different thread
+# Good for CPU-bound work (computation, image processing)
+on(client, MessageCreate) do c, event
+    Threads.@spawn begin
+        result = expensive_computation()  # runs in parallel
+        create_message(c, event.message.channel_id; content=string(result))
+    end
+end</code></pre><p>Start Julia with multiple threads:</p><pre><code class="language-bash hljs">julia --threads=4 --project=. bin/run.jl</code></pre><h3 id="Avoiding-Event-Loop-Blocking"><a class="docs-heading-anchor" href="#Avoiding-Event-Loop-Blocking">Avoiding Event Loop Blocking</a><a id="Avoiding-Event-Loop-Blocking-1"></a><a class="docs-heading-anchor-permalink" href="#Avoiding-Event-Loop-Blocking" title="Permalink"></a></h3><pre><code class="language-julia hljs">!!! warning &quot;Global Variables Cause Type Instability&quot;
+    Avoid global mutable state. Global variables have unpredictable types, forcing the compiler to use dynamic dispatch. Instead, inject state through `Client(; state=...)` or use `const` globals with concrete types.
+
+# BAD: blocks the event loop
+on(client, MessageCreate) do c, event
+    sleep(10)  # nothing else processes for 10 seconds!
+    create_message(c, event.message.channel_id; content=&quot;Done&quot;)
+end
+
+# GOOD: defer to a task
+on(client, MessageCreate) do c, event
+    @async begin
+        sleep(10)
+        create_message(c, event.message.channel_id; content=&quot;Done&quot;)
+    end
+end</code></pre><h3 id="Channel-Based-Worker-Pattern"><a class="docs-heading-anchor" href="#Channel-Based-Worker-Pattern">Channel-Based Worker Pattern</a><a id="Channel-Based-Worker-Pattern-1"></a><a class="docs-heading-anchor-permalink" href="#Channel-Based-Worker-Pattern" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Process heavy work in a dedicated worker
+const work_queue = Channel{Tuple{Client, Snowflake, String}}(100)
+
+# Worker task
+@async begin
+    for (client, channel_id, input) in work_queue
+        try
+            result = expensive_processing(input)
+            create_message(client, channel_id; content=result)
+        catch e
+            @error &quot;Worker error&quot; exception=e
+        end
+    end
+end
+
+# Handler just enqueues
+on(client, MessageCreate) do c, event
+    msg = event.message
+    ismissing(msg.content) &amp;&amp; return
+    startswith(msg.content, &quot;!process &quot;) || return
+    put!(work_queue, (c, msg.channel_id, msg.content[10:end]))
+end</code></pre><h2 id="4.-Memory-Management"><a class="docs-heading-anchor" href="#4.-Memory-Management">4. Memory Management</a><a id="4.-Memory-Management-1"></a><a class="docs-heading-anchor-permalink" href="#4.-Memory-Management" title="Permalink"></a></h2><h3 id="Cache-Sizing"><a class="docs-heading-anchor" href="#Cache-Sizing">Cache Sizing</a><a id="Cache-Sizing-1"></a><a class="docs-heading-anchor-permalink" href="#Cache-Sizing" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Monitor memory usage
+function memory_report(client)
+    guilds = length(client.state.guilds)
+    channels = length(client.state.channels)
+    users = length(client.state.users)
+
+    total_mb = Base.summarysize(client.state) / 1024 / 1024
+
+    @info &quot;Memory report&quot; guilds channels users total_mb=round(total_mb, digits=1)
+end
+
+# Run periodically
+@async while client.running
+    sleep(300)  # every 5 minutes
+    memory_report(client)
+end</code></pre><h3 id="Avoid-String-Allocations-in-Hot-Paths"><a class="docs-heading-anchor" href="#Avoid-String-Allocations-in-Hot-Paths">Avoid String Allocations in Hot Paths</a><a id="Avoid-String-Allocations-in-Hot-Paths-1"></a><a class="docs-heading-anchor-permalink" href="#Avoid-String-Allocations-in-Hot-Paths" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Allocates a new string every call
+function make_greeting(name)
+    return &quot;Hello, $name! Welcome to the server.&quot;
+end
+
+# Pre-allocate with IOBuffer for complex strings
+function make_report(items)
+    io = IOBuffer()
+    for (i, item) in enumerate(items)
+        print(io, i, &quot;. &quot;, item, &quot;\n&quot;)
+    end
+    return String(take!(io))
+end</code></pre><h2 id="5.-Profiling"><a class="docs-heading-anchor" href="#5.-Profiling">5. Profiling</a><a id="5.-Profiling-1"></a><a class="docs-heading-anchor-permalink" href="#5.-Profiling" title="Permalink"></a></h2><h3 id="@time-and-@allocated"><a class="docs-heading-anchor" href="#@time-and-@allocated">@time and @allocated</a><a id="@time-and-@allocated-1"></a><a class="docs-heading-anchor-permalink" href="#@time-and-@allocated" title="Permalink"></a></h3><pre><code class="language-julia hljs"># In REPL with non-blocking mode
+start(client; blocking=false)
+
+# Time a specific operation
+@time create_message(client, channel_id; content=&quot;test&quot;)
+# 0.052 seconds (423 allocations: 28.5 KiB)
+
+@allocated embed(title=&quot;Test&quot;, color=0x5865F2)
+# 1248</code></pre><h3 id="Profile.@profile"><a class="docs-heading-anchor" href="#Profile.@profile">Profile.@profile</a><a id="Profile.@profile-1"></a><a class="docs-heading-anchor-permalink" href="#Profile.@profile" title="Permalink"></a></h3><pre><code class="language-julia hljs">using Profile
+
+# Profile event handling
+Profile.@profile begin
+    for i in 1:1000
+        embed(title=&quot;Test $i&quot;, color=i, fields=[
+            Dict(&quot;name&quot; =&gt; &quot;Field&quot;, &quot;value&quot; =&gt; &quot;Value&quot;)
+        ])
+    end
+end
+
+Profile.print(mincount=10)</code></pre><h3 id="Allocation-tracking"><a class="docs-heading-anchor" href="#Allocation-tracking">Allocation tracking</a><a id="Allocation-tracking-1"></a><a class="docs-heading-anchor-permalink" href="#Allocation-tracking" title="Permalink"></a></h3><pre><code class="language-julia hljs"># Find where allocations happen
+Profile.Allocs.@profile sample_rate=1.0 begin
+    for i in 1:100
+        embed(title=&quot;Test&quot;, fields=[
+            Dict(&quot;name&quot; =&gt; &quot;N&quot;, &quot;value&quot; =&gt; string(i))
+        ])
+    end
+end</code></pre><h2 id="6.-Batch-Operations"><a class="docs-heading-anchor" href="#6.-Batch-Operations">6. Batch Operations</a><a id="6.-Batch-Operations-1"></a><a class="docs-heading-anchor-permalink" href="#6.-Batch-Operations" title="Permalink"></a></h2><p>Use batch endpoints to reduce API calls:</p><pre><code class="language-julia hljs"># Instead of N individual deletes:
+for id in message_ids
+    delete_message(client, channel_id, id)  # N API calls
+end
+
+# Use bulk delete (1 API call):
+bulk_delete_messages(client.ratelimiter, channel_id;
+    token=client.token, message_ids=message_ids)
+
+# Instead of N individual command creates:
+# Use sync_commands! which calls bulk_overwrite_global_application_commands
+sync_commands!(client, tree)  # 1 API call for all commands</code></pre><h2 id="7.-Connection-Pooling-for-External-Services"><a class="docs-heading-anchor" href="#7.-Connection-Pooling-for-External-Services">7. Connection Pooling for External Services</a><a id="7.-Connection-Pooling-for-External-Services-1"></a><a class="docs-heading-anchor-permalink" href="#7.-Connection-Pooling-for-External-Services" title="Permalink"></a></h2><pre><code class="language-julia hljs"># Reuse HTTP connections for external APIs
+const http_pool = Ref{HTTP.Pool}()
+
+function init_pool()
+    http_pool[] = HTTP.Pool(16)  # 16 connections
+end
+
+function call_external_api(endpoint, body)
+    HTTP.post(endpoint, [&quot;Content-Type&quot; =&gt; &quot;application/json&quot;],
+        JSON3.write(body);
+        pool=http_pool[],
+        retry=true,
+        retries=3,
+    )
+end</code></pre><h2 id="8.-Benchmark:-Event-Handler-Overhead"><a class="docs-heading-anchor" href="#8.-Benchmark:-Event-Handler-Overhead">8. Benchmark: Event Handler Overhead</a><a id="8.-Benchmark:-Event-Handler-Overhead-1"></a><a class="docs-heading-anchor-permalink" href="#8.-Benchmark:-Event-Handler-Overhead" title="Permalink"></a></h2><pre><code class="language-julia hljs">using BenchmarkTools
+
+# Measure handler dispatch overhead
+eh = EventHandler()
+register_handler!(eh, MessageCreate, (c, e) -&gt; nothing)
+
+# Create a fake event
+fake_msg = Message(id=Snowflake(1), channel_id=Snowflake(2))
+fake_event = MessageCreate(fake_msg)
+
+@benchmark dispatch_event!($eh, nothing, $fake_event)
+# Should be &lt; 1μs — handler dispatch is not your bottleneck</code></pre><hr/><p><strong>Next steps:</strong> <a href="../13-deploy/">Recipe 13 — Deployment</a> for running your bot in production.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../11-architectural-patterns/">« Architectural Patterns</a><a class="docs-footer-nextpage" href="../13-deploy/">Deployment »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Tuesday 17 February 2026 05:56">Tuesday 17 February 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
