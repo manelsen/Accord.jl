@@ -26,7 +26,15 @@ function install(client::Client)
 
     # Comando: Rank
     @slash_command client "rank" "Veja seu nível e XP" function(ctx)
-        target = get(ctx.options, "user", ctx.user)
+        target_id = get_option(ctx, "user")
+        target = if isnothing(target_id)
+            ctx.user
+        else
+            # Tenta pegar objeto de usuário do cache ou API
+            # get_user é cache-first, então é eficiente
+            get_user(ctx.client, Snowflake(target_id))
+        end
+        
         xp, rank_pos = Service.get_user_rank(ctx.client.state.db, Int(target.id), Int(ctx.guild_id))
         
         embed_data = embed(
