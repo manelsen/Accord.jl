@@ -36,7 +36,7 @@ const voice_sessions = Dict{Int, VoiceClient}()
     defer(ctx) # Conectar pode demorar
     
     try
-        vc = await(connect!(ctx.client, ctx.guild_id, channel_id))
+        vc = connect!(ctx.client, ctx.guild_id, channel_id)
         voice_sessions[Int(ctx.guild_id)] = vc
         respond(ctx; content="Conectado ao canal <#$channel_id>! 🔊")
     catch e

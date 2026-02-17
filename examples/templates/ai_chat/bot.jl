@@ -60,15 +60,16 @@ end
     
     defer(ctx) # API pode demorar
     
-    # 3. Chama a IA
-    reply_content = ask_gpt(history)
-    
-    # 4. Adiciona resposta da IA ao histórico
-    push!(history, Dict(:role => "assistant", :content => reply_content))
-    
-    # 5. Responde no Discord (limitado a 2000 chars)
-    # Se for maior, deveria enviar como arquivo ou dividir.
-    respond(ctx; content=first(reply_content, 2000))
+    # 3. Chama a IA (em uma Task separada para não bloquear o Gateway)
+    @async begin
+        reply_content = ask_gpt(history)
+        
+        # 4. Adiciona resposta da IA ao histórico
+        push!(history, Dict(:role => "assistant", :content => reply_content))
+        
+        # 5. Responde no Discord (limitado a 2000 chars)
+        respond(ctx; content=first(reply_content, 2000))
+    end
 end
 
 @slash_command client "reset" "Apaga o histórico da conversa" function(ctx)
