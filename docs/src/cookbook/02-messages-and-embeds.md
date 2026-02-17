@@ -24,45 +24,40 @@ create_message(client, channel_id;
 
 ## 2. Building Embeds
 
-The [`embed`](@ref)`()` helper returns a `Dict` ready for the API:
+The easiest way to build embeds is using the [`@embed`](@ref) macro, which provides a declarative DSL:
 
 ```julia
-e = embed(
-    title="My Embed",
-    description="A rich embed with all the trimmings.",
-    url="https://github.com/your-org/Accord.jl",
-    color=0x5865F2,  # Discord blurple
-    timestamp=string(Dates.now()) * "Z",
-    footer=Dict("text" => "Footer text", "icon_url" => "https://example.com/icon.png"),
-    thumbnail=Dict("url" => "https://example.com/thumb.png"),
-    image=Dict("url" => "https://example.com/image.png"),
-    author=Dict(
-        "name" => "Bot Author",
-        "url" => "https://example.com",
-        "icon_url" => "https://example.com/avatar.png"
-    ),
-    fields=[
-        Dict("name" => "Field 1", "value" => "Value 1", "inline" => true),
-        Dict("name" => "Field 2", "value" => "Value 2", "inline" => true),
-        Dict("name" => "Wide Field", "value" => "This spans the full width."),
-    ]
-)
+e = @embed begin
+    title "My Embed"
+    description "A rich embed built with the @embed macro."
+    url "https://github.com/manelsen/Accord.jl"
+    color :blurple
+    field "Performance" "283k msg/s" inline=true
+    field "Ergonomics" "Macros & DSLs" inline=true
+    footer "Accord.jl v0.3.0"
+    timestamp
+end
 
 create_message(client, channel_id; embeds=[e])
 ```
 
-### Color Reference
+Alternatively, the [`embed`](@ref)`()` helper returns a `Dict` if you prefer a standard function call:
 
 ```julia
-const COLORS = Dict(
-    :blurple => 0x5865F2,
-    :green   => 0x57F287,
-    :yellow  => 0xFEE75C,
-    :fuchsia => 0xEB459E,
-    :red     => 0xED4245,
-    :white   => 0xFFFFFF,
-    :black   => 0x23272A,
+e = embed(
+    title="Legacy Style",
+    description="Using the functional helper.",
+    color=0x5865F2
 )
+```
+
+### Color Reference
+
+The `@embed` macro supports symbols for common Discord colors:
+
+```julia
+# Supported symbols:
+# :blurple, :green, :yellow, :fuchsia, :red, :white, :black, :gold, :orange, :blue
 ```
 
 ## 3. Multiple Embeds

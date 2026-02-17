@@ -1,5 +1,150 @@
 # Macro-based decorators for registering commands and component handlers
 
+# Map symbols to color hex values for @embed
+const DISCORD_COLORS = Dict(
+    :blurple => 0x5865F2,
+    :green   => 0x57F287,
+    :yellow  => 0xFEE75C,
+    :fuchsia => 0xEB459E,
+    :red     => 0xED4245,
+    :white   => 0xFFFFFF,
+    :black   => 0x23272A,
+    :gold    => 0xF1C40F,
+    :orange  => 0xE67E22,
+    :blue    => 0x3498DB,
+)
+
+"""
+    @on client EventType handler
+
+Register an event handler using a clean decorator syntax.
+
+# Example
+```julia
+@on client MessageCreate (c, event) -> println(event.message.content)
+
+@on client ReadyEvent function(c, event)
+    @info "Logged in as \$(event.user.username)"
+end
+```
+"""
+macro on(client, event_type, handler)
+    quote
+        $(@__MODULE__).on($(esc(handler)), $(esc(client)), $(esc(event_type)))
+    end
+end
+
+"""
+    @embed begin ... end
+
+DSL for building Discord embeds quickly.
+
+# Supported Keywords
+- `title "text"`
+- `description "text"`
+- `url "url"`
+- `color :symbol` or `0xHEX`
+- `image "url"`
+- `thumbnail "url"`
+- `author "name" icon="url" url="url"`
+- `footer "text" icon="url"`
+- `field "name" "value" inline=true/false`
+- `timestamp` (uses current time)
+
+# Example
+```julia
+e = @embed begin
+    title "Success"
+    description "Operation completed"
+    color :green
+    field "ID" "123" inline=true
+    timestamp
+end
+```
+"""
+macro embed(block)
+    exprs = []
+    push!(exprs, :(dict = Dict{String, Any}()))
+    push!(exprs, :(fields = Dict{String, Any}[]))
+    
+    for line in block.args
+        line isa LineNumberNode && continue
+        !(line isa Expr) && continue
+        
+        cmd = line.args[1]
+        args = line.args[2:end]
+        
+        if cmd == :title
+            push!(exprs, :(dict["title"] = $(esc(args[1]))))
+        elseif cmd == :description
+            push!(exprs, :(dict["description"] = $(esc(args[1]))))
+        elseif cmd == :url
+            push!(exprs, :(dict["url"] = $(esc(args[1]))))
+        elseif cmd == :color
+            color_val = args[1]
+            if color_val isa QuoteNode || (color_val isa Expr && color_val.head == :quote)
+                push!(exprs, :(dict["color"] = get(DISCORD_COLORS, $(esc(color_val)), 0x000000)))
+            else
+                push!(exprs, :(dict["color"] = $(esc(color_val))))
+            end
+        elseif cmd == :image
+            push!(exprs, :(dict["image"] = Dict("url" => $(esc(args[1])))))
+        elseif cmd == :thumbnail
+            push!(exprs, :(dict["thumbnail"] = Dict("url" => $(esc(args[1])))))
+        elseif cmd == :timestamp
+            push!(exprs, :(dict["timestamp"] = string(Dates.now()) * "Z"))
+        elseif cmd == :author
+            name = args[1]
+            author_dict = :(Dict{String, Any}("name" => $(esc(name))))
+            for arg in args[2:end]
+                if arg isa Expr && arg.head == :kw
+                    author_dict.args[1].args[2][string(arg.args[1])] = esc(arg.args[2]) # simplified for logic
+                end
+            end
+            # Build author dict properly
+            author_expr = :(a_dict = Dict{String, Any}("name" => $(esc(name))))
+            for arg in args[2:end]
+                if arg isa Expr && arg.head == :kw
+                    key = string(arg.args[1])
+                    if key == "icon" key = "icon_url" end
+                    push!(author_expr.args, :(a_dict[$key] = $(esc(arg.args[2]))))
+                end
+            end
+            push!(exprs, quote $author_expr; dict["author"] = a_dict end)
+        elseif cmd == :footer
+            text = args[1]
+            footer_expr = :(f_dict = Dict{String, Any}("text" => $(esc(text))))
+            for arg in args[2:end]
+                if arg isa Expr && arg.head == :kw
+                    key = string(arg.args[1])
+                    if key == "icon" key = "icon_url" end
+                    push!(footer_expr.args, :(f_dict[$key] = $(esc(arg.args[2]))))
+                end
+            end
+            push!(exprs, quote $footer_expr; dict["footer"] = f_dict end)
+        elseif cmd == :field
+            name = args[1]
+            val = args[2]
+            f_expr = :(f = Dict{String, Any}("name" => $(esc(name)), "value" => string($(esc(val)))))
+            for arg in args[3:end]
+                if arg isa Expr && arg.head == :kw
+                    push!(f_expr.args, :(f[$(string(arg.args[1]))] = $(esc(arg.args[2]))))
+                end
+            end
+            push!(exprs, quote $f_expr; push!(fields, f) end)
+        end
+    end
+    
+    push!(exprs, :(if !isempty(fields) dict["fields"] = fields end))
+    push!(exprs, :(dict))
+    
+    return quote
+        let
+            $(exprs...)
+        end
+    end
+end
+
 """
     @check check_function
 
@@ -221,6 +366,96 @@ end
 macro autocomplete(client, command_name, handler)
     quote
         $(@__MODULE__).register_autocomplete!($(esc(client)).command_tree, $(esc(command_name)), $(esc(handler)))
+    end
+end
+
+# Temporary storage for subcommands during @group macro expansion
+const _GROUP_OPTIONS = Dict{Symbol, Vector{Dict{String, Any}}}()
+
+"""
+    @group client [guild_id] name description begin ... end
+
+Organize related slash commands into a single top-level command with subcommands.
+
+# Example
+```julia
+@group client "admin" "Moderation tools" begin
+    @subcommand "ban" "Ban a user" [
+        @option User "user" "The user to ban" required=true
+    ] (ctx) -> respond(ctx, content="Banned!")
+
+    @subcommand "kick" "Kick a user" (ctx) -> respond(ctx, content="Kicked!")
+end
+```
+"""
+macro group(client, args...)
+    # Logic to handle optional guild_id and block
+    block = args[end]
+    if !(block isa Expr && block.head == :begin)
+        error("@group requires a begin...end block as the last argument")
+    end
+
+    if length(args) == 3
+        name, desc = args[1], args[2]
+        guild_id = nothing
+    elseif length(args) == 4
+        guild_id, name, desc = args[1], args[2], args[3]
+    else
+        error("Invalid @group syntax. Expected: @group client [guild_id] name description begin...end")
+    end
+
+    # Use a unique key for this group to support nesting if needed
+    group_key = gensym(:group)
+    
+    quote
+        $(@__MODULE__)._GROUP_OPTIONS[$QuoteNode(group_key)] = Dict{String, Any}[]
+        
+        # Run the block which should contain @subcommand calls
+        # We need to pass the group_key down
+        let
+            $(esc(block))
+        end
+        
+        opts = pop!($(@__MODULE__)._GROUP_OPTIONS, $QuoteNode(group_key))
+        
+        # Register the top-level command with collected subcommands
+        # Top level group doesn't have a handler of its own (usually)
+        # but we provide a dummy one that just does nothing if called directly.
+        if isnothing($guild_id)
+            $(@__MODULE__).register_command!($(esc(client)).command_tree, $(esc(name)), $(esc(desc)), (ctx) -> nothing;
+                options=opts)
+        else
+            $(@__MODULE__).register_command!($(esc(client)).command_tree, $(esc(name)), $(esc(desc)), (ctx) -> nothing;
+                options=opts, guild_id=$(@__MODULE__).Snowflake($(esc(guild_id))))
+        end
+    end
+end
+
+"""
+    @subcommand name description [options] handler
+
+Define a subcommand inside a `@group` block.
+"""
+macro subcommand(name, description, args...)
+    handler = args[end]
+    options = length(args) == 2 ? args[1] : :([])
+    
+    # This macro relies on being called inside @group which sets up the context.
+    # However, macros are expanded independently. We'll find the last group key.
+    
+    quote
+        # Get the current group being built (last added to the dict)
+        # This is a bit hacky due to macro expansion order, but works for linear definitions.
+        keys_list = collect(keys($(@__MODULE__)._GROUP_OPTIONS))
+        if isempty(keys_list)
+            error("@subcommand must be used inside a @group block")
+        end
+        current_key = last(keys_list)
+        
+        _checks_ = $(@__MODULE__).drain_pending_checks!()
+        $(@__MODULE__).register_subcommand!($(@__MODULE__)._GROUP_OPTIONS[current_key], 
+            $(esc(name)), $(esc(description)), $(esc(handler));
+            options=$(esc(options)), checks=_checks_)
     end
 end
 

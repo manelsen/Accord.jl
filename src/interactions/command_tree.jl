@@ -96,6 +96,26 @@ function register_command!(tree::CommandTree, name::String, description::String,
 end
 
 """
+    register_subcommand!(parent_options::Vector, name::String, description::String, handler::Function; options=[], checks=[])
+
+Register a subcommand into a list of options for a parent command or group.
+Internal helper used by the `@group` and `@subcommand` macros.
+"""
+function register_subcommand!(parent_options::Vector, name::String, description::String, handler::Function;
+    options::Vector = [],
+    checks::Vector = Function[],
+)
+    push!(parent_options, Dict{String, Any}(
+        "type" => ApplicationCommandOptionTypes.SUB_COMMAND,
+        "name" => name,
+        "description" => description,
+        "options" => options,
+        "_handler" => handler, # Internal marker for routing
+        "_checks" => checks
+    ))
+end
+
+"""
     register_component!(tree::CommandTree, custom_id::String, handler::Function)
 
 Register a handler for a Message Component (button or select menu).
@@ -254,6 +274,44 @@ function sync_commands!(client, tree::CommandTree; guild_id=nothing)
     end
 end
 
+function _dispatch_command(handler::Function, checks::Vector{Function}, options::Vector, ctx::InteractionContext)
+    # 1. Run checks for this level
+    if !isempty(checks)
+        run_checks(checks, ctx) || return
+    end
+
+    # 2. Check if we have subcommands in the data
+    data = ctx.interaction.data
+    ismissing(data) && return
+    
+    # Nested subcommand data is usually in data.options
+    sub_data = ismissing(data.options) ? nothing : first(data.options)
+    
+    if !isnothing(sub_data) && sub_data.type in (ApplicationCommandOptionTypes.SUB_COMMAND, ApplicationCommandOptionTypes.SUB_COMMAND_GROUP)
+        # Find the subcommand definition in our options
+        sub_name = sub_data.name
+        sub_def_idx = findfirst(opt -> get(opt, "name", "") == sub_name, options)
+        
+        if !isnothing(sub_def_idx)
+            sub_def = options[sub_def_idx]
+            if haskey(sub_def, "_handler")
+                # Found nested handler, recurse!
+                # We need to shift the context or just pass it along
+                # Discord subcommands are nested, but InteractionContext points to the root.
+                # The handler can use get_option to find nested values.
+                return _dispatch_command(sub_def["_handler"], sub_def["_checks"], get(sub_def, "options", []), ctx)
+            end
+        end
+    end
+
+    # 3. No more subcommands to route, call the handler
+    try
+        handler(ctx)
+    catch e
+        @error "Error in command handler" exception=(e, catch_backtrace())
+    end
+end
+
 """
     dispatch_interaction!(tree::CommandTree, client, interaction::Interaction)
 
@@ -289,15 +347,8 @@ function dispatch_interaction!(tree::CommandTree, client, interaction::Interacti
 
         cmd = get(tree.commands, cmd_name, nothing)
         if !isnothing(cmd)
-            # Run pre-execution checks (guards)
-            if !isempty(cmd.checks)
-                run_checks(cmd.checks, ctx) || return
-            end
-            try
-                cmd.handler(ctx)
-            catch e
-                @error "Error in command handler" command=cmd_name exception=(e, catch_backtrace())
-            end
+            # Recursive routing for subcommands
+            _dispatch_command(cmd.handler, cmd.checks, cmd.options, ctx)
         else
             @warn "Unknown command" name=cmd_name
         end

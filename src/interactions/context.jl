@@ -11,13 +11,13 @@ Wraps an [`Interaction`](@ref) with convenience methods for responding. Holds a 
     `InteractionContext` and all interaction helpers are available since Accord 0.1.0.
 """
 struct InteractionContext
-    client::Client
+    client::AbstractClient
     interaction::Interaction
     responded::Ref{Bool}
     deferred::Ref{Bool}
 end
 
-function InteractionContext(client::Client, interaction::Interaction)
+function InteractionContext(client::AbstractClient, interaction::Interaction)
     InteractionContext(client, interaction, Ref(false), Ref(false))
 end
 
