@@ -290,7 +290,7 @@
     @testset "dispatch MESSAGE_COMPONENT prefix match" begin
         tree = CommandTree()
         called = Ref(false)
-        register_component!(tree, "btn_", ctx -> (called[] = true))
+        register_component!(tree, "btn_*", ctx -> (called[] = true))
 
         client = mock_client()
         interaction = component_interaction(custom_id_val="btn_delete_42")

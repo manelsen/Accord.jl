@@ -37,6 +37,7 @@ The `client.command_tree` field holds the instance used by the bot.
 # Fields
 - `commands::Dict{String, CommandDefinition}`: Map of command names to definitions.
 - `component_handlers::Dict{String, Function}`: Map of custom_ids to component handlers.
+- `component_prefix_handlers::Dict{String, Function}`: Map of custom_id prefixes to handlers.
 - `modal_handlers::Dict{String, Function}`: Map of custom_ids to modal handlers.
 - `autocomplete_handlers::Dict{String, Function}`: Map of command names to autocomplete handlers.
 
@@ -44,13 +45,15 @@ See [`register_command!`](@ref), [`sync_commands!`](@ref).
 """
 mutable struct CommandTree
     commands::Dict{String, CommandDefinition}
-    component_handlers::Dict{String, Function}  # custom_id → handler
-    modal_handlers::Dict{String, Function}       # custom_id → handler
-    autocomplete_handlers::Dict{String, Function} # command_name → handler
+    component_handlers::Dict{String, Function}        # custom_id → handler
+    component_prefix_handlers::Dict{String, Function} # custom_id prefix → handler
+    modal_handlers::Dict{String, Function}             # custom_id → handler
+    autocomplete_handlers::Dict{String, Function}       # command_name → handler
 end
 
 CommandTree() = CommandTree(
     Dict{String, CommandDefinition}(),
+    Dict{String, Function}(),
     Dict{String, Function}(),
     Dict{String, Function}(),
     Dict{String, Function}(),
@@ -102,7 +105,7 @@ an exact match or a prefix (if no exact match is found).
 
 # Arguments
 - `tree::CommandTree`: The command tree.
-- `custom_id::String`: The identifier string assigned to the component.
+- `custom_id::String`: The identifier string assigned to the component. Use "prefix*" for prefix matching.
 - `handler::Function`: Function `ctx -> Any` called when the component is used.
 
 # Example
@@ -111,10 +114,21 @@ an exact match or a prefix (if no exact match is found).
 register_component!(client.command_tree, "click_one", ctx -> begin
     reply(ctx, "Button clicked!")
 end)
+
+# Register a prefix handler
+register_component!(client.command_tree, "user_select:*", ctx -> begin
+    id = split(ctx.interaction.data.custom_id, ":")[2]
+    reply(ctx, "Selected user \$id")
+end)
 ```
 """
 function register_component!(tree::CommandTree, custom_id::String, handler::Function)
-    tree.component_handlers[custom_id] = handler
+    if endswith(custom_id, "*")
+        prefix = custom_id[1:end-1]
+        tree.component_prefix_handlers[prefix] = handler
+    else
+        tree.component_handlers[custom_id] = handler
+    end
 end
 
 """
@@ -294,11 +308,13 @@ function dispatch_interaction!(tree::CommandTree, client, interaction::Interacti
 
         cid = data.custom_id
         ismissing(cid) && return
-        # Try exact match first, then prefix match
+        # Try exact match first
         handler = get(tree.component_handlers, cid, nothing)
+        
+        # Then try prefix matches (only if no exact match)
         if isnothing(handler)
-            for (pattern, h) in tree.component_handlers
-                if startswith(cid, pattern)
+            for (prefix, h) in tree.component_prefix_handlers
+                if startswith(cid, prefix)
                     handler = h
                     break
                 end
