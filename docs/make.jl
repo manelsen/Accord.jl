@@ -35,6 +35,7 @@ makedocs(;
         ],
         "API Reference" => "api.md",
         "Diagnostics" => "diagnostics.md",
+        "Release Notes" => "release-notes.md",
     ],
 )
 

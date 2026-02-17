@@ -65,6 +65,74 @@ function Store{T}(strategy::CacheStrategy=CacheForever()) where T
     Store{T}(strategy, data, Dict{Snowflake, Float64}())
 end
 
+"""
+    ShardedStore{T}
+
+A thread-safe version of [`Store`](@ref) that uses multiple shards (buckets) to reduce
+lock contention. Ideal for global resources accessed by many shards/tasks.
+"""
+struct ShardedStore{T}
+    shards::Vector{Store{T}}
+    locks::Vector{ReentrantLock}
+    num_shards::Int
+end
+
+function ShardedStore{T}(strategy::CacheStrategy=CacheForever(), num_shards::Int=16) where T
+    shards = [Store{T}(strategy) for _ in 1:num_shards]
+    locks = [ReentrantLock() for _ in 1:num_shards]
+    ShardedStore{T}(shards, locks, num_shards)
+end
+
+function _get_shard(store::ShardedStore, id::Snowflake)
+    idx = (id.value % store.num_shards) + 1
+    return store.shards[idx], store.locks[idx]
+end
+
+function Base.get(store::ShardedStore{T}, id::Snowflake, default=nothing) where T
+    s, l = _get_shard(store, id)
+    lock(l) do
+        return get(s, id, default)
+    end
+end
+
+function Base.getindex(store::ShardedStore{T}, id::Snowflake) where T
+    val = get(store, id)
+    isnothing(val) && throw(KeyError(id))
+    return val
+end
+
+function Base.setindex!(store::ShardedStore{T}, value::T, id::Snowflake) where T
+    s, l = _get_shard(store, id)
+    lock(l) do
+        s.data[id] = value
+        if s.strategy isa CacheTTL
+            s.timestamps[id] = time()
+        end
+    end
+    return value
+end
+
+function Base.delete!(store::ShardedStore, id::Snowflake)
+    s, l = _get_shard(store, id)
+    lock(l) do
+        delete!(s, id)
+    end
+end
+
+function Base.length(store::ShardedStore)
+    total = 0
+    for i in 1:store.num_shards
+        lock(store.locks[i]) do
+            total += length(store.shards[i])
+        end
+    end
+    return total
+end
+
+Base.haskey(store::ShardedStore, id::Snowflake) = let (s, l) = _get_shard(store, id); lock(() -> haskey(s, id), l) end
+Base.empty!(store::ShardedStore) = begin for (s, l) in zip(store.shards, store.locks) lock(() -> empty!(s), l) end; store end
+
+
 function Base.get(store::Store{T}, id::Snowflake, default=nothing) where T
     store.strategy isa CacheNever && return default
 
@@ -116,7 +184,8 @@ Base.keys(store::Store) = keys(store.data)
 
 Use this to access and manage cached Discord objects for your bot.
 
-Holds all cached Discord state.
+Holds all cached Discord state. Global resources (guilds, channels, users) use
+a [`ShardedStore`](@ref) for thread-safe concurrent access.
 
 # Example
 ```julia
@@ -125,15 +194,16 @@ client.state.me.username
 ```
 """
 mutable struct State
-    guilds::Store{Guild}
-    channels::Store{DiscordChannel}
-    users::Store{User}
+    guilds::ShardedStore{Guild}
+    channels::ShardedStore{DiscordChannel}
+    users::ShardedStore{User}
     members::Dict{Snowflake, Store{Member}}  # guild_id → Store{Member}
     roles::Dict{Snowflake, Store{Role}}      # guild_id → Store{Role}
     emojis::Dict{Snowflake, Store{Emoji}}    # guild_id → Store{Emoji}
-    presences::Store{Presence}
+    presences::ShardedStore{Presence}
     voice_states::Dict{Snowflake, Dict{Snowflake, VoiceState}}  # guild_id → user_id → VoiceState
     me::Nullable{User}
+    _lock::ReentrantLock # for the dicts themselves
 end
 
 function State(;
@@ -144,15 +214,16 @@ function State(;
     presence_strategy::CacheStrategy=CacheNever(),
 )
     State(
-        Store{Guild}(guild_strategy),
-        Store{DiscordChannel}(channel_strategy),
-        Store{User}(user_strategy),
+        ShardedStore{Guild}(guild_strategy),
+        ShardedStore{DiscordChannel}(channel_strategy),
+        ShardedStore{User}(user_strategy),
         Dict{Snowflake, Store{Member}}(),
         Dict{Snowflake, Store{Role}}(),
         Dict{Snowflake, Store{Emoji}}(),
-        Store{Presence}(presence_strategy),
+        ShardedStore{Presence}(presence_strategy),
         Dict{Snowflake, Dict{Snowflake, VoiceState}}(),
         nothing,
+        ReentrantLock()
     )
 end
 
@@ -196,7 +267,9 @@ function update_state!(state::State, event::GuildCreate)
     # Cache roles
     roles = g.roles
     if !ismissing(roles)
-        store = get!(state.roles, g.id, Store{Role}())
+        store = lock(state._lock) do
+            get!(state.roles, g.id, Store{Role}())
+        end
         for role in roles
             store[role.id] = role
         end
@@ -205,7 +278,9 @@ function update_state!(state::State, event::GuildCreate)
     # Cache emojis
     emojis = g.emojis
     if !ismissing(emojis)
-        store = get!(state.emojis, g.id, Store{Emoji}())
+        store = lock(state._lock) do
+            get!(state.emojis, g.id, Store{Emoji}())
+        end
         for emoji in emojis
             eid = emoji.id
             !isnothing(eid) && (store[eid] = emoji)
@@ -215,7 +290,9 @@ function update_state!(state::State, event::GuildCreate)
     # Cache members
     members = g.members
     if !ismissing(members)
-        store = get!(state.members, g.id, Store{Member}())
+        store = lock(state._lock) do
+            get!(state.members, g.id, Store{Member}())
+        end
         for member in members
             user = member.user
             if !ismissing(user)
@@ -231,11 +308,13 @@ function update_state!(state::State, event::GuildUpdate)
 end
 
 function update_state!(state::State, event::GuildDelete)
-    delete!(state.guilds, event.guild.id)
-    delete!(state.members, event.guild.id)
-    delete!(state.roles, event.guild.id)
-    delete!(state.emojis, event.guild.id)
-    delete!(state.voice_states, event.guild.id)
+    lock(state._lock) do
+        delete!(state.guilds, event.guild.id)
+        delete!(state.members, event.guild.id)
+        delete!(state.roles, event.guild.id)
+        delete!(state.emojis, event.guild.id)
+        delete!(state.voice_states, event.guild.id)
+    end
 end
 
 function update_state!(state::State, event::ChannelCreate)
@@ -259,7 +338,9 @@ function update_state!(state::State, event::ThreadDelete)
 end
 
 function update_state!(state::State, event::GuildMemberAdd)
-    store = get!(state.members, event.guild_id, Store{Member}())
+    store = lock(state._lock) do
+        get!(state.members, event.guild_id, Store{Member}())
+    end
     user = event.member.user
     if !ismissing(user)
         state.users[user.id] = user
@@ -268,12 +349,16 @@ function update_state!(state::State, event::GuildMemberAdd)
 end
 
 function update_state!(state::State, event::GuildMemberRemove)
-    store = get(state.members, event.guild_id, nothing)
+    store = lock(state._lock) do
+        get(state.members, event.guild_id, nothing)
+    end
     !isnothing(store) && delete!(store, event.user.id)
 end
 
 function update_state!(state::State, event::GuildMemberUpdate)
-    store = get!(state.members, event.guild_id, Store{Member}())
+    store = lock(state._lock) do
+        get!(state.members, event.guild_id, Store{Member}())
+    end
     existing = get(store, event.user.id)
     if !isnothing(existing)
         existing.roles = event.roles
@@ -286,20 +371,28 @@ function update_state!(state::State, event::GuildMemberUpdate)
 end
 
 function update_state!(state::State, event::GuildRoleCreate)
-    store = get!(state.roles, event.guild_id, Store{Role}())
+    store = lock(state._lock) do
+        get!(state.roles, event.guild_id, Store{Role}())
+    end
     store[event.role.id] = event.role
 end
 function update_state!(state::State, event::GuildRoleUpdate)
-    store = get!(state.roles, event.guild_id, Store{Role}())
+    store = lock(state._lock) do
+        get!(state.roles, event.guild_id, Store{Role}())
+    end
     store[event.role.id] = event.role
 end
 function update_state!(state::State, event::GuildRoleDelete)
-    store = get(state.roles, event.guild_id, nothing)
+    store = lock(state._lock) do
+        get(state.roles, event.guild_id, nothing)
+    end
     !isnothing(store) && delete!(store, event.role_id)
 end
 
 function update_state!(state::State, event::GuildEmojisUpdate)
-    store = get!(state.emojis, event.guild_id, Store{Emoji}())
+    store = lock(state._lock) do
+        get!(state.emojis, event.guild_id, Store{Emoji}())
+    end
     # Replace all emojis for this guild
     empty!(store)
     for emoji in event.emojis
@@ -317,7 +410,9 @@ function update_state!(state::State, event::VoiceStateUpdateEvent)
     vs = event.state
     gid = vs.guild_id
     if !ismissing(gid)
-        guild_vs = get!(state.voice_states, gid, Dict{Snowflake, VoiceState}())
+        guild_vs = lock(state._lock) do
+            get!(state.voice_states, gid, Dict{Snowflake, VoiceState}())
+        end
         if isnothing(vs.channel_id)
             # User left voice
             delete!(guild_vs, vs.user_id)

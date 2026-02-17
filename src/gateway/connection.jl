@@ -169,29 +169,35 @@ function _gateway_loop(
         isnothing(payload) && continue
 
         # Parse JSON
-        msg = try
-            JSON3.read(payload, Dict{String, Any})
+        # To avoid double-parsing the 'd' payload, we use JSON3.read(payload) to get an Object
+        # then we extract the raw string representation of 'd'.
+        msg_obj = try
+            JSON3.read(payload)
         catch e
             @warn "Failed to parse gateway JSON" exception=e
             continue
         end
 
-        op = msg["op"]
-        d = get(msg, "d", nothing)
-        s = get(msg, "s", nothing)
-        t = get(msg, "t", nothing)
+        op = get(msg_obj, :op, nothing)
+        d_obj = get(msg_obj, :d, nothing)
+        s = get(msg_obj, :s, nothing)
+        t = get(msg_obj, :t, nothing)
 
         # Update sequence
         if !isnothing(s)
-            session.seq = s
-            session.seq_ref[] = s
+            session.seq = Int(s)
+            session.seq_ref[] = session.seq
         end
 
         if op == GatewayOpcodes.DISPATCH
-            _handle_dispatch(t, d, events_channel, session, ready_event)
+            # t is the event name (String)
+            # d_obj is the data. We want the raw JSON of d.
+            # JSON3.write(d_obj) is efficient if d_obj is a JSON3.Object
+            d_raw = !isnothing(d_obj) ? JSON3.write(d_obj) : nothing
+            _handle_dispatch(string(t), d_raw, events_channel, session, ready_event)
 
         elseif op == GatewayOpcodes.HELLO
-            interval = d["heartbeat_interval"]
+            interval = d_obj[:heartbeat_interval]
             # Start heartbeat (use session's persistent seq_ref)
             hb_task, hb_state = start_heartbeat(ws, interval, session.seq_ref, session.stop_event)
             session.heartbeat_task = hb_task
@@ -221,7 +227,7 @@ function _gateway_loop(
             break
 
         elseif op == GatewayOpcodes.INVALID_SESSION
-            can_resume = d === true
+            can_resume = d_obj === true
             @warn "Invalid session" can_resume
             if !can_resume
                 session.session_id = nothing
