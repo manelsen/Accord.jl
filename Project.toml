@@ -1,7 +1,7 @@
 name = "Accord"
 uuid = "e32180e5-4c2f-49c0-8021-11dfb7fed3fc"
 version = "0.2.0"
-authors = ["Accord.jl Contributors"]
+authors = ["Manelsen"]
 
 [deps]
 CodecZlib = "944b1d66-785c-5afd-91f1-9de20f533193"
