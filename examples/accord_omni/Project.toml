@@ -1,0 +1,15 @@
+name = "AccordOmni"
+uuid = "14c62294-0103-4f96-857a-974246197116"
+authors = ["Accord.jl Community"]
+version = "0.1.0"
+
+[deps]
+Accord = "e32180e5-4c2f-49c0-8021-11dfb7fed3fc"
+SQLite = "0aa819cd-b072-5ff4-a722-6bc24af294d9"
+FunSQL = "cf6cc811-59f4-4a10-b258-a8547a8f6407"
+DBInterface = "a10d1c49-ce27-4219-8d33-6db1a4562965"
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
+
+[compat]
+julia = "1.10"
