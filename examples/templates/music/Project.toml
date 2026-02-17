@@ -1,0 +1,11 @@
+name = "MusicBot"
+uuid = "2b83416a-8923-4c07-b387-5732c4389439"
+authors = ["Accord.jl Community"]
+version = "0.1.0"
+
+[deps]
+Accord = { path = "../../.." }
+DotEnv = "f2b01f46-224f-11e9-2b0b-cdbd1d7b2907"
+
+[compat]
+julia = "1.10"
