@@ -585,6 +585,12 @@ end
 Use this to retrieve user information, with automatic caching for performance.
 
 Get a user by ID. Checks the local state cache first.
+
+# Example
+```julia
+user = get_user(client, user_id)
+println("User tag: ", user.username, "#", user.discriminator)
+```
 """
 function get_user(client::Client, user_id::Snowflake)
     cached = get(client.state.users, user_id)
@@ -599,6 +605,18 @@ end
 Use this to make your bot join, leave, or move between voice channels.
 
 Send a gateway command to update voice state (join/leave/move voice channels).
+
+# Example
+```julia
+# Join a voice channel (unmuted)
+update_voice_state(client, guild_id; channel_id=voice_channel_id)
+
+# Self-mute
+update_voice_state(client, guild_id; channel_id=voice_channel_id, self_mute=true)
+
+# Leave voice channel
+update_voice_state(client, guild_id; channel_id=nothing)
+```
 """
 function update_voice_state(client::Client, guild_id::Snowflake; channel_id=nothing, self_mute::Bool=false, self_deaf::Bool=false)
     shard_id = shard_for_guild(guild_id, client.num_shards)
