@@ -120,6 +120,7 @@ AutoModerationActionExecution
 ```@docs
 State
 Store
+ShardedStore
 CacheStrategy
 CacheForever
 CacheNever
@@ -362,10 +363,13 @@ register_command!
 register_component!
 register_modal!
 register_autocomplete!
+register_subcommand!
 dispatch_interaction!
 @slash_command
 @user_command
 @message_command
+@group
+@subcommand
 @button_handler
 @select_handler
 @modal_handler
@@ -373,6 +377,8 @@ dispatch_interaction!
 @check
 @option
 @on_message
+@on
+@embed
 respond
 defer
 followup

@@ -140,7 +140,7 @@ export User, Guild, UnavailableGuild, DiscordChannel, Message, Member, Role, Emo
 export Embed, Attachment, Reaction, Component, Interaction, SelectOption
 export Invite, Webhook, AuditLog, AutoModRule, ScheduledEvent, Poll
 export Presence, Activity, VoiceState, VoiceRegion
-export InteractionContext, InteractionData, ApplicationCommand
+export InteractionContext, InteractionData, InteractionDataOption, ApplicationCommand
 export Overwrite, Ban, ThreadMetadata, ThreadMember, ForumTag
 export Sticker, StickerItem, StickerPack, StageInstance, GuildTemplate
 export MessageReference, MessageActivity, AllowedMentions
