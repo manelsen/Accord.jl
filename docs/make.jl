@@ -34,6 +34,7 @@ makedocs(;
             "AI Agent Bot" => "cookbook/16-ai-agent.md",
         ],
         "API Reference" => "api.md",
+        "Diagnostics" => "diagnostics.md",
     ],
 )
 

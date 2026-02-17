@@ -68,7 +68,24 @@ function discord_request(
     result_ch = Channel{Any}(1)
     job = RestJob(route, route.method, request_url, headers, request_body, result_ch)
 
-    return submit_rest(rl, job)
+    try
+        return submit_rest(rl, job)
+    catch e
+        # DIAGNOSTICS: Intercept HTTP errors to show friendly boxes
+        if e isa HTTP.StatusError
+            try
+                diag = Accord.Diagnoser.diagnose(e, catch_backtrace())
+                if !isnothing(diag)
+                    buf = IOBuffer()
+                    Accord.Diagnoser.render(buf, diag)
+                    printstyled(stderr, String(take!(buf)), color=:red)
+                end
+            catch
+                # Don't let diagnostics crash the actual error handling
+            end
+        end
+        rethrow()
+    end
 end
 
 """
