@@ -587,4 +587,62 @@
             @test isempty(_PENDING_CHECKS)
         end
     end
+
+    @testset "@on" begin
+        expr = @macroexpand @on client ReadyEvent (c, e) -> nothing
+        @test expr isa Expr
+        expr_str = string(expr)
+        @test occursin("ReadyEvent", expr_str)
+    end
+
+    @testset "@embed" begin
+        e = @embed begin
+            title("Test Title")
+            description("Test Desc")
+            color(:green)
+            field("Field1", "Value1", inline=true)
+            footer("Footer", icon="https://icon.png")
+            timestamp()
+        end
+
+        @test e["title"] == "Test Title"
+        @test e["description"] == "Test Desc"
+        @test e["color"] == 0x57F287
+        @test length(e["fields"]) == 1
+        @test e["fields"][1]["name"] == "Field1"
+        @test e["fields"][1]["inline"] == true
+        @test e["footer"]["text"] == "Footer"
+        @test e["footer"]["icon_url"] == "https://icon.png"
+        @test haskey(e, "timestamp")
+    end
+
+    @testset "@group and @subcommand" begin
+        struct MockClient <: Accord.AbstractClient
+            command_tree::CommandTree
+        end
+        
+        tree = CommandTree()
+        mock_client = MockClient(tree)
+        called = Ref(false)
+
+        @group mock_client "admin" "Admin group" begin
+            @subcommand "test" "Test sub" (ctx) -> (called[] = true)
+        end
+
+        @test haskey(tree.commands, "admin")
+        cmd = tree.commands["admin"]
+        @test length(cmd.options) == 1
+        @test cmd.options[1]["name"] == "test"
+        @test cmd.options[1]["type"] == 1 # SUB_COMMAND
+        
+        # Test routing via dispatch
+        interaction = Interaction(
+            id=Snowflake(1), application_id=Snowflake(100),
+            type=InteractionTypes.APPLICATION_COMMAND,
+            data=InteractionData(id=Snowflake(10), name="admin", options=[InteractionDataOption(name="test", type=1)]),
+            token="tok", version=1
+        )
+        dispatch_interaction!(tree, mock_client, interaction)
+        @test called[]
+    end
 end
