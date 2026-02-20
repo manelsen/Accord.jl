@@ -23,6 +23,7 @@ using PrecompileTools
 import LRUCache
 import Opus_jll
 import libsodium_jll
+using Actors
 
 # === Types (order matters for dependencies) ===
 include("types/macros.jl")
@@ -111,6 +112,12 @@ include("interactions/command_tree.jl")
 include("client/state.jl")
 include("client/event_handler.jl")
 include("client/client.jl") # Defines Client <: AbstractClient
+
+# === Actors ===
+include("actors/state.jl")
+include("actors/ratelimiter.jl")
+include("actors/dispatch.jl")
+include("actors/shard.jl")
 
 # === Interactions (Macros & UI) ===
 include("interactions/decorators.jl")

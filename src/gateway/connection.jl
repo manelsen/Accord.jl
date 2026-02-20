@@ -4,7 +4,8 @@
 # connect/reconnect logic, zlib decompression, opcode dispatch (HELLO, HEARTBEAT,
 # IDENTIFY, RESUME), and event routing to the client's event channel.
 
-const GATEWAY_URL = "wss://gateway.discord.gg/?v=$(API_VERSION)&encoding=json"
+const GATEWAY_URL = "wss://gateway.discord.gg/?v=$(API_VERSION)&encoding=json&compress=zlib-stream"
+const ZLIB_SUFFIX = UInt8[0x00, 0x00, 0xFF, 0xFF]
 
 """Use this internal struct to send control commands to the gateway connection actor.
 
@@ -72,7 +73,7 @@ function gateway_connect(
     token::String,
     intents::UInt32,
     shard::Tuple{Int,Int},
-    events_channel::Channel{AbstractEvent},
+    dispatch_actor::Any, # Actors.Link
     commands_channel::Channel{GatewayCommand},
     ready_event::Base.Event;
     session::GatewaySession = GatewaySession()
@@ -97,7 +98,7 @@ function gateway_connect(
                 session.zlib_buffer = IOBuffer()
                 session.stop_event = Base.Event()
 
-                _gateway_loop(ws, token, intents, shard, events_channel,
+                _gateway_loop(ws, token, intents, shard, dispatch_actor,
                              commands_channel, ready_event, session, resume)
             end
         catch e
@@ -148,7 +149,7 @@ function gateway_connect(
 end
 
 function _gateway_loop(
-    ws, token, intents, shard, events_channel, commands_channel,
+    ws, token, intents, shard, dispatch_actor, commands_channel,
     ready_event, session, resume
 )
     while !session.stop_event.set
@@ -194,7 +195,7 @@ function _gateway_loop(
             # d_obj is the data. We want the raw JSON of d.
             # JSON3.write(d_obj) is efficient if d_obj is a JSON3.Object
             d_raw = !isnothing(d_obj) ? JSON3.write(d_obj) : nothing
-            _handle_dispatch(string(t), d_raw, events_channel, session, ready_event)
+            _handle_dispatch(string(t), d_raw, dispatch_actor, session, ready_event)
 
         elseif op == GatewayOpcodes.HELLO
             interval = d_obj[:heartbeat_interval]
@@ -245,7 +246,7 @@ function _gateway_loop(
     end
 end
 
-function _handle_dispatch(event_name, data, events_channel, session, ready_event)
+function _handle_dispatch(event_name, data, dispatch_actor, session, ready_event)
     isnothing(event_name) && return
     isnothing(data) && return
 
@@ -259,19 +260,37 @@ function _handle_dispatch(event_name, data, events_channel, session, ready_event
         notify(ready_event)
     end
 
-    # Put event into channel (non-blocking)
+    # Cast event to dispatch actor (non-blocking)
     try
-        put!(events_channel, event)
+        cast(dispatch_actor, DispatchEvent(event))
     catch e
-        @warn "Failed to dispatch event" event_name exception=e
+        @warn "Failed to dispatch event to actor" event_name exception=e
     end
 end
 
 function _decompress(session::GatewaySession, data)
-    if data isa Vector{UInt8}
-        return String(data)
-    elseif data isa String
+    if data isa String
         return data
+    elseif data isa Vector{UInt8}
+        write(session.zlib_buffer, data)
+        buf = session.zlib_buffer
+        buf_data = buf.data[1:buf.size]
+        
+        if length(buf_data) >= 4 && buf_data[end-3:end] == ZLIB_SUFFIX
+            decompressor = CodecZlib.ZlibDecompressor()
+            try
+                write(decompressor, buf_data)
+                decompressed = take!(decompressor)
+                CodecZlib.finish!(decompressor)
+                truncate(session.zlib_buffer, 0)
+                return String(decompressed)
+            catch e
+                @warn "Zlib decompression failed" exception=e
+                truncate(session.zlib_buffer, 0)
+                return nothing
+            end
+        end
+        return nothing
     else
         return nothing
     end

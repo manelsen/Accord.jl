@@ -23,15 +23,15 @@ mutable struct ShardInfo
     total::Int
     task::Nullable{Task}
     session::GatewaySession
-    events::Channel{AbstractEvent}
+    dispatch_actor::Any # Actors.Link
     commands::Channel{GatewayCommand}
     ready::Base.Event
 end
 
-function ShardInfo(id::Int, total::Int, events::Channel{AbstractEvent})
+function ShardInfo(id::Int, total::Int, dispatch_actor::Any)
     ShardInfo(
         id, total, nothing, GatewaySession(),
-        events, Channel{GatewayCommand}(64),
+        dispatch_actor, Channel{GatewayCommand}(64),
         Base.Event()
     )
 end
@@ -51,7 +51,7 @@ task = start_shard(shard, "Bot my_token", UInt32(513))
 function start_shard(shard::ShardInfo, token::String, intents::UInt32)
     shard.task = @async gateway_connect(
         token, intents, (shard.id, shard.total),
-        shard.events, shard.commands, shard.ready;
+        shard.dispatch_actor, shard.commands, shard.ready;
         session=shard.session
     )
     return shard.task
@@ -87,8 +87,8 @@ cmd = GatewayCommand(GatewayOpcodes.PRESENCE_UPDATE, payload)
 send_to_shard(shard, cmd)
 ```
 """
-function send_to_shard(shard::ShardInfo, cmd::GatewayCommand)
-    put!(shard.commands, cmd)
+function send_to_shard(shard_actor::Any, cmd::GatewayCommand)
+    cast(shard_actor, SendCommand(cmd))
 end
 
 """

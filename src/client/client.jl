@@ -58,6 +58,13 @@ mutable struct Client <: AbstractClient
     num_shards::Int
     ready::Base.Event
     running::Bool
+    
+    # Actors
+    state_actor::Nullable{Link}
+    ratelimiter_actor::Nullable{Link}
+    dispatch_actor::Nullable{Link}
+    shard_actors::Vector{Link}
+
     _event_loop_task::Nullable{Task}
     _supervisor_task::Nullable{Task}
     _waiters::Vector{EventWaiter}
@@ -84,12 +91,9 @@ function Client(token::String;
         member_strategy, presence_strategy,
     )
 
-    events_channel = Channel{AbstractEvent}(1024)
-
-    shards = [ShardInfo(i, num_shards, events_channel) for i in 0:(num_shards-1)]
-
     tree = CommandTree()
 
+    # Pre-create client with nothing for actors
     client = Client(
         actual_token,
         nothing,
@@ -99,15 +103,28 @@ function Client(token::String;
         EventHandler(),
         tree,
         RateLimiter(),
-        shards,
+        ShardInfo[], # Empty shards for now
         num_shards,
         Base.Event(),
         false,
         nothing,
         nothing,
+        nothing,
+        Link[],
+        nothing,
+        nothing,
         EventWaiter[],
         ReentrantLock(),
     )
+
+    # Spawn Core Actors
+    client.state_actor = spawn_state_actor(client.state)
+    client.ratelimiter_actor = spawn_ratelimiter_actor(client.ratelimiter)
+    client.dispatch_actor = spawn_dispatch_actor(client)
+
+    # Initialize Shards with dispatch_actor
+    client.shards = [ShardInfo(i, num_shards, client.dispatch_actor) for i in 0:(num_shards-1)]
+    client.shard_actors = [spawn_shard_actor(shard) for shard in client.shards]
 
     # Register interaction dispatcher
     on(client, InteractionCreate) do c, event
@@ -184,22 +201,14 @@ println("Bot is online!")
 function start(client::Client; blocking::Bool=true)
     client.running = true
 
-    # Start rate limiter
-    start_ratelimiter!(client.ratelimiter)
-
-    # Start shards (with 5s delay between shards as Discord requires)
-    for (i, shard) in enumerate(client.shards)
+    # Shards are already initialized with actors in constructor
+    # Start shards via actor messages
+    for (i, shard_actor) in enumerate(client.shard_actors)
         if i > 1
             sleep(5.0)
         end
-        start_shard(shard, client.token, client.intents)
+        cast(shard_actor, StartShard(client.token, client.intents))
     end
-
-    # Start event processing loop
-    client._event_loop_task = @async _event_loop(client)
-
-    # Start supervisor task to monitor and restart shards
-    client._supervisor_task = @async _supervisor_loop(client)
 
     if blocking
         # Wait for first shard to be ready
@@ -243,13 +252,13 @@ end
 function stop(client::Client)
     client.running = false
 
-    # Stop shards
-    for shard in client.shards
-        stop_shard(shard)
+    # Stop shard actors
+    for shard_actor in client.shard_actors
+        cast(shard_actor, StopShard())
     end
 
-    # Stop rate limiter
-    stop_ratelimiter!(client.ratelimiter)
+    # Core actors will be automatically cleaned up by the GC when Client is gone,
+    # or we could explicitly stop them if needed.
 
     @info "Client stopped"
 end
@@ -339,7 +348,7 @@ end
 Use this internal function to match incoming events against registered waiters for wait_for.
 
 Check registered waiters against an incoming event. If a waiter's predicate
-matches, deliver the event through its channel. Called from `_event_loop`.
+matches, deliver the event through its channel.
 """
 function _notify_waiters!(client::Client, event::AbstractEvent)
     lock(client._waiters_lock) do
@@ -358,73 +367,6 @@ function _notify_waiters!(client::Client, event::AbstractEvent)
         end
         deleteat!(client._waiters, sort!(matched))
     end
-end
-
-function _event_loop(client::Client)
-    # All shards share the same events channel
-    events = client.shards[1].events
-
-    while client.running
-        local event
-        try
-            event = take!(events)
-        catch e
-            e isa InvalidStateException && break
-            @error "Error taking event from channel" exception=e
-            continue
-        end
-
-        # Update state cache
-        try
-            update_state!(client.state, event)
-        catch e
-            @error "Error updating state" event_type=typeof(event) exception=e
-        end
-
-        # Capture application_id from READY
-        if event isa ReadyEvent && !isnothing(event.application)
-            try
-                if event.application isa Dict && haskey(event.application, "id")
-                    client.application_id = Snowflake(event.application["id"])
-                elseif hasproperty(event.application, :id)
-                    client.application_id = Snowflake(event.application.id)
-                end
-                @debug "Captured application_id" application_id=client.application_id
-            catch e
-                @error "Failed to extract application_id from READY" application=event.application exception=e
-            end
-        end
-
-        # Dispatch to handlers
-        dispatch_event!(client.event_handler, client, event)
-
-        # Notify any wait_for waiters
-        _notify_waiters!(client, event)
-    end
-end
-
-function _supervisor_loop(client::Client)
-    @debug "Supervisor task started"
-    
-    while client.running
-        # Check every 5 seconds
-        sleep(5.0)
-        
-        for shard in client.shards
-            # If the task is finished but we didn't stop the bot, restart it
-            task = shard.task
-            if !isnothing(task) && istaskdone(task) && client.running
-                # Check if it was an intentional stop (connected would be false)
-                # shard.session.connected is managed by gateway_connect and stop_shard
-                if shard.session.connected
-                    @error "Shard $(shard.id) died unexpectedly! Restarting..."
-                    start_shard(shard, client.token, client.intents)
-                end
-            end
-        end
-    end
-    
-    @debug "Supervisor task stopped"
 end
 
 """
@@ -458,7 +400,7 @@ function create_message(client::Client, channel_id::Snowflake; content::String="
     !isempty(components) && (body["components"] = components)
     tts && (body["tts"] = true)
     !isnothing(message_reference) && (body["message_reference"] = message_reference)
-    create_message(client.ratelimiter, channel_id; token=client.token, body, files)
+    create_message(client.ratelimiter_actor, channel_id; token=client.token, body, files)
 end
 
 """
@@ -499,7 +441,7 @@ function edit_message(client::Client, channel_id::Snowflake, message_id::Snowfla
     for (k, v) in kwargs
         body[string(k)] = v
     end
-    edit_message(client.ratelimiter, channel_id, message_id; token=client.token, body)
+    edit_message(client.ratelimiter_actor, channel_id, message_id; token=client.token, body)
 end
 
 """
@@ -515,7 +457,7 @@ delete_message(client, channel_id, message_id; reason="Spam")
 ```
 """
 function delete_message(client::Client, channel_id::Snowflake, message_id::Snowflake; reason=nothing)
-    delete_message(client.ratelimiter, channel_id, message_id; token=client.token, reason)
+    delete_message(client.ratelimiter_actor, channel_id, message_id; token=client.token, reason)
 end
 
 """
@@ -535,7 +477,7 @@ end
 ```
 """
 function create_reaction(client::Client, channel_id::Snowflake, message_id::Snowflake, emoji::String)
-    create_reaction(client.ratelimiter, channel_id, message_id, emoji; token=client.token)
+    create_reaction(client.ratelimiter_actor, channel_id, message_id, emoji; token=client.token)
 end
 
 """
@@ -552,11 +494,11 @@ println("Channel name: ", channel.name)
 ```
 """
 function get_channel(client::Client, channel_id::Snowflake)
-    # Check cache first
-    cached = get(client.state.channels, channel_id)
+    # Check cache via actor
+    cached = request(client.state_actor, GetChannel(channel_id))
     !isnothing(cached) && return cached
 
-    get_channel(client.ratelimiter, channel_id; token=client.token)
+    get_channel(client.ratelimiter_actor, channel_id; token=client.token)
 end
 
 """
@@ -573,10 +515,11 @@ println("Server name: ", guild.name)
 ```
 """
 function get_guild(client::Client, guild_id::Snowflake)
-    cached = get(client.state.guilds, guild_id)
+    # Check cache via actor
+    cached = request(client.state_actor, GetGuild(guild_id))
     !isnothing(cached) && return cached
 
-    get_guild(client.ratelimiter, guild_id; token=client.token)
+    get_guild(client.ratelimiter_actor, guild_id; token=client.token)
 end
 
 """
@@ -593,10 +536,11 @@ println("User tag: ", user.username, "#", user.discriminator)
 ```
 """
 function get_user(client::Client, user_id::Snowflake)
-    cached = get(client.state.users, user_id)
+    # Check cache via actor
+    cached = request(client.state_actor, GetUser(user_id))
     !isnothing(cached) && return cached
 
-    get_user(client.ratelimiter, user_id; token=client.token)
+    get_user(client.ratelimiter_actor, user_id; token=client.token)
 end
 
 """
@@ -620,14 +564,14 @@ update_voice_state(client, guild_id; channel_id=nothing)
 """
 function update_voice_state(client::Client, guild_id::Snowflake; channel_id=nothing, self_mute::Bool=false, self_deaf::Bool=false)
     shard_id = shard_for_guild(guild_id, client.num_shards)
-    shard = client.shards[shard_id + 1]
+    shard_actor = client.shard_actors[shard_id + 1]
     cmd = GatewayCommand(GatewayOpcodes.VOICE_STATE_UPDATE, Dict{String, Any}(
         "guild_id" => string(guild_id),
         "channel_id" => isnothing(channel_id) ? nothing : string(channel_id),
         "self_mute" => self_mute,
         "self_deaf" => self_deaf,
     ))
-    send_to_shard(shard, cmd)
+    send_to_shard(shard_actor, cmd)
 end
 
 """
@@ -647,14 +591,14 @@ update_presence(client; status="dnd", activities=[activity("maintenance", Activi
 ```
 """
 function update_presence(client::Client; status::String="online", activities::Vector=[], afk::Bool=false, since=nothing)
-    for shard in client.shards
+    for shard_actor in client.shard_actors
         cmd = GatewayCommand(GatewayOpcodes.PRESENCE_UPDATE, Dict{String, Any}(
             "since" => since,
             "activities" => activities,
             "status" => status,
             "afk" => afk,
         ))
-        send_to_shard(shard, cmd)
+        send_to_shard(shard_actor, cmd)
     end
 end
 
@@ -676,7 +620,7 @@ request_guild_members(client, guild_id; user_ids=[Snowflake("123456789")])
 """
 function request_guild_members(client::Client, guild_id::Snowflake; query::String="", limit::Int=0, presences::Bool=false, user_ids=nothing, nonce=nothing)
     shard_id = shard_for_guild(guild_id, client.num_shards)
-    shard = client.shards[shard_id + 1]
+    shard_actor = client.shard_actors[shard_id + 1]
 
     d = Dict{String, Any}(
         "guild_id" => string(guild_id),
@@ -686,5 +630,5 @@ function request_guild_members(client::Client, guild_id::Snowflake; query::Strin
     !isnothing(user_ids) ? (d["user_ids"] = user_ids) : (d["query"] = query)
     !isnothing(nonce) && (d["nonce"] = nonce)
 
-    send_to_shard(shard, GatewayCommand(GatewayOpcodes.REQUEST_GUILD_MEMBERS, d))
+    send_to_shard(shard_actor, GatewayCommand(GatewayOpcodes.REQUEST_GUILD_MEMBERS, d))
 end
