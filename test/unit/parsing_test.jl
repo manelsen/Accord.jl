@@ -33,6 +33,52 @@
         @test msg_event isa MessageCreate
         @test !ismissing(msg_event.message.content)
         @test msg_event.message.author.username != ""
+
+        # MESSAGE_UPDATE
+        msg_upd_json = read(joinpath(fixtures_dir, "gateway_message_update.json"), String)
+        msg_upd_list = JSON3.read(msg_upd_json)
+        msg_upd_data = msg_upd_list[1]
+        msg_upd_event = Accord.parse_event("MESSAGE_UPDATE", to_dict(msg_upd_data.d))
+        @test msg_upd_event isa Accord.MessageUpdate
+        @test msg_upd_event.message.id isa Snowflake
+        @test msg_upd_event.message.channel_id isa Snowflake
+        @test ismissing(msg_upd_event.message.edited_timestamp) || msg_upd_event.message.edited_timestamp isa String
+
+        # MESSAGE_DELETE
+        msg_del_json = read(joinpath(fixtures_dir, "gateway_message_delete.json"), String)
+        msg_del_list = JSON3.read(msg_del_json)
+        msg_del_data = msg_del_list[1]
+        msg_del_event = Accord.parse_event("MESSAGE_DELETE", to_dict(msg_del_data.d))
+        @test msg_del_event isa Accord.MessageDelete
+        @test msg_del_event.id isa Snowflake
+        @test msg_del_event.channel_id isa Snowflake
+
+        # THREAD_CREATE
+        thread_json = read(joinpath(fixtures_dir, "gateway_thread_create.json"), String)
+        thread_list = JSON3.read(thread_json)
+        thread_data = thread_list[1]
+        thread_event = Accord.parse_event("THREAD_CREATE", to_dict(thread_data.d))
+        @test thread_event isa Accord.ThreadCreate
+        @test thread_event.channel.id isa Snowflake
+        @test thread_event.channel.type isa Int
+        if !ismissing(thread_event.channel.thread_metadata)
+            meta = thread_event.channel.thread_metadata
+            @test meta.archived isa Bool
+            @test meta.locked isa Bool
+            @test meta.auto_archive_duration isa Int
+        end
+
+        # PRESENCE_UPDATE (payload may omit "user" in some edge cases)
+        presence_payload = Dict{String, Any}(
+            "guild_id" => "200",
+            "status" => "online",
+            "activities" => Any[],
+            "client_status" => Dict("desktop" => "online"),
+        )
+        presence_event = Accord.parse_event("PRESENCE_UPDATE", presence_payload)
+        @test presence_event isa PresenceUpdate
+        @test presence_event.presence.status == "online"
+        @test presence_event.presence.user isa Dict
     end
 
     @testset "REST Payloads" begin
@@ -62,6 +108,15 @@
         @test members isa Vector{Member}
         @test length(members) > 0
         @test members[1].user isa User
+
+        # Get Emojis
+        emojis_json = read(joinpath(fixtures_dir, "rest_get_emojis.json"), String)
+        emojis_list = JSON3.read(emojis_json)
+        emojis_data = haskey(emojis_list[1], :items) ? emojis_list[1].items : emojis_list
+        emojis = JSON3.read(JSON3.write(emojis_data), Vector{Emoji})
+        @test emojis isa Vector{Emoji}
+        @test length(emojis) > 0
+        @test emojis[1].id isa Snowflake
     end
 
     @testset "Interaction Payloads" begin

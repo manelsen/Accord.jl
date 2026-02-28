@@ -6,7 +6,7 @@
         "d": {
             "heartbeat_interval": 41250,
             "_trace": [
-                "[\"gateway-prd-arm-us-east1-c-x73q\",{\"micros\":0.0}]"
+                "[\"gateway-prd-arm-us-east1-d-41zj\",{\"micros\":0.0}]"
             ]
         }
     }

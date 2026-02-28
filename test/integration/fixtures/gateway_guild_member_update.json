@@ -1,0 +1,36 @@
+[
+    {
+        "t": "GUILD_MEMBER_UPDATE",
+        "op": 0,
+        "s": 11,
+        "d": {
+            "guild_id": "900000000000000008",
+            "collectibles": null,
+            "user": {
+                "collectibles": null,
+                "username": "username_4",
+                "display_name_styles": null,
+                "global_name": "global_name_2",
+                "primary_guild": null,
+                "id": "900000000000000007",
+                "clan": null,
+                "public_flags": 0,
+                "discriminator": "0",
+                "avatar_decoration_data": null,
+                "avatar": "00000000000000000000000000000012"
+            },
+            "display_name_styles": null,
+            "pending": false,
+            "unusual_dm_activity_until": null,
+            "banner": null,
+            "flags": 0,
+            "communication_disabled_until": null,
+            "roles": [
+            ],
+            "premium_since": null,
+            "nick": "nick_1",
+            "joined_at": "2026-02-27T23:53:35.495000+00:00",
+            "avatar": null
+        }
+    }
+]

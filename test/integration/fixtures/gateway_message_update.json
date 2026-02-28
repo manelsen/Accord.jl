@@ -11,7 +11,7 @@
                 "flags": 0,
                 "communication_disabled_until": null,
                 "roles": [
-                    "1292918902988345414"
+                    "900000000000000020"
                 ],
                 "premium_since": null,
                 "nick": null,
@@ -20,39 +20,39 @@
                 "avatar": null
             },
             "channel_type": 0,
-            "guild_id": "1212124712629440612",
+            "guild_id": "900000000000000009",
             "edited_timestamp": null,
             "author": {
                 "collectibles": null,
-                "username": "voiddragon",
+                "username": "username_5",
                 "display_name_styles": null,
-                "global_name": "Void Dragon",
+                "global_name": "global_name_4",
                 "primary_guild": {
-                    "identity_guild_id": "1346756824233148527",
-                    "tag": "Z.ai",
-                    "badge": "7f968d34689b032120d7a0f2a3d69b83",
+                    "identity_guild_id": "900000000000000081",
+                    "tag": "tag_2",
+                    "badge": "0000000000000000000000000000000f",
                     "identity_enabled": true
                 },
-                "id": "383221796700291082",
+                "id": "900000000000000026",
                 "clan": {
-                    "identity_guild_id": "1346756824233148527",
-                    "tag": "Z.ai",
-                    "badge": "7f968d34689b032120d7a0f2a3d69b83",
+                    "identity_guild_id": "900000000000000081",
+                    "tag": "tag_2",
+                    "badge": "00000000000000000000000000000010",
                     "identity_enabled": true
                 },
                 "public_flags": 0,
                 "discriminator": "0",
                 "avatar_decoration_data": {
                     "expires_at": null,
-                    "asset": "a_94febf08c37b21ee5ed92c49ef98bf00",
-                    "sku_id": "1366494385583165630"
+                    "asset": "00000000000000000000000000000007",
+                    "sku_id": "900000000000000082"
                 },
-                "avatar": "904d256347c060ddb0071fa23a13c6ec"
+                "avatar": "0000000000000000000000000000000d"
             },
             "pinned": false,
-            "id": "1471995906302935183",
-            "channel_id": "1212124713271304246",
-            "content": "É isso aí, companheiro\nA terra é um campo de brasa\nOnde o homem sem dinheiro\nÉ um passarinho sem asa",
+            "id": "900000000000000088",
+            "channel_id": "900000000000000004",
+            "content": "content_5",
             "embeds": [
             ],
             "mentions": [
@@ -82,7 +82,7 @@
                 "flags": 0,
                 "communication_disabled_until": null,
                 "roles": [
-                    "1292918902988345414"
+                    "900000000000000020"
                 ],
                 "premium_since": null,
                 "nick": null,
@@ -91,39 +91,39 @@
                 "avatar": null
             },
             "channel_type": 0,
-            "guild_id": "1212124712629440612",
+            "guild_id": "900000000000000009",
             "edited_timestamp": null,
             "author": {
                 "collectibles": null,
-                "username": "voiddragon",
+                "username": "username_5",
                 "display_name_styles": null,
-                "global_name": "Void Dragon",
+                "global_name": "global_name_4",
                 "primary_guild": {
-                    "identity_guild_id": "1346756824233148527",
-                    "tag": "Z.ai",
-                    "badge": "7f968d34689b032120d7a0f2a3d69b83",
+                    "identity_guild_id": "900000000000000081",
+                    "tag": "tag_2",
+                    "badge": "00000000000000000000000000000011",
                     "identity_enabled": true
                 },
-                "id": "383221796700291082",
+                "id": "900000000000000026",
                 "clan": {
-                    "identity_guild_id": "1346756824233148527",
-                    "tag": "Z.ai",
-                    "badge": "7f968d34689b032120d7a0f2a3d69b83",
+                    "identity_guild_id": "900000000000000081",
+                    "tag": "tag_2",
+                    "badge": "00000000000000000000000000000012",
                     "identity_enabled": true
                 },
                 "public_flags": 0,
                 "discriminator": "0",
                 "avatar_decoration_data": {
                     "expires_at": null,
-                    "asset": "a_94febf08c37b21ee5ed92c49ef98bf00",
-                    "sku_id": "1366494385583165630"
+                    "asset": "00000000000000000000000000000008",
+                    "sku_id": "900000000000000082"
                 },
-                "avatar": "904d256347c060ddb0071fa23a13c6ec"
+                "avatar": "0000000000000000000000000000000e"
             },
             "pinned": false,
-            "id": "1471995906302935183",
-            "channel_id": "1212124713271304246",
-            "content": "É isso aí, companheiro\nA terra é um campo de brasa\nOnde o homem sem dinheiro\nÉ um passarinho sem asa",
+            "id": "900000000000000088",
+            "channel_id": "900000000000000004",
+            "content": "content_5",
             "embeds": [
             ],
             "mentions": [
@@ -137,16 +137,16 @@
             ],
             "thread": {
                 "member_ids_preview": [
-                    "383221796700291082"
+                    "900000000000000026"
                 ],
-                "guild_id": "1212124712629440612",
-                "parent_id": "1212124713271304246",
+                "guild_id": "900000000000000009",
+                "parent_id": "900000000000000004",
                 "total_message_sent": 1,
                 "message_count": 1,
-                "owner_id": "383221796700291082",
-                "name": "É isso aí, companheiro",
-                "last_message_id": "1472054086127059025",
-                "id": "1471995906302935183",
+                "owner_id": "900000000000000026",
+                "name": "name_50",
+                "last_message_id": "900000000000000091",
+                "id": "900000000000000088",
                 "thread_metadata": {
                     "locked": false,
                     "archived": false,

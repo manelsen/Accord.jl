@@ -3,12 +3,12 @@
         "edited_timestamp": null,
         "author": {
             "collectibles": null,
-            "username": "Bellegendas Premium",
+            "username": "username_2",
             "bot": true,
             "accent_color": null,
             "display_name_styles": null,
             "global_name": null,
-            "id": "1470119116374282333",
+            "id": "900000000000000018",
             "clan": null,
             "primary_guild": null,
             "discriminator": "7281",
@@ -19,10 +19,10 @@
             "avatar_decoration_data": null,
             "avatar": null
         },
-        "id": "1472053869558239494",
+        "id": "900000000000000019",
         "pinned": false,
-        "channel_id": "1212124713271304246",
-        "content": "[Accord.jl integration test — this message will be deleted]",
+        "channel_id": "900000000000000009",
+        "content": "content_1",
         "embeds": [
         ],
         "mentions": [
@@ -36,7 +36,7 @@
         ],
         "attachments": [
         ],
-        "timestamp": "2026-02-14T02:16:31.941000+00:00",
+        "timestamp": "2026-02-27T23:56:37.361000+00:00",
         "type": 0
     }
 ]

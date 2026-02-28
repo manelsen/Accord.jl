@@ -80,17 +80,25 @@
 
     # ── Heartbeat Actor Tests (real start_heartbeat with short intervals) ───────
 
+    function wait_for_heartbeat_sent(ws::MockWebSocket; timeout_s=1.0)
+        deadline = time() + timeout_s
+        while isempty(ws.sent) && time() < deadline
+            sleep(0.01)
+        end
+        return !isempty(ws.sent)
+    end
+
     @testset "Heartbeat sends OP 1 with null seq" begin
         ws = MockWebSocket()
         seq_ref = Ref{Union{Int,Nothing}}(nothing)
         stop = Base.Event()
 
         task, state = start_heartbeat(ws, 50, seq_ref, stop)  # 50ms interval
-        sleep(0.2)  # Let at least one heartbeat fire
+        sent = wait_for_heartbeat_sent(ws)
         stop_heartbeat!(state)
         wait(task)
 
-        @test length(ws.sent) >= 1
+        @test sent
         msg = JSON3.read(ws.sent[1])
         @test msg.op == 1
         @test msg.d === nothing
@@ -102,11 +110,11 @@
         stop = Base.Event()
 
         task, state = start_heartbeat(ws, 50, seq_ref, stop)
-        sleep(0.2)
+        sent = wait_for_heartbeat_sent(ws)
         stop_heartbeat!(state)
         wait(task)
 
-        @test length(ws.sent) >= 1
+        @test sent
         msg = JSON3.read(ws.sent[1])
         @test msg.op == 1
         @test msg.d == 42

@@ -1,6 +1,8 @@
 @testitem "Macros" tags=[:unit] begin
     using Accord, JSON3, StructTypes, Dates
-    using Accord: has_flag, @discord_flags, @discord_struct, @_flags_structtypes_int, drain_pending_checks!, _CHECKS_LOCK, _PENDING_CHECKS, CommandTree
+    using Accord: has_flag, @discord_flags, @discord_struct, @_flags_structtypes_int,
+        drain_pending_checks!, pending_checks, push_pending_check!, CommandTree,
+        dispatch_interaction!
 
     # Flags macro types need to be defined at module/top-level scope because they
     # generate `const` declarations that are not allowed inside local scopes.
@@ -524,15 +526,13 @@
             tree = CommandTree()
             mock_client = (; command_tree=tree)
 
-            lock(_CHECKS_LOCK) do
-                push!(_PENDING_CHECKS, ctx -> true)
-            end
+            push_pending_check!(ctx -> true)
 
             @user_command mock_client "Check User" function(ctx) end
 
             cmd = tree.commands["Check User"]
             @test length(cmd.checks) == 1
-            @test isempty(_PENDING_CHECKS)
+            @test isempty(pending_checks())
         end
 
         @testset "invalid args throws error" begin
@@ -575,16 +575,14 @@
             tree = CommandTree()
             mock_client = (; command_tree=tree)
 
-            lock(_CHECKS_LOCK) do
-                push!(_PENDING_CHECKS, ctx -> true)
-                push!(_PENDING_CHECKS, ctx -> false)
-            end
+            push_pending_check!(ctx -> true)
+            push_pending_check!(ctx -> false)
 
             @message_command mock_client "Pin Message" function(ctx) end
 
             cmd = tree.commands["Pin Message"]
             @test length(cmd.checks) == 2
-            @test isempty(_PENDING_CHECKS)
+            @test isempty(pending_checks())
         end
     end
 

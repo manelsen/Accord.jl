@@ -2,10 +2,10 @@
     {
         "items": [
             {
-                "name": "Canais de Texto",
+                "name": "name_11",
                 "flags": 0,
-                "guild_id": "1212124712629440612",
-                "id": "1212124713271304243",
+                "guild_id": "900000000000000008",
+                "id": "900000000000000020",
                 "parent_id": null,
                 "position": 0,
                 "permission_overwrites": [
@@ -13,10 +13,10 @@
                 "type": 4
             },
             {
-                "name": "Canais de Voz",
+                "name": "name_12",
                 "flags": 0,
-                "guild_id": "1212124712629440612",
-                "id": "1212124713271304245",
+                "guild_id": "900000000000000008",
+                "id": "900000000000000021",
                 "parent_id": null,
                 "position": 0,
                 "permission_overwrites": [
@@ -24,20 +24,20 @@
                 "type": 4
             },
             {
-                "guild_id": "1212124712629440612",
+                "guild_id": "900000000000000008",
                 "topic": null,
-                "parent_id": "1212124713271304243",
+                "parent_id": "900000000000000020",
                 "theme_color": null,
-                "name": "geral",
+                "name": "name_13",
                 "last_pin_timestamp": "2025-12-30T21:05:57.113000+00:00",
                 "nsfw": false,
-                "id": "1212124713271304246",
-                "last_message_id": "1472010770148757640",
+                "id": "900000000000000009",
+                "last_message_id": "900000000000000006",
                 "position": 0,
                 "permission_overwrites": [
                 ],
                 "icon_emoji": {
-                    "name": "👋",
+                    "name": "name_14",
                     "id": null
                 },
                 "rate_limit_per_user": 0,
@@ -45,21 +45,21 @@
                 "type": 0
             },
             {
-                "guild_id": "1212124712629440612",
-                "parent_id": "1212124713271304245",
+                "guild_id": "900000000000000008",
+                "parent_id": "900000000000000021",
                 "theme_color": null,
                 "voice_background_display": null,
                 "bitrate": 64000,
-                "name": "Geral",
+                "name": "name_15",
                 "user_limit": 0,
                 "nsfw": false,
-                "id": "1212124713271304247",
-                "last_message_id": "1470151424087298171",
+                "id": "900000000000000022",
+                "last_message_id": "900000000000000023",
                 "position": 0,
                 "permission_overwrites": [
                 ],
                 "icon_emoji": {
-                    "name": "🎙️",
+                    "name": "name_16",
                     "id": null
                 },
                 "rate_limit_per_user": 0,
@@ -68,17 +68,17 @@
                 "type": 2
             },
             {
-                "guild_id": "1212124712629440612",
+                "guild_id": "900000000000000008",
                 "topic": null,
-                "parent_id": "1212124713271304243",
-                "name": "mapas",
+                "parent_id": "900000000000000020",
+                "name": "name_17",
                 "nsfw": false,
-                "id": "1213870040336568360",
-                "last_message_id": "1235550799803977768",
+                "id": "900000000000000024",
+                "last_message_id": "900000000000000025",
                 "position": 1,
                 "permission_overwrites": [
                     {
-                        "id": "1212124712629440612",
+                        "id": "900000000000000008",
                         "allow": "0",
                         "deny": "1024",
                         "type": 0
@@ -89,13 +89,13 @@
                 "type": 0
             },
             {
-                "guild_id": "1212124712629440612",
+                "guild_id": "900000000000000008",
                 "topic": null,
-                "parent_id": "1212124713271304243",
-                "name": "spells",
+                "parent_id": "900000000000000020",
+                "name": "name_18",
                 "nsfw": false,
-                "id": "1453175103268585666",
-                "last_message_id": "1453177085635068084",
+                "id": "900000000000000026",
+                "last_message_id": "900000000000000027",
                 "position": 2,
                 "permission_overwrites": [
                 ],
@@ -104,24 +104,24 @@
                 "type": 0
             },
             {
-                "guild_id": "1212124712629440612",
-                "topic": "Um teste em cada linha",
-                "parent_id": "1212124713271304243",
+                "guild_id": "900000000000000008",
+                "topic": "topic_1",
+                "parent_id": "900000000000000020",
                 "theme_color": null,
                 "default_sort_order": null,
-                "name": "testes",
+                "name": "name_19",
                 "nsfw": false,
                 "available_tags": [
                     {
-                        "name": "Avrae",
+                        "name": "name_8",
                         "moderated": false,
                         "emoji_id": null,
-                        "id": "1459207578797211710",
+                        "id": "900000000000000028",
                         "emoji_name": null
                     }
                 ],
-                "id": "1459206718516101298",
-                "last_message_id": "1465112677381574716",
+                "id": "900000000000000029",
+                "last_message_id": "900000000000000030",
                 "position": 0,
                 "permission_overwrites": [
                 ],

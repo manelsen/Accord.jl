@@ -1,5 +1,5 @@
 @testitem "Types JSON round-trip" tags=[:unit] begin
-    using Accord, JSON3
+    using Accord, JSON3, Dates
 
     @testset "User" begin
         json = """{"id":"123456789","username":"testuser","discriminator":"0","global_name":"Test User","avatar":"abc123","bot":false}"""
@@ -49,7 +49,7 @@
         member = JSON3.read(json, Member)
         @test member.user.id == Snowflake(555)
         @test length(member.roles) == 2
-        @test member.joined_at == "2023-01-01T00:00:00Z"
+        @test member.joined_at == DateTime(2023, 1, 1, 0, 0, 0)
     end
 
     @testset "Message" begin

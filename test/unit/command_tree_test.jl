@@ -4,7 +4,7 @@
         register_modal!, register_autocomplete!, dispatch_interaction!, sync_commands!,
         InteractionContext, get_options, get_option, custom_id, selected_values, modal_values,
         target, respond, defer, edit_response, followup, show_modal,
-        run_checks, drain_pending_checks!, _PENDING_CHECKS, _CHECKS_LOCK,
+        run_checks, drain_pending_checks!, pending_checks, push_pending_check!,
         has_permissions, is_owner, is_in_guild, cooldown,
         InteractionDataOption, ResolvedData, CheckFailedError,
         compute_base_permissions, has_flag, _cooldown_key, _is_present,
@@ -729,14 +729,13 @@
     # ── drain_pending_checks! ───────────────────────────────────────────────────
 
     @testset "drain_pending_checks!" begin
-        lock(_CHECKS_LOCK) do
-            empty!(_PENDING_CHECKS)
-            push!(_PENDING_CHECKS, ctx -> true)
-            push!(_PENDING_CHECKS, ctx -> false)
-        end
+        drain_pending_checks!()
+        push_pending_check!(ctx -> true)
+        push_pending_check!(ctx -> false)
         drained = drain_pending_checks!()
         @test length(drained) == 2
         # Should be empty after drain
+        @test isempty(pending_checks())
         @test isempty(drain_pending_checks!())
     end
 

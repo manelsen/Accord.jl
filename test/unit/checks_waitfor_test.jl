@@ -1,6 +1,8 @@
 @testitem "Checks & Guards" tags=[:unit] begin
     using Accord
-    using Accord: _init_perm_map!, _resolve_perm, _resolve_perms, _cooldown_key, drain_pending_checks!, _PENDING_CHECKS, _CHECKS_LOCK, EventWaiter, CommandTree, register_command!
+    using Accord: _init_perm_map!, _resolve_perm, _resolve_perms, _cooldown_key,
+        drain_pending_checks!, pending_checks, push_pending_check!,
+        EventWaiter, CommandTree, register_command!
 
     # Initialize permission map
     _init_perm_map!()
@@ -59,19 +61,17 @@
     @testset "Pending checks accumulation and drain" begin
         # Start clean
         drain_pending_checks!()
-        @test isempty(_PENDING_CHECKS)
+        @test isempty(pending_checks())
 
         # Push some checks
-        lock(_CHECKS_LOCK) do
-            push!(_PENDING_CHECKS, is_owner())
-            push!(_PENDING_CHECKS, is_in_guild())
-        end
-        @test length(_PENDING_CHECKS) == 2
+        push_pending_check!(is_owner())
+        push_pending_check!(is_in_guild())
+        @test length(pending_checks()) == 2
 
         # Drain should return all and empty the accumulator
         drained = drain_pending_checks!()
         @test length(drained) == 2
-        @test isempty(_PENDING_CHECKS)
+        @test isempty(pending_checks())
 
         # Drain again should return empty
         drained2 = drain_pending_checks!()
@@ -138,7 +138,7 @@
         @testset "Client accepts state kwarg" begin
             # We can't create a full Client without a gateway, but we can
             # verify the struct has the field
-            @test hasfield(Client, :state_data)
+            @test hasfield(Client{Nothing}, :state_data)
         end
     end
 end

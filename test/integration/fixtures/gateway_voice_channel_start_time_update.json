@@ -1,0 +1,22 @@
+[
+    {
+        "t": "VOICE_CHANNEL_START_TIME_UPDATE",
+        "op": 0,
+        "s": 9,
+        "d": {
+            "voice_start_time": 1772236618,
+            "guild_id": "900000000000000008",
+            "id": "900000000000000022"
+        }
+    },
+    {
+        "t": "VOICE_CHANNEL_START_TIME_UPDATE",
+        "op": 0,
+        "s": 13,
+        "d": {
+            "voice_start_time": null,
+            "guild_id": "900000000000000008",
+            "id": "900000000000000022"
+        }
+    }
+]

@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.0-alpha] - 2026-02-24 (Early Adopters Stabilization)
+
+### Added
+- **Internal namespace**: Introduced `Accord.Internals` (also available as `Accord.internals`) to provide an explicit access point for non-public symbols used by advanced users and tests.
+
+### Fixed
+- **Test stability**: Removed hangs in contract tests by using mocked `RateLimiter` flows for forum tags and thread/poll validation tests.
+- **Gateway robustness**: Hardened gateway payload parsing and heartbeat interval handling in `_gateway_loop` to avoid invalid payload paths.
+- **Forum tags endpoints**: Fixed type handling for `ForumTag` operations (`create/modify/delete`) and corrected payload generation for `available_tags`.
+- **Voice gateway safety**: Added explicit websocket connectivity checks before sending speaking/protocol payloads.
+- **Diagnostics module**: Fixed internal module references for `HTTP`/`JSON3` used by `Diagnoser`.
+
+### Changed
+- **Version consistency**: Aligned module runtime version constant with package metadata (`0.3.0-alpha`).
+
 ## [0.2.0] - 2026-02-17 (The "Developer Experience" Release)
 
 ### Added

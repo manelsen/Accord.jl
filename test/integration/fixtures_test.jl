@@ -193,6 +193,213 @@
                 end
             end
 
+            # ── MESSAGE_UPDATE ─────────────────────────────────────────────────────
+            @testset "MESSAGE_UPDATE" begin
+                if has_fixture("gateway_message_update")
+                    payloads = load_fixture("gateway_message_update")
+                    @test length(payloads) >= 1
+
+                    for (i, payload) in enumerate(payloads)
+                        data = get_data(payload)
+                        event = parse_event("MESSAGE_UPDATE", data)
+                        @test event isa Accord.MessageUpdate
+
+                        msg = event.message
+                        @test msg isa Message
+                        @test msg.id isa Snowflake
+                        @test msg.channel_id isa Snowflake
+
+                        if !ismissing(msg.guild_id)
+                            @test msg.guild_id isa Snowflake
+                        end
+                        if !ismissing(msg.author)
+                            @test msg.author isa User
+                            @test msg.author.id isa Snowflake
+                        end
+                        if !ismissing(msg.content)
+                            @test msg.content isa String
+                            @test !isempty(msg.content)
+                        end
+                        @test ismissing(msg.edited_timestamp) || msg.edited_timestamp isa String
+
+                        if !ismissing(msg.thread)
+                            @test msg.thread isa DiscordChannel
+                            @test msg.thread.id == msg.id
+                            @test msg.thread.type isa Int
+                            if !ismissing(msg.thread.thread_metadata)
+                                meta = msg.thread.thread_metadata
+                                @test meta.archived isa Bool
+                                @test meta.locked isa Bool
+                                @test meta.auto_archive_duration isa Int
+                            end
+                        end
+
+                        msg_json = JSON3.write(msg)
+                        msg2 = JSON3.read(msg_json, Message)
+                        @test msg2.id == msg.id
+
+                        i >= 5 && break
+                    end
+                else
+                    @test_skip "no MESSAGE_UPDATE fixture"
+                end
+            end
+
+            # ── MESSAGE_DELETE ─────────────────────────────────────────────────────
+            @testset "MESSAGE_DELETE" begin
+                if has_fixture("gateway_message_delete")
+                    payloads = load_fixture("gateway_message_delete")
+                    @test length(payloads) >= 1
+
+                    for payload in payloads
+                        data = get_data(payload)
+                        event = parse_event("MESSAGE_DELETE", data)
+                        @test event isa Accord.MessageDelete
+                        @test event.id isa Snowflake
+                        @test event.channel_id isa Snowflake
+                        @test ismissing(event.guild_id) || event.guild_id isa Snowflake
+                    end
+                else
+                    @test_skip "no MESSAGE_DELETE fixture"
+                end
+            end
+
+            # ── THREAD_CREATE ──────────────────────────────────────────────────────
+            @testset "THREAD_CREATE" begin
+                if has_fixture("gateway_thread_create")
+                    payloads = load_fixture("gateway_thread_create")
+                    @test length(payloads) >= 1
+
+                    for payload in payloads
+                        data = get_data(payload)
+                        event = parse_event("THREAD_CREATE", data)
+                        @test event isa Accord.ThreadCreate
+
+                        ch = event.channel
+                        @test ch isa DiscordChannel
+                        @test ch.id isa Snowflake
+                        @test ch.type isa Int
+                        @test ismissing(ch.guild_id) || ch.guild_id isa Snowflake
+                        @test ismissing(ch.parent_id) || ch.parent_id isa Snowflake
+                        @test ismissing(ch.owner_id) || ch.owner_id isa Snowflake
+                        @test ismissing(ch.member_count) || ch.member_count isa Int
+
+                        if !ismissing(ch.thread_metadata)
+                            meta = ch.thread_metadata
+                            @test meta.archived isa Bool
+                            @test meta.locked isa Bool
+                            @test meta.auto_archive_duration isa Int
+                            @test !isempty(string(meta.archive_timestamp))
+                        end
+                    end
+                else
+                    @test_skip "no THREAD_CREATE fixture"
+                end
+            end
+
+            # ── VOICE_STATE_UPDATE ─────────────────────────────────────────────────
+            @testset "VOICE_STATE_UPDATE" begin
+                if has_fixture("gateway_voice_state_update")
+                    payloads = load_fixture("gateway_voice_state_update")
+                    @test length(payloads) >= 1
+
+                    for payload in payloads
+                        data = get_data(payload)
+                        event = parse_event("VOICE_STATE_UPDATE", data)
+                        @test event isa Accord.VoiceStateUpdateEvent
+
+                        vs = event.state
+                        @test vs isa VoiceState
+                        @test vs.user_id isa Snowflake
+                        @test ismissing(vs.guild_id) || vs.guild_id isa Snowflake
+                        @test ismissing(vs.channel_id) || isnothing(vs.channel_id) || vs.channel_id isa Snowflake
+                        @test vs.session_id isa String
+                        @test vs.deaf isa Bool
+                        @test vs.mute isa Bool
+                    end
+                else
+                    @test_skip "no VOICE_STATE_UPDATE fixture"
+                end
+            end
+
+            # ── VOICE_CHANNEL_STATUS_UPDATE ────────────────────────────────────────
+            @testset "VOICE_CHANNEL_STATUS_UPDATE" begin
+                if has_fixture("gateway_voice_channel_status_update")
+                    payloads = load_fixture("gateway_voice_channel_status_update")
+                    @test length(payloads) >= 1
+
+                    for payload in payloads
+                        data = get_data(payload)
+                        event = parse_event("VOICE_CHANNEL_STATUS_UPDATE", data)
+                        @test event isa Accord.VoiceChannelStatusUpdate
+                        @test event.guild_id isa Snowflake
+                        @test event.id isa Snowflake
+                    end
+                else
+                    @test_skip "no VOICE_CHANNEL_STATUS_UPDATE fixture"
+                end
+            end
+
+            # ── VOICE_CHANNEL_START_TIME_UPDATE ────────────────────────────────────
+            @testset "VOICE_CHANNEL_START_TIME_UPDATE" begin
+                if has_fixture("gateway_voice_channel_start_time_update")
+                    payloads = load_fixture("gateway_voice_channel_start_time_update")
+                    @test length(payloads) >= 1
+
+                    for payload in payloads
+                        data = get_data(payload)
+                        event = parse_event("VOICE_CHANNEL_START_TIME_UPDATE", data)
+                        @test event isa Accord.VoiceChannelStartTimeUpdate
+                        @test event.guild_id isa Snowflake
+                        @test event.id isa Snowflake
+                        @test ismissing(event.voice_start_time) || isnothing(event.voice_start_time) || event.voice_start_time isa Int
+                    end
+                else
+                    @test_skip "no VOICE_CHANNEL_START_TIME_UPDATE fixture"
+                end
+            end
+
+            # ── MESSAGE_REACTION_ADD ───────────────────────────────────────────────
+            @testset "MESSAGE_REACTION_ADD" begin
+                if has_fixture("gateway_message_reaction_add")
+                    payloads = load_fixture("gateway_message_reaction_add")
+                    @test length(payloads) >= 1
+
+                    for payload in payloads
+                        data = get_data(payload)
+                        event = parse_event("MESSAGE_REACTION_ADD", data)
+                        @test event isa Accord.MessageReactionAdd
+                        @test event.user_id isa Snowflake
+                        @test event.channel_id isa Snowflake
+                        @test event.message_id isa Snowflake
+                        @test event.emoji isa Emoji
+                        @test ismissing(event.emoji.name) || !isempty(event.emoji.name)
+                    end
+                else
+                    @test_skip "no MESSAGE_REACTION_ADD fixture"
+                end
+            end
+
+            # ── GUILD_MEMBER_UPDATE ────────────────────────────────────────────────
+            @testset "GUILD_MEMBER_UPDATE" begin
+                if has_fixture("gateway_guild_member_update")
+                    payloads = load_fixture("gateway_guild_member_update")
+                    @test length(payloads) >= 1
+
+                    for payload in payloads
+                        data = get_data(payload)
+                        event = parse_event("GUILD_MEMBER_UPDATE", data)
+                        @test event isa Accord.GuildMemberUpdate
+                        @test event.guild_id isa Snowflake
+                        @test event.user isa User
+                        @test event.user.id isa Snowflake
+                        @test event.roles isa Vector{Snowflake}
+                    end
+                else
+                    @test_skip "no GUILD_MEMBER_UPDATE fixture"
+                end
+            end
+
             # ── INTERACTION_CREATE ─────────────────────────────────────────────────
             @testset "INTERACTION_CREATE" begin
                 if has_fixture("gateway_interaction_create")
@@ -368,6 +575,38 @@
                     end
                 else
                     @test_skip "no rest_get_roles fixture"
+                end
+            end
+
+            # ── Emojis ─────────────────────────────────────────────────────────────
+            @testset "GET /guilds/:id/emojis → Vector{Emoji}" begin
+                if has_fixture("rest_get_emojis")
+                    payload = load_fixture_one("rest_get_emojis")
+                    items = if payload isa Dict && haskey(payload, "items")
+                        payload["items"]
+                    elseif payload isa AbstractVector
+                        payload
+                    else
+                        Any[payload]
+                    end
+
+                    emojis = JSON3.read(JSON3.write(items), Vector{Emoji})
+                    @test length(emojis) >= 1
+
+                    for emoji in emojis
+                        @test emoji isa Emoji
+                        @test emoji.id isa Snowflake
+                        @test ismissing(emoji.name) || emoji.name isa String
+                        @test ismissing(emoji.animated) || emoji.animated isa Bool
+                    end
+
+                    for emoji in emojis[1:min(3, length(emojis))]
+                        json = JSON3.write(emoji)
+                        emoji2 = JSON3.read(json, Emoji)
+                        @test emoji2.id == emoji.id
+                    end
+                else
+                    @test_skip "no rest_get_emojis fixture"
                 end
             end
 

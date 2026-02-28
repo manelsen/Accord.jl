@@ -11,7 +11,7 @@
                 "flags": 0,
                 "communication_disabled_until": null,
                 "roles": [
-                    "1292918902988345414"
+                    "900000000000000005"
                 ],
                 "premium_since": null,
                 "nick": null,
@@ -20,39 +20,39 @@
                 "avatar": null
             },
             "channel_type": 0,
-            "guild_id": "1212124712629440612",
+            "guild_id": "900000000000000008",
             "edited_timestamp": null,
             "author": {
                 "collectibles": null,
-                "username": "voiddragon",
+                "username": "username_1",
                 "display_name_styles": null,
-                "global_name": "Void Dragon",
+                "global_name": "global_name_1",
                 "primary_guild": {
-                    "identity_guild_id": "1346756824233148527",
-                    "tag": "Z.ai",
-                    "badge": "7f968d34689b032120d7a0f2a3d69b83",
+                    "identity_guild_id": "900000000000000003",
+                    "tag": "tag_1",
+                    "badge": "0000000000000000000000000000000c",
                     "identity_enabled": true
                 },
-                "id": "383221796700291082",
+                "id": "900000000000000002",
                 "clan": {
-                    "identity_guild_id": "1346756824233148527",
-                    "tag": "Z.ai",
-                    "badge": "7f968d34689b032120d7a0f2a3d69b83",
+                    "identity_guild_id": "900000000000000003",
+                    "tag": "tag_1",
+                    "badge": "0000000000000000000000000000000d",
                     "identity_enabled": true
                 },
                 "public_flags": 0,
                 "discriminator": "0",
                 "avatar_decoration_data": {
                     "expires_at": null,
-                    "asset": "a_94febf08c37b21ee5ed92c49ef98bf00",
-                    "sku_id": "1366494385583165630"
+                    "asset": "00000000000000000000000000000008",
+                    "sku_id": "900000000000000004"
                 },
-                "avatar": "904d256347c060ddb0071fa23a13c6ec"
+                "avatar": "0000000000000000000000000000000d"
             },
             "pinned": false,
-            "id": "1472053922800734339",
-            "channel_id": "1212124713271304246",
-            "content": "Ei",
+            "id": "900000000000000087",
+            "channel_id": "900000000000000009",
+            "content": "content_2",
             "embeds": [
             ],
             "mentions": [
@@ -66,15 +66,15 @@
             ],
             "attachments": [
             ],
-            "timestamp": "2026-02-14T02:16:44.635000+00:00",
+            "timestamp": "2026-02-27T23:56:48.287000+00:00",
             "type": 0,
-            "nonce": "1472053792059949056"
+            "nonce": "nonce_1"
         }
     },
     {
         "t": "MESSAGE_CREATE",
         "op": 0,
-        "s": 9,
+        "s": 6,
         "d": {
             "member": {
                 "pending": false,
@@ -83,85 +83,7 @@
                 "flags": 0,
                 "communication_disabled_until": null,
                 "roles": [
-                    "1292918902988345414"
-                ],
-                "premium_since": null,
-                "nick": null,
-                "joined_at": "2024-02-27T19:50:51.701000+00:00",
-                "deaf": false,
-                "avatar": null
-            },
-            "channel_type": 11,
-            "guild_id": "1212124712629440612",
-            "message_reference": {
-                "message_id": "1471995906302935183",
-                "guild_id": "1212124712629440612",
-                "channel_id": "1212124713271304246",
-                "type": 0
-            },
-            "edited_timestamp": null,
-            "author": {
-                "collectibles": null,
-                "username": "voiddragon",
-                "display_name_styles": null,
-                "global_name": "Void Dragon",
-                "primary_guild": {
-                    "identity_guild_id": "1346756824233148527",
-                    "tag": "Z.ai",
-                    "badge": "7f968d34689b032120d7a0f2a3d69b83",
-                    "identity_enabled": true
-                },
-                "id": "383221796700291082",
-                "clan": {
-                    "identity_guild_id": "1346756824233148527",
-                    "tag": "Z.ai",
-                    "badge": "7f968d34689b032120d7a0f2a3d69b83",
-                    "identity_enabled": true
-                },
-                "public_flags": 0,
-                "discriminator": "0",
-                "avatar_decoration_data": {
-                    "expires_at": null,
-                    "asset": "a_94febf08c37b21ee5ed92c49ef98bf00",
-                    "sku_id": "1366494385583165630"
-                },
-                "avatar": "904d256347c060ddb0071fa23a13c6ec"
-            },
-            "pinned": false,
-            "id": "1472054083064959038",
-            "position": 0,
-            "channel_id": "1471995906302935183",
-            "content": "",
-            "embeds": [
-            ],
-            "mentions": [
-            ],
-            "components": [
-            ],
-            "flags": 0,
-            "mention_everyone": false,
-            "tts": false,
-            "mention_roles": [
-            ],
-            "attachments": [
-            ],
-            "timestamp": "2026-02-14T02:17:22.845000+00:00",
-            "type": 21
-        }
-    },
-    {
-        "t": "MESSAGE_CREATE",
-        "op": 0,
-        "s": 10,
-        "d": {
-            "member": {
-                "pending": false,
-                "banner": null,
-                "mute": false,
-                "flags": 0,
-                "communication_disabled_until": null,
-                "roles": [
-                    "1292918902988345414"
+                    "900000000000000005"
                 ],
                 "premium_since": null,
                 "nick": null,
@@ -170,65 +92,135 @@
                 "avatar": null
             },
             "channel_type": 0,
-            "guild_id": "1212124712629440612",
+            "guild_id": "900000000000000008",
+            "referenced_message": {
+                "edited_timestamp": null,
+                "author": {
+                    "collectibles": null,
+                    "username": "username_4",
+                    "display_name_styles": null,
+                    "global_name": "global_name_2",
+                    "primary_guild": null,
+                    "id": "900000000000000007",
+                    "clan": null,
+                    "public_flags": 0,
+                    "discriminator": "0",
+                    "avatar_decoration_data": null,
+                    "avatar": "0000000000000000000000000000000e"
+                },
+                "pinned": false,
+                "id": "900000000000000088",
+                "channel_id": "900000000000000009",
+                "content": "content_3",
+                "embeds": [
+                ],
+                "mentions": [
+                ],
+                "components": [
+                ],
+                "flags": 0,
+                "mention_everyone": false,
+                "tts": false,
+                "mention_roles": [
+                ],
+                "attachments": [
+                ],
+                "timestamp": "2026-02-27T23:53:35.808000+00:00",
+                "type": 7
+            },
             "message_reference": {
-                "guild_id": "1212124712629440612",
-                "channel_id": "1471995906302935183",
+                "message_id": "900000000000000088",
+                "guild_id": "900000000000000008",
+                "channel_id": "900000000000000009",
                 "type": 0
             },
             "edited_timestamp": null,
             "author": {
                 "collectibles": null,
-                "username": "voiddragon",
+                "username": "username_1",
                 "display_name_styles": null,
-                "global_name": "Void Dragon",
+                "global_name": "global_name_1",
                 "primary_guild": {
-                    "identity_guild_id": "1346756824233148527",
-                    "tag": "Z.ai",
-                    "badge": "7f968d34689b032120d7a0f2a3d69b83",
+                    "identity_guild_id": "900000000000000003",
+                    "tag": "tag_1",
+                    "badge": "0000000000000000000000000000000e",
                     "identity_enabled": true
                 },
-                "id": "383221796700291082",
+                "id": "900000000000000002",
                 "clan": {
-                    "identity_guild_id": "1346756824233148527",
-                    "tag": "Z.ai",
-                    "badge": "7f968d34689b032120d7a0f2a3d69b83",
+                    "identity_guild_id": "900000000000000003",
+                    "tag": "tag_1",
+                    "badge": "0000000000000000000000000000000f",
                     "identity_enabled": true
                 },
                 "public_flags": 0,
                 "discriminator": "0",
                 "avatar_decoration_data": {
                     "expires_at": null,
-                    "asset": "a_94febf08c37b21ee5ed92c49ef98bf00",
-                    "sku_id": "1366494385583165630"
+                    "asset": "00000000000000000000000000000009",
+                    "sku_id": "900000000000000004"
                 },
-                "avatar": "904d256347c060ddb0071fa23a13c6ec"
+                "avatar": "0000000000000000000000000000000f"
             },
             "pinned": false,
-            "id": "1472054083509686438",
-            "channel_id": "1212124713271304246",
-            "content": "É isso aí, companheiro",
+            "id": "900000000000000089",
+            "channel_id": "900000000000000009",
+            "content": "content_3",
             "embeds": [
             ],
             "mentions": [
+                {
+                    "member": {
+                        "pending": false,
+                        "banner": null,
+                        "mute": false,
+                        "flags": 0,
+                        "communication_disabled_until": null,
+                        "roles": [
+                        ],
+                        "premium_since": null,
+                        "nick": null,
+                        "joined_at": "2026-02-27T23:53:35.495923+00:00",
+                        "deaf": false,
+                        "avatar": null
+                    },
+                    "collectibles": null,
+                    "username": "username_4",
+                    "display_name_styles": null,
+                    "global_name": "global_name_2",
+                    "primary_guild": null,
+                    "id": "900000000000000007",
+                    "clan": null,
+                    "public_flags": 0,
+                    "discriminator": "0",
+                    "avatar_decoration_data": null,
+                    "avatar": "00000000000000000000000000000010"
+                }
             ],
             "components": [
             ],
             "flags": 0,
             "mention_everyone": false,
             "tts": false,
+            "sticker_items": [
+                {
+                    "name": "name_50",
+                    "id": "900000000000000090",
+                    "format_type": 3
+                }
+            ],
             "mention_roles": [
             ],
             "attachments": [
             ],
-            "timestamp": "2026-02-14T02:17:22.951000+00:00",
-            "type": 18
+            "timestamp": "2026-02-27T23:56:53.848000+00:00",
+            "type": 19
         }
     },
     {
         "t": "MESSAGE_CREATE",
         "op": 0,
-        "s": 11,
+        "s": 15,
         "d": {
             "member": {
                 "pending": false,
@@ -237,7 +229,7 @@
                 "flags": 0,
                 "communication_disabled_until": null,
                 "roles": [
-                    "1292918902988345414"
+                    "900000000000000005"
                 ],
                 "premium_since": null,
                 "nick": null,
@@ -245,41 +237,40 @@
                 "deaf": false,
                 "avatar": null
             },
-            "channel_type": 11,
-            "guild_id": "1212124712629440612",
+            "channel_type": 0,
+            "guild_id": "900000000000000008",
             "edited_timestamp": null,
             "author": {
                 "collectibles": null,
-                "username": "voiddragon",
+                "username": "username_1",
                 "display_name_styles": null,
-                "global_name": "Void Dragon",
+                "global_name": "global_name_1",
                 "primary_guild": {
-                    "identity_guild_id": "1346756824233148527",
-                    "tag": "Z.ai",
-                    "badge": "7f968d34689b032120d7a0f2a3d69b83",
+                    "identity_guild_id": "900000000000000003",
+                    "tag": "tag_1",
+                    "badge": "00000000000000000000000000000010",
                     "identity_enabled": true
                 },
-                "id": "383221796700291082",
+                "id": "900000000000000002",
                 "clan": {
-                    "identity_guild_id": "1346756824233148527",
-                    "tag": "Z.ai",
-                    "badge": "7f968d34689b032120d7a0f2a3d69b83",
+                    "identity_guild_id": "900000000000000003",
+                    "tag": "tag_1",
+                    "badge": "00000000000000000000000000000011",
                     "identity_enabled": true
                 },
                 "public_flags": 0,
                 "discriminator": "0",
                 "avatar_decoration_data": {
                     "expires_at": null,
-                    "asset": "a_94febf08c37b21ee5ed92c49ef98bf00",
-                    "sku_id": "1366494385583165630"
+                    "asset": "0000000000000000000000000000000a",
+                    "sku_id": "900000000000000004"
                 },
-                "avatar": "904d256347c060ddb0071fa23a13c6ec"
+                "avatar": "00000000000000000000000000000011"
             },
             "pinned": false,
-            "id": "1472054086127059025",
-            "position": 0,
-            "channel_id": "1471995906302935183",
-            "content": "A terra",
+            "id": "900000000000000091",
+            "channel_id": "900000000000000009",
+            "content": "content_4",
             "embeds": [
             ],
             "mentions": [
@@ -293,9 +284,9 @@
             ],
             "attachments": [
             ],
-            "timestamp": "2026-02-14T02:17:23.575000+00:00",
+            "timestamp": "2026-02-27T23:58:15.367000+00:00",
             "type": 0,
-            "nonce": "1472053955402924032"
+            "nonce": "nonce_2"
         }
     }
 ]

@@ -1,0 +1,58 @@
+[
+    {
+        "t": "MESSAGE_REACTION_ADD",
+        "op": 0,
+        "s": 5,
+        "d": {
+            "member": {
+                "user": {
+                    "collectibles": null,
+                    "username": "username_1",
+                    "bot": false,
+                    "display_name_styles": null,
+                    "global_name": "global_name_1",
+                    "primary_guild": {
+                        "identity_guild_id": "900000000000000003",
+                        "tag": "tag_1",
+                        "badge": "00000000000000000000000000000003",
+                        "identity_enabled": true
+                    },
+                    "id": "900000000000000002",
+                    "public_flags": 0,
+                    "discriminator": "0",
+                    "avatar_decoration_data": {
+                        "expires_at": null,
+                        "asset": "00000000000000000000000000000002",
+                        "sku_id": "900000000000000004"
+                    },
+                    "display_name": "Void Dragon",
+                    "avatar": "00000000000000000000000000000002"
+                },
+                "pending": false,
+                "banner": null,
+                "mute": false,
+                "flags": 0,
+                "communication_disabled_until": null,
+                "roles": [
+                    "900000000000000005"
+                ],
+                "premium_since": null,
+                "nick": null,
+                "joined_at": "2024-02-27T19:50:51.701000+00:00",
+                "deaf": false,
+                "avatar": null
+            },
+            "message_id": "900000000000000006",
+            "message_author_id": "900000000000000007",
+            "emoji": {
+                "name": "name_2",
+                "id": null
+            },
+            "guild_id": "900000000000000008",
+            "user_id": "900000000000000002",
+            "channel_id": "900000000000000009",
+            "burst": false,
+            "type": 0
+        }
+    }
+]

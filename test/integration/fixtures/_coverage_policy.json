@@ -1,0 +1,31 @@
+{
+    "version": 1,
+    "manifest_file": "_manifest.json",
+    "known_gateway_events_file": "_known_gateway_events.txt",
+    "required_gateway_fixtures": [
+        "gateway_guild_create",
+        "gateway_heartbeat_ack",
+        "gateway_hello",
+        "gateway_interaction_create",
+        "gateway_message_create",
+        "gateway_message_delete",
+        "gateway_message_update",
+        "gateway_ready",
+        "gateway_thread_create"
+    ],
+    "required_rest_fixtures": [
+        "rest_create_message",
+        "rest_get_channel",
+        "rest_get_channels",
+        "rest_get_emojis",
+        "rest_get_gateway_bot",
+        "rest_get_guild",
+        "rest_get_me",
+        "rest_get_members",
+        "rest_get_roles"
+    ],
+    "allowed_non_dispatch_gateway_fixtures": [
+        "gateway_hello",
+        "gateway_heartbeat_ack"
+    ]
+}

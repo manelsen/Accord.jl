@@ -1,7 +1,7 @@
 [
     {
         "mfa_level": 0,
-        "system_channel_id": "1212124713271304246",
+        "system_channel_id": "900000000000000009",
         "max_stage_video_channel_users": 50,
         "max_presences": null,
         "banner": null,
@@ -9,14 +9,14 @@
         "home_header": null,
         "stickers": [
             {
-                "name": "grond_morning",
-                "guild_id": "1212124712629440612",
-                "id": "1457719681048907870",
-                "asset": "",
+                "name": "name_3",
+                "guild_id": "900000000000000008",
+                "id": "900000000000000010",
+                "asset": "00000000000000000000000000000003",
                 "format_type": 1,
                 "tags": "coffee",
                 "type": 2,
-                "description": "",
+                "description": "description_1",
                 "available": true
             }
         ],
@@ -27,9 +27,9 @@
                     "tertiary_color": null,
                     "primary_color": 0
                 },
-                "name": "@everyone",
+                "name": "name_4",
                 "icon": null,
-                "id": "1212124712629440612",
+                "id": "900000000000000008",
                 "position": 0,
                 "hoist": false,
                 "description": null,
@@ -46,9 +46,9 @@
                     "tertiary_color": null,
                     "primary_color": 0
                 },
-                "name": "5eCrawler",
+                "name": "name_5",
                 "icon": null,
-                "id": "1223803016055095439",
+                "id": "900000000000000011",
                 "position": 5,
                 "hoist": false,
                 "description": null,
@@ -59,7 +59,7 @@
                 "flags": 0,
                 "color": 0,
                 "tags": {
-                    "bot_id": "559331529378103317"
+                    "bot_id": "900000000000000012"
                 }
             },
             {
@@ -68,9 +68,9 @@
                     "tertiary_color": null,
                     "primary_color": 3066993
                 },
-                "name": "Biomancer",
+                "name": "name_6",
                 "icon": null,
-                "id": "1292918902988345414",
+                "id": "900000000000000005",
                 "position": 1,
                 "hoist": true,
                 "description": null,
@@ -87,9 +87,9 @@
                     "tertiary_color": null,
                     "primary_color": 0
                 },
-                "name": "Bellegendas",
+                "name": "name_7",
                 "icon": null,
-                "id": "1295912921498652706",
+                "id": "900000000000000013",
                 "position": 1,
                 "hoist": false,
                 "description": null,
@@ -100,7 +100,7 @@
                 "flags": 0,
                 "color": 0,
                 "tags": {
-                    "bot_id": "1030236747008851979"
+                    "bot_id": "900000000000000014"
                 }
             },
             {
@@ -109,9 +109,9 @@
                     "tertiary_color": null,
                     "primary_color": 0
                 },
-                "name": "Avrae",
+                "name": "name_8",
                 "icon": null,
-                "id": "1446307833988775976",
+                "id": "900000000000000015",
                 "position": 1,
                 "hoist": false,
                 "description": null,
@@ -122,7 +122,7 @@
                 "flags": 0,
                 "color": 0,
                 "tags": {
-                    "bot_id": "261302296103747584"
+                    "bot_id": "900000000000000016"
                 }
             },
             {
@@ -131,9 +131,9 @@
                     "tertiary_color": null,
                     "primary_color": 0
                 },
-                "name": "Subtitler",
+                "name": "name_9",
                 "icon": null,
-                "id": "1470125745056518333",
+                "id": "900000000000000017",
                 "position": 1,
                 "hoist": false,
                 "description": null,
@@ -144,23 +144,23 @@
                 "flags": 0,
                 "color": 0,
                 "tags": {
-                    "bot_id": "1470119116374282333"
+                    "bot_id": "900000000000000018"
                 }
             }
         ],
         "emojis": [
             {
-                "name": "UniHands",
+                "name": "name_1",
                 "animated": false,
                 "managed": false,
-                "id": "1457062926287376497",
+                "id": "900000000000000001",
                 "roles": [
                 ],
                 "available": true,
                 "require_colons": true
             }
         ],
-        "name": "Server Teste",
+        "name": "name_10",
         "nsfw": false,
         "public_updates_channel_id": null,
         "afk_timeout": 300,
@@ -172,7 +172,7 @@
         "explicit_content_filter": 0,
         "default_message_notifications": 0,
         "icon": null,
-        "id": "1212124712629440612",
+        "id": "900000000000000008",
         "nsfw_level": 0,
         "discovery_splash": null,
         "embed_enabled": false,
@@ -182,7 +182,7 @@
         "max_members": 25000000,
         "premium_tier": 0,
         "embed_channel_id": null,
-        "owner_id": "383221796700291082",
+        "owner_id": "900000000000000002",
         "splash": null,
         "latest_onboarding_question_id": null,
         "vanity_url_code": null,
@@ -197,6 +197,7 @@
         "premium_subscription_count": 0,
         "features": [
             "BYPASS_SLOWMODE_PERMISSION_MIGRATION_COMPLETE",
+            "AUTO_MODERATION",
             "PIN_PERMISSION_MIGRATION_COMPLETE"
         ],
         "system_channel_flags": 0

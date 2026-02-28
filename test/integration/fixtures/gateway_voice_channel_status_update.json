@@ -1,0 +1,12 @@
+[
+    {
+        "t": "VOICE_CHANNEL_STATUS_UPDATE",
+        "op": 0,
+        "s": 14,
+        "d": {
+            "status": null,
+            "guild_id": "900000000000000008",
+            "id": "900000000000000022"
+        }
+    }
+]
