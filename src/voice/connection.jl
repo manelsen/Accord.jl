@@ -151,6 +151,9 @@ end
 
 Send Speaking opcode to the voice gateway."""
 function send_speaking(session::VoiceGatewaySession, speaking::Bool; microphone::Bool=true)
+    ws = session.ws
+    isnothing(ws) && throw(ArgumentError("Voice gateway websocket is not connected"))
+
     flags = microphone ? 1 : 0
     if !speaking
         flags = 0
@@ -163,13 +166,16 @@ function send_speaking(session::VoiceGatewaySession, speaking::Bool; microphone:
             "ssrc" => session.ssrc,
         )
     )
-    HTTP.WebSockets.send(session.ws, JSON3.write(payload))
+    HTTP.WebSockets.send(ws, JSON3.write(payload))
 end
 
 """Use this internal function to complete the voice connection handshake after IP discovery.
 
 Send Select Protocol to the voice gateway after IP discovery."""
 function send_select_protocol(session::VoiceGatewaySession, our_ip::String, our_port::Int, mode::String)
+    ws = session.ws
+    isnothing(ws) && throw(ArgumentError("Voice gateway websocket is not connected"))
+
     payload = Dict(
         "op" => VoiceOpcodes.SELECT_PROTOCOL,
         "d" => Dict(
@@ -181,5 +187,5 @@ function send_select_protocol(session::VoiceGatewaySession, our_ip::String, our_
             )
         )
     )
-    HTTP.WebSockets.send(session.ws, JSON3.write(payload))
+    HTTP.WebSockets.send(ws, JSON3.write(payload))
 end

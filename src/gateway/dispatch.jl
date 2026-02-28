@@ -545,10 +545,33 @@ function _construct_event(T::Type{MessagePollVoteRemove}, data::String)
 end
 
 function _construct_event(::Type{PresenceUpdate}, data::String)
-    PresenceUpdate(JSON3.read(data, Presence))
+    _construct_event(PresenceUpdate, JSON3.read(data, Dict{String, Any}))
 end
 function _construct_event(::Type{PresenceUpdate}, data::Dict)
-    PresenceUpdate(JSON3.read(JSON3.write(data), Presence))
+    # Discord may omit `user` on some PRESENCE_UPDATE payloads.
+    user = haskey(data, "user") && !isnothing(data["user"]) ? data["user"] : Dict{String, Any}()
+
+    status_raw = get(data, "status", "offline")
+    status = isnothing(status_raw) ? "offline" : string(status_raw)
+
+    activities_raw = get(data, "activities", Any[])
+    activities = isnothing(activities_raw) ?
+        Activity[] :
+        JSON3.read(JSON3.write(activities_raw), Vector{Activity})
+
+    client_status = if haskey(data, "client_status") && !isnothing(data["client_status"])
+        JSON3.read(JSON3.write(data["client_status"]), ClientStatus)
+    else
+        missing
+    end
+
+    PresenceUpdate(Presence(
+        user,
+        _get_snowflake(data, "guild_id"),
+        status,
+        activities,
+        client_status,
+    ))
 end
 
 function _construct_event(::Type{StageInstanceCreate}, data::String)
@@ -619,6 +642,28 @@ function _construct_event(::Type{VoiceChannelEffectSend}, data::Dict)
     )
 end
 function _construct_event(T::Type{VoiceChannelEffectSend}, data::String)
+    _construct_event(T, JSON3.read(data, Dict{String, Any}))
+end
+
+function _construct_event(::Type{VoiceChannelStatusUpdate}, data::Dict)
+    VoiceChannelStatusUpdate(
+        Snowflake(data["guild_id"]),
+        Snowflake(data["id"]),
+        get(data, "status", missing),
+    )
+end
+function _construct_event(T::Type{VoiceChannelStatusUpdate}, data::String)
+    _construct_event(T, JSON3.read(data, Dict{String, Any}))
+end
+
+function _construct_event(::Type{VoiceChannelStartTimeUpdate}, data::Dict)
+    VoiceChannelStartTimeUpdate(
+        Snowflake(data["guild_id"]),
+        Snowflake(data["id"]),
+        get(data, "voice_start_time", missing),
+    )
+end
+function _construct_event(T::Type{VoiceChannelStartTimeUpdate}, data::String)
     _construct_event(T, JSON3.read(data, Dict{String, Any}))
 end
 

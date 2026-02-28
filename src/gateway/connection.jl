@@ -148,8 +148,15 @@ function gateway_connect(
 end
 
 function _gateway_loop(
-    ws, token, intents, shard, events_channel, commands_channel,
-    ready_event, session, resume
+    ws,
+    token::String,
+    intents,
+    shard::Tuple{Int,Int},
+    events_channel::Channel{AbstractEvent},
+    commands_channel::Channel{GatewayCommand},
+    ready_event::Base.Event,
+    session::GatewaySession,
+    resume::Bool,
 )
     while !session.stop_event.set
         data = try
@@ -172,21 +179,27 @@ function _gateway_loop(
         # To avoid double-parsing the 'd' payload, we use JSON3.read(payload) to get an Object
         # then we extract the raw string representation of 'd'.
         msg_obj = try
-            JSON3.read(payload)
+            JSON3.read(payload, Dict{String, Any})
         catch e
             @warn "Failed to parse gateway JSON" exception=e
             continue
         end
 
-        op = get(msg_obj, :op, nothing)
-        d_obj = get(msg_obj, :d, nothing)
-        s = get(msg_obj, :s, nothing)
-        t = get(msg_obj, :t, nothing)
+        op = get(msg_obj, "op", nothing)
+        d_obj = get(msg_obj, "d", nothing)
+        s = get(msg_obj, "s", nothing)
+        t = get(msg_obj, "t", nothing)
 
         # Update sequence
-        if !isnothing(s)
+        if s isa Integer
             session.seq = Int(s)
             session.seq_ref[] = session.seq
+        elseif s isa AbstractString
+            parsed = tryparse(Int, s)
+            if !isnothing(parsed)
+                session.seq = parsed
+                session.seq_ref[] = session.seq
+            end
         end
 
         if op == GatewayOpcodes.DISPATCH
@@ -194,12 +207,28 @@ function _gateway_loop(
             # d_obj is the data. We want the raw JSON of d.
             # JSON3.write(d_obj) is efficient if d_obj is a JSON3.Object
             d_raw = !isnothing(d_obj) ? JSON3.write(d_obj) : nothing
-            _handle_dispatch(string(t), d_raw, events_channel, session, ready_event)
+            event_name = t isa AbstractString ? t : nothing
+            _handle_dispatch(event_name, d_raw, events_channel, session, ready_event)
 
         elseif op == GatewayOpcodes.HELLO
-            interval = d_obj[:heartbeat_interval]
+            if !(d_obj isa AbstractDict) || !haskey(d_obj, "heartbeat_interval")
+                @warn "Gateway HELLO payload missing heartbeat interval" payload_type=typeof(d_obj)
+                continue
+            end
+            interval_raw = d_obj["heartbeat_interval"]
+            interval = if interval_raw isa Number
+                Float64(interval_raw)
+            else
+                parsed = tryparse(Float64, string(interval_raw))
+                isnothing(parsed) ? 0.0 : parsed
+            end
+            if interval <= 0
+                @warn "Gateway HELLO payload has invalid heartbeat interval" interval_raw
+                continue
+            end
+            interval_ms = round(Int, interval)
             # Start heartbeat (use session's persistent seq_ref)
-            hb_task, hb_state = start_heartbeat(ws, interval, session.seq_ref, session.stop_event)
+            hb_task, hb_state = start_heartbeat(ws, interval_ms, session.seq_ref, session.stop_event)
             session.heartbeat_task = hb_task
             session.heartbeat_state = hb_state
 

@@ -1,6 +1,8 @@
 module Diagnoser
 
 using Dates
+using ..HTTP
+using ..JSON3
 
 export Diagnostic, report, diagnose
 

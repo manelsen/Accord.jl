@@ -356,15 +356,15 @@ struct GuildMemberUpdate <: AbstractEvent
     guild_id::Snowflake
     roles::Vector{Snowflake}
     user::User
-    nick::Optional{String}
-    avatar::Optional{String}
-    joined_at::Optional{String}
-    premium_since::Optional{String}
-    deaf::Optional{Bool}
-    mute::Optional{Bool}
-    pending::Optional{Bool}
-    communication_disabled_until::Optional{String}
-    flags::Optional{Int}
+    nick::Maybe{String}
+    avatar::Maybe{String}
+    joined_at::Maybe{String}
+    premium_since::Maybe{String}
+    deaf::Maybe{Bool}
+    mute::Maybe{Bool}
+    pending::Maybe{Bool}
+    communication_disabled_until::Maybe{String}
+    flags::Maybe{Int}
 end
 
 """
@@ -930,6 +930,27 @@ struct UnknownEvent <: AbstractEvent
     data::Dict{String, Any}
 end
 
+"""
+    VoiceChannelStatusUpdate
+Sent when a voice channel's status is updated.
+[Discord docs](https://discord.com/developers/docs/topics/gateway-events#voice-channel-status-update)
+"""
+struct VoiceChannelStatusUpdate <: AbstractEvent
+    guild_id::Snowflake
+    id::Snowflake
+    status::Maybe{String}
+end
+
+"""
+    VoiceChannelStartTimeUpdate
+Sent when a voice channel's start time is updated.
+"""
+struct VoiceChannelStartTimeUpdate <: AbstractEvent
+    guild_id::Snowflake
+    id::Snowflake
+    voice_start_time::Maybe{Int}
+end
+
 # Event name → type mapping
 const EVENT_TYPES = Dict{String, Type{<:AbstractEvent}}(
     "READY"                              => ReadyEvent,
@@ -995,6 +1016,8 @@ const EVENT_TYPES = Dict{String, Type{<:AbstractEvent}}(
     "VOICE_STATE_UPDATE"               => VoiceStateUpdateEvent,
     "VOICE_SERVER_UPDATE"              => VoiceServerUpdate,
     "VOICE_CHANNEL_EFFECT_SEND"        => VoiceChannelEffectSend,
+    "VOICE_CHANNEL_STATUS_UPDATE"      => VoiceChannelStatusUpdate,
+    "VOICE_CHANNEL_START_TIME_UPDATE"  => VoiceChannelStartTimeUpdate,
     "WEBHOOKS_UPDATE"                   => WebhooksUpdate,
     "ENTITLEMENT_CREATE"               => EntitlementCreate,
     "ENTITLEMENT_UPDATE"               => EntitlementUpdate,
