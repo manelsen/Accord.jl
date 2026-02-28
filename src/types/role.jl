@@ -1,17 +1,18 @@
 """
     RoleTags
 
-Tags describing extra attributes of a role.
-
-[Discord docs](https://discord.com/developers/docs/topics/permissions#role-object-role-tags-structure)
+Extra attributes describing a special role (e.g., bot role, booster role).
 
 # Fields
-- `bot_id::Optional{Snowflake}` — ID of the bot this role belongs to.
-- `integration_id::Optional{Snowflake}` — ID of the integration this role belongs to.
-- `premium_subscriber::Optional{Nothing}` — whether this is the guild's booster role. Present as `nothing` if true; absent otherwise.
-- `subscription_listing_id::Optional{Snowflake}` — ID of this role's subscription sku and listing.
-- `available_for_purchase::Optional{Nothing}` — whether this role is available for purchase. Present as `nothing` if true; absent otherwise.
-- `guild_connections::Optional{Nothing}` — whether this role is a guild's linked role. Present as `nothing` if true; absent otherwise.
+- `bot_id::Optional{Snowflake}`: The ID of the bot this role belongs to.
+- `integration_id::Optional{Snowflake}`: The ID of the integration this role belongs to.
+- `premium_subscriber::Optional{Nothing}`: Present if this is the guild's booster role.
+- `subscription_listing_id::Optional{Snowflake}`: ID of the role's subscription SKU.
+- `available_for_purchase::Optional{Nothing}`: Present if the role is available for purchase.
+- `guild_connections::Optional{Nothing}`: Present if the role is a guild's linked role.
+
+# See Also
+- [Discord API: Role Tags Object](https://discord.com/developers/docs/topics/permissions#role-object-role-tags-structure)
 """
 @discord_struct RoleTags begin
     bot_id::Optional{Snowflake}
@@ -25,23 +26,32 @@ end
 """
     Role
 
-A role in a guild. Roles are used to group users and grant them permissions. Every guild member has at least the `@everyone` role.
-
-[Discord docs](https://discord.com/developers/docs/topics/permissions#role-object)
+Represents a Discord guild role. Roles are used to grant permissions to users
+and group them in the member list.
 
 # Fields
-- `id::Snowflake` — unique role ID.
-- `name::String` — role name. For the `@everyone` role, this is the guild name.
-- `color::Int` — integer representation of hexadecimal color code.
-- `hoist::Bool` — whether the role is pinned in the user listing.
-- `icon::Optional{String}` — role icon hash. Only present if the role has an icon.
-- `unicode_emoji::Optional{String}` — role unicode emoji. Only present if the role has a unicode emoji.
-- `position::Int` — position of this role in the role list. Higher values appear first.
-- `permissions::String` — permission bit set as a string. See `Permissions` bitfield type.
-- `managed::Bool` — whether this role is managed by an integration.
-- `mentionable::Bool` — whether this role is mentionable.
-- `tags::Optional{RoleTags}` — tags describing extra attributes of the role. Only present for special roles like boosters or bot roles.
-- `flags::Int` — role flags combined as a bitfield.
+- `id::Snowflake`: The unique ID of the role.
+- `name::String`: The name of the role (e.g., "@everyone", "Moderator").
+- `color::Int`: The integer representation of the hex color code.
+- `hoist::Bool`: Whether the role is pinned (hoisted) in the user listing.
+- `icon::Optional{String}`: The role's icon hash.
+- `unicode_emoji::Optional{String}`: The role's unicode emoji.
+- `position::Int`: Position of this role in the hierarchy (higher is higher).
+- `permissions::String`: Permission bitfield as a string.
+- `managed::Bool`: Whether the role is managed by an integration (bot, etc.).
+- `mentionable::Bool`: Whether the role can be mentioned by anyone.
+- `tags::Optional{RoleTags}`: Special tags for this role.
+- `flags::Int`: Role flags (see [`RoleFlags`](@ref)).
+
+# Example
+```julia
+roles = guild.roles
+mod_role = findfirst(r -> r.name == "Moderator", roles)
+println("Moderator role ID: \$(mod_role.id)")
+```
+
+# See Also
+- [Discord API: Role Object](https://discord.com/developers/docs/resources/guild#role-object)
 """
 @discord_struct Role begin
     id::Snowflake

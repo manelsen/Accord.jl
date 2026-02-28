@@ -1,3 +1,11 @@
+"""
+    WelcomeScreenChannel
+
+Metadata for a channel on a guild's welcome screen.
+
+# See Also
+- [Discord API: Welcome Screen Channel Object](https://discord.com/developers/docs/resources/guild#welcome-screen-object-welcome-screen-channel-structure)
+"""
 @discord_struct WelcomeScreenChannel begin
     channel_id::Snowflake
     description::String
@@ -5,11 +13,27 @@
     emoji_name::Nullable{String}
 end
 
+"""
+    WelcomeScreen
+
+The welcome screen shown to new members in a guild.
+
+# See Also
+- [Discord API: Welcome Screen Object](https://discord.com/developers/docs/resources/guild#welcome-screen-object)
+"""
 @discord_struct WelcomeScreen begin
     description::Nullable{String}
     welcome_channels::Vector{WelcomeScreenChannel}
 end
 
+"""
+    UnavailableGuild
+
+Represents a guild that is currently unavailable due to an outage.
+
+# See Also
+- [Discord API: Unavailable Guild Object](https://discord.com/developers/docs/resources/guild#unavailable-guild-object)
+"""
 @discord_struct UnavailableGuild begin
     id::Snowflake
     unavailable::Optional{Bool}
@@ -18,21 +42,46 @@ end
 """
     Guild
 
-Use this struct to access information about a Discord server (guild), including channels, roles, and member counts.
-
 Represents a Discord guild (server).
 
+A `Guild` contains all the data about a server, including its name, roles, 
+emojis, and (in `GUILD_CREATE` events) its channels and members.
+
 # Fields
-- `id`: The guild's snowflake ID.
-- `name`: Guild name (2-100 characters, excluding trailing/leading whitespace).
-- `icon`: Icon hash.
-- `owner_id`: ID of the guild owner.
-- `permissions`: Total permissions for the user in the guild (excludes overwrites).
-- `roles`: Roles in the guild.
-- `emojis`: Custom guild emojis.
-- `features`: Enabled guild features.
-- `approximate_member_count`: Approximate number of members in this guild.
-- `approximate_presence_count`: Approximate number of online members in this guild.
+- `id::Snowflake`: The unique ID of the guild.
+- `name::String`: The guild's name.
+- `icon::Nullable{String}`: The guild's icon hash.
+- `splash::Nullable{String}`: The guild's splash image hash.
+- `discovery_splash::Nullable{String}`: Discovery splash hash (for partnered/verified).
+- `owner_id::Optional{Snowflake}`: ID of the guild owner.
+- `permissions::Optional{String}`: Total permissions for the user in the guild.
+- `afk_channel_id::Nullable{Snowflake}`: ID of the AFK voice channel.
+- `afk_timeout::Optional{Int}`: AFK timeout in seconds.
+- `widget_enabled::Optional{Bool}`: Whether the server widget is enabled.
+- `verification_level::Optional{Int}`: Verification level required for the guild.
+- `roles::Optional{Vector{Role}}`: Roles assigned to this guild.
+- `emojis::Optional{Vector{Emoji}}`: Custom emojis in this guild.
+- `features::Optional{Vector{String}}`: List of enabled guild features (e.g., "COMMUNITY").
+- `mfa_level::Optional{Int}`: MFA level required for moderators.
+- `system_channel_id::Nullable{Snowflake}`: ID of the channel where system messages are sent.
+- `vanity_url_code::Nullable{String}`: The vanity URL code (for boosted guilds).
+- `description::Nullable{String}`: The guild's description.
+- `banner::Nullable{String}`: The guild's banner image hash.
+- `premium_tier::Optional{Int}`: The Nitro boost tier of the guild.
+- `premium_subscription_count::Optional{Int}`: The number of Nitro boosts.
+- `approximate_member_count::Optional{Int}`: Approximate total member count.
+- `approximate_presence_count::Optional{Int}`: Approximate online member count.
+- `nsfw_level::Optional{Int}`: Guild's NSFW level.
+- `stickers::Optional{Vector{Sticker}}`: Custom stickers in this guild.
+
+# Example
+```julia
+guild = fetch_guild(client, guild_id)
+println("Server name: \$(guild.name) (\$(guild.id))")
+```
+
+# See Also
+- [Discord API: Guild Object](https://discord.com/developers/docs/resources/guild#guild-object)
 """
 @discord_struct Guild begin
     id::Snowflake

@@ -70,7 +70,13 @@ function RateLimiter(;global_limit::Int=50)
         0.0, global_limit, global_limit,
         Channel{RestJob}(256),
         nothing, false,
-        (m, u, h, b) -> HTTP.request(m, u, h, b; status_exception=false, retry=false)
+        (m, u, h, b) -> begin
+            if b === nothing
+                HTTP.request(m, u, h; status_exception=false, retry=false)
+            else
+                HTTP.request(m, u, h, b; status_exception=false, retry=false)
+            end
+        end
     )
 end
 
@@ -144,7 +150,8 @@ function _process_job(rl::RateLimiter, job::RestJob)
         # Check global rate limit
         now = time()
         if now < rl.global_reset_at
-            wait_time = rl.global_reset_at - now
+            # Add a small 100ms safety buffer for clock drift/network jitter
+            wait_time = (rl.global_reset_at - now) + 0.1
             @debug "Global rate limit, waiting" wait_time
             sleep(wait_time)
         end
@@ -155,7 +162,8 @@ function _process_job(rl::RateLimiter, job::RestJob)
         if !isnothing(bucket) && bucket.remaining <= 0
             now = time()
             if now < bucket.reset_at
-                wait_time = bucket.reset_at - now
+                # Add a small 100ms safety buffer for clock drift/network jitter
+                wait_time = (bucket.reset_at - now) + 0.1
                 @debug "Bucket rate limit, waiting" bucket_key wait_time
                 sleep(wait_time)
             end
@@ -180,7 +188,7 @@ function _process_job(rl::RateLimiter, job::RestJob)
                     @warn "Bucket rate limit hit" bucket_key retry_after
                 end
 
-                sleep(retry_after)
+                sleep(retry_after + 0.1) # Buffer also on explicit 429
                 continue  # Retry
             end
 
@@ -191,8 +199,10 @@ function _process_job(rl::RateLimiter, job::RestJob)
                 put!(job.result, e)
                 return
             end
-            @warn "REST request failed, retrying" attempt exception=e
-            sleep(1.0 * attempt)
+            # Exponential backoff with jitter for network/generic errors
+            backoff = min(10.0, (2^attempt) * (0.5 + rand()))
+            @warn "REST request failed, retrying with backoff" attempt backoff exception=e
+            sleep(backoff)
         end
     end
 end
