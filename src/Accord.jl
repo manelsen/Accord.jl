@@ -249,6 +249,10 @@ export OPUS_SAMPLE_RATE, OPUS_CHANNELS, OPUS_FRAME_SIZE, OPUS_FRAME_DURATION_MS,
 export OPUS_APPLICATION_AUDIO, OPUS_APPLICATION_VOIP
 export read_frame, close_source
 
+# CLI
+include("cli/AccordCLI.jl")
+export AccordCLI
+
 # Initialize libsodium on module load
 function __init__()
     init_sodium()

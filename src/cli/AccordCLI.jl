@@ -1,0 +1,34 @@
+module AccordCLI
+
+using Comonicon
+using ..Accord
+
+include("onboard.jl")
+include("doctor.jl")
+
+"""
+Onboard a new Accord.jl bot project.
+
+# Arguments
+- `name`: The name of your new bot project.
+
+# Options
+- `-t, --template <type>`: The template to use (basic, music, ai_chat). Defaults to "basic".
+"""
+@cast function onboard(name::String; template::String="basic")
+    onboard_impl(name; template)
+end
+
+"""
+Check your environment for Accord.jl compatibility and common issues.
+"""
+@cast function doctor()
+    doctor_impl()
+end
+
+"""
+Accord.jl — The high-performance Discord API framework.
+"""
+Comonicon.@main
+
+end # module
