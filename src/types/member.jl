@@ -1,24 +1,34 @@
 """
     Member
 
-A guild member. This struct is received whenever information about a guild member is available, such as in message events, voice state updates, or when fetching guild members.
-
-[Discord docs](https://discord.com/developers/docs/resources/guild#guild-member-object)
+Represents a Discord guild member. A `Member` differs from a [`User`](@ref) in that
+it contains metadata specific to a particular guild (like nicknames and roles).
 
 # Fields
-- `user::Optional{User}` — user object for the guild member. Only present if the member was fetched or is the bot itself.
-- `nick::Optional{String}` — guild-specific nickname for the member, if set.
-- `avatar::Optional{String}` — member's guild-specific avatar hash, if set.
-- `roles::Vector{Snowflake}` — array of role IDs that the member has.
-- `joined_at::String` — ISO8601 timestamp when the user joined the guild.
-- `premium_since::Optional{String}` — ISO8601 timestamp when the user started boosting the guild, if applicable.
-- `deaf::Optional{Bool}` — whether the user is deafened in voice channels.
-- `mute::Optional{Bool}` — whether the user is muted in voice channels.
-- `flags::Int` — guild member flags represented as a bit set. See [`GuildMemberFlags`](@ref) module.
-- `pending::Optional{Bool}` — whether the user has not yet passed the guild's Membership Screening requirements.
-- `permissions::Optional{String}` — total permissions of the member in the channel, including overwrites. Returned when in the interaction object.
-- `communication_disabled_until::Optional{String}` — ISO8601 timestamp until the user's timeout expires, if applicable. When present, the user cannot interact with the guild.
-- `avatar_decoration_data::Optional{Any}` — data for the member's guild avatar decoration.
+- `user::Maybe{User}`: The underlying user object.
+- `nick::Maybe{String}`: The guild-specific nickname.
+- `avatar::Maybe{String}`: The guild-specific avatar hash.
+- `roles::Vector{Snowflake}`: Array of role IDs assigned to this member.
+- `joined_at::String`: ISO8601 timestamp of when the member joined the guild.
+- `premium_since::Maybe{String}`: ISO8601 timestamp of when the member started boosting the guild.
+- `deaf::Maybe{Bool}`: Whether the member is deafened in voice channels.
+- `mute::Maybe{Bool}`: Whether the member is muted in voice channels.
+- `flags::Int`: Guild member flags (see [`GuildMemberFlags`](@ref)).
+- `pending::Maybe{Bool}`: Whether the member has not yet passed the guild's Membership Screening.
+- `permissions::Maybe{String}`: Total permissions of the member in a channel (sent in interactions).
+- `communication_disabled_until::Maybe{String}`: ISO8601 timestamp of when the member's timeout expires.
+- `avatar_decoration_data::Maybe{Any}`: Metadata about the member's guild avatar decoration.
+
+# Example
+```julia
+member = msg.member
+if !ismissing(member.nick)
+    println("Member nickname: \$(member.nick)")
+end
+```
+
+# See Also
+- [Discord API: Guild Member Object](https://discord.com/developers/docs/resources/guild#guild-member-object)
 """
 @discord_struct Member begin
     user::Maybe{User}

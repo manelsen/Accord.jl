@@ -37,22 +37,53 @@ end
 """
     Message
 
-Use this struct to work with messages sent in Discord channels, including content, attachments, and reactions.
+Represents a message sent in a Discord channel.
 
-Represents a message sent in a channel within Discord.
+A `Message` is the primary way users communicate on Discord. It contains text,
+attachments, embeds, and more.
 
 # Fields
-- `id`: The message ID.
-- `channel_id`: The channel ID.
-- `author`: The user who sent the message (optional).
-- `content`: The message text content.
-- [`timestamp`](@ref): The time the message was sent.
-- `attachments`: Vector of attachments.
-- `embeds`: Vector of embeds.
-- `reactions`: Vector of reactions.
-- `pinned`: Whether the message is pinned.
-- `type`: The type of message.
-- `referenced_message`: The message being replied to (if any).
+- `id::Snowflake`: The unique ID of the message.
+- `channel_id::Snowflake`: The ID of the channel the message was sent in.
+- `author::Optional{User}`: The user who sent the message (may be missing for some webhooks).
+- `content::Optional{String}`: The text content of the message.
+- `timestamp::Optional{String}`: ISO8601 timestamp of when the message was sent.
+- `edited_timestamp::Optional{String}`: ISO8601 timestamp of when the message was last edited.
+- `tts::Optional{Bool}`: Whether the message was a text-to-speech message.
+- `mention_everyone::Optional{Bool}`: Whether the message mentions `@everyone`.
+- `mentions::Optional{Vector{User}}`: Users specifically mentioned in the message.
+- `mention_roles::Optional{Vector{Snowflake}}`: Roles specifically mentioned in the message.
+- `mention_channels::Optional{Vector{ChannelMention}}`: Channels mentioned in the message.
+- `attachments::Optional{Vector{Attachment}}`: Files attached to the message.
+- `embeds::Optional{Vector{Embed}}`: Rich embeds contained in the message.
+- `reactions::Optional{Vector{Reaction}}`: Reactions added to the message.
+- `nonce::Optional{Any}`: A value used for optimistic message sending.
+- `pinned::Optional{Bool}`: Whether the message is pinned.
+- `webhook_id::Optional{Snowflake}`: If sent by a webhook, the webhook's ID.
+- `type::Optional{Int}`: The message type (see [`MessageType`](@ref)).
+- `activity::Optional{MessageActivity}`: Associated activity (e.g., Spotify).
+- `application_id::Optional{Snowflake}`: The ID of the application if sent by an app.
+- `message_reference::Optional{MessageReference}`: Metadata about a replied-to message.
+- `flags::Optional{Int}`: Message flags (see [`MessageFlags`](@ref)).
+- `referenced_message::Optional{Message}`: The message being replied to.
+- `interaction_metadata::Optional{MessageInteractionMetadata}`: Metadata about the interaction this message responded to.
+- `thread::Optional{DiscordChannel}`: The thread that was started from this message.
+- `components::Optional{Vector{Component}}`: Buttons, select menus, and other UI components.
+- `sticker_items::Optional{Vector{StickerItem}}`: Stickers sent with the message.
+- `position::Optional{Int}`: A generally increasing integer for message ordering in threads.
+- `poll::Optional{Poll}`: An associated poll.
+- `guild_id::Optional{Snowflake}`: The ID of the guild the message was sent in.
+- `member::Optional{Member}`: Member properties for the author (only in some contexts).
+
+# Example
+```julia
+on_message(ctx) do msg
+    println("Received message from \$(msg.author.username): \$(msg.content)")
+end
+```
+
+# See Also
+- [Discord API: Message Object](https://discord.com/developers/docs/resources/channel#message-object)
 """
 @discord_struct Message begin
     id::Snowflake

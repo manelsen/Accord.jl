@@ -1,17 +1,18 @@
 """
     ThreadMetadata
 
-Metadata for a forum or media thread, including auto-archive settings and lock status.
-
-[Discord docs](https://discord.com/developers/docs/resources/channel#thread-metadata-object)
+Contains metadata about a Discord thread, such as its archive status and lock state.
 
 # Fields
-- `archived::Bool` — whether the thread is archived.
-- `auto_archive_duration::Int` — duration in minutes to automatically archive the thread after recent activity.
-- `archive_timestamp::String` — ISO8601 timestamp when the thread's archive status was last changed.
-- `locked::Bool` — whether the thread is locked; when locked only users with `MANAGE_THREADS` can unarchive it.
-- `invitable::Optional{Bool}` — whether non-moderators can add other non-moderators to a private thread.
-- `create_timestamp::Optional{String}` — ISO8601 timestamp when the thread was created. Only present for threads created after 2022-01-09.
+- `archived::Bool`: Whether the thread is archived.
+- `auto_archive_duration::Int`: Duration in minutes to automatically archive the thread after recent activity (60, 1440, 4320, 10080).
+- `archive_timestamp::String`: ISO8601 timestamp when the thread's archive status was last changed.
+- `locked::Bool`: Whether the thread is locked.
+- `invitable::Optional{Bool}`: Whether non-moderators can add other non-moderators to a private thread.
+- `create_timestamp::Optional{String}`: ISO8601 timestamp when the thread was created.
+
+# See Also
+- [Discord API: Thread Metadata Object](https://discord.com/developers/docs/resources/channel#thread-metadata-object)
 """
 @discord_struct ThreadMetadata begin
     archived::Bool
@@ -25,16 +26,17 @@ end
 """
     ThreadMember
 
-A member of a thread.
-
-[Discord docs](https://discord.com/developers/docs/resources/channel#thread-member-object)
+Represents a member of a thread.
 
 # Fields
-- `id::Optional{Snowflake}` — ID of the thread. Omitted on the `GUILD_THREAD_MEMBERS_UPDATE` gateway event.
-- `user_id::Optional{Snowflake}` — ID of the user. Omitted on the `GUILD_THREAD_MEMBERS_UPDATE` gateway event.
-- `join_timestamp::String` — ISO8601 timestamp when the user joined the thread.
-- `flags::Int` — any user-thread settings, currently only used for notifications.
-- `member::Optional{Member}` — additional information about the user. Only present when `with_member` is set to `true` when listing thread members.
+- `id::Optional{Snowflake}`: ID of the thread.
+- `user_id::Optional{Snowflake}`: ID of the user.
+- `join_timestamp::String`: ISO8601 timestamp when the user joined the thread.
+- `flags::Int`: User-thread settings (notifications, etc.).
+- `member::Optional{Member}`: Additional member information (if requested).
+
+# See Also
+- [Discord API: Thread Member Object](https://discord.com/developers/docs/resources/channel#thread-member-object)
 """
 @discord_struct ThreadMember begin
     id::Optional{Snowflake}
@@ -47,16 +49,17 @@ end
 """
     ForumTag
 
-A tag that can be applied to threads in a `GUILD_FORUM` or `GUILD_MEDIA` channel.
-
-[Discord docs](https://discord.com/developers/docs/resources/channel#forum-tag-object)
+Represents a tag that can be applied to threads in a forum or media channel.
 
 # Fields
-- `id::Snowflake` — unique ID of the tag.
-- `name::String` — name of the tag (0-20 characters).
-- `moderated::Bool` — whether this tag can only be added or removed by members with the `MANAGE_THREADS` permission.
-- `emoji_id::Nullable{Snowflake}` — ID of a guild's custom emoji. At least one of `emoji_id` or `emoji_name` must be set.
-- `emoji_name::Nullable{String}` — Unicode character of the emoji. At least one of `emoji_id` or `emoji_name` must be set.
+- `id::Snowflake`: Unique ID of the tag.
+- `name::String`: The name of the tag (0-20 characters).
+- `moderated::Bool`: Whether this tag can only be added/removed by moderators.
+- `emoji_id::Nullable{Snowflake}`: ID of a custom guild emoji.
+- `emoji_name::Nullable{String}`: Unicode character of the emoji.
+
+# See Also
+- [Discord API: Forum Tag Object](https://discord.com/developers/docs/resources/channel#forum-tag-object)
 """
 @discord_struct ForumTag begin
     id::Snowflake
@@ -69,13 +72,11 @@ end
 """
     DefaultReaction
 
-The default emoji to show in the reaction button for a forum post.
-
-[Discord docs](https://discord.com/developers/docs/resources/channel#default-reaction-object)
+The default emoji shown in the reaction button for a forum post.
 
 # Fields
-- `emoji_id::Nullable{Snowflake}` — ID of a guild's custom emoji. At least one of `emoji_id` or `emoji_name` must be set.
-- `emoji_name::Nullable{String}` — Unicode character of the emoji. At least one of `emoji_id` or `emoji_name` must be set.
+- `emoji_id::Nullable{Snowflake}`: ID of a custom guild emoji.
+- `emoji_name::Nullable{String}`: Unicode character of the emoji.
 """
 @discord_struct DefaultReaction begin
     emoji_id::Nullable{Snowflake}
@@ -85,46 +86,56 @@ end
 """
     DiscordChannel
 
-Represents a guild or DM channel within Discord. This is a central structure that bots interact with constantly when sending messages, managing permissions, or handling events.
+Represents a Discord channel. This can be a text channel, voice channel, category, 
+thread, or DM.
 
-[Discord docs](https://discord.com/developers/docs/resources/channel#channel-object)
+Channels are the primary containers for messages and other Discord resources.
 
 # Fields
-- `id::Snowflake` — unique ID of the channel.
-- `type::Int` — type of channel. See [`ChannelTypes`](@ref) module for values.
-- `guild_id::Optional{Snowflake}` — ID of the guild the channel belongs to. May be missing for some channel objects received over gateway guild dispatches.
-- `position::Optional{Int}` — sorting position of the channel. Only present for guild channels.
-- `permission_overwrites::Optional{Vector{Overwrite}}` — explicit permission overwrites for members and roles. Only present for guild channels.
-- `name::Optional{String}` — name of the channel (1-100 characters). Not present for DM channels.
-- `topic::Optional{String}` — channel topic (0-1024 characters for `GUILD_FORUM` and `GUILD_MEDIA` channels, 0-4096 for all others). Not present for all channel types.
-- `nsfw::Optional{Bool}` — whether the channel is NSFW. Only present for guild channels.
-- `last_message_id::Optional{Snowflake}` — ID of the last message sent in this channel. May not point to an existing message. Not present for all channel types.
-- `bitrate::Optional{Int}` — bitrate (in bits) of the voice channel. Only for voice channels.
-- `user_limit::Optional{Int}` — user limit of the voice channel. Only for voice channels.
-- `rate_limit_per_user::Optional{Int}` — amount of seconds a user has to wait before sending another message (0-21600). Not present for all channel types.
-- `recipients::Optional{Vector{User}}` — recipients of the DM. Only present for DM and group DM channels.
-- `icon::Optional{String}` — icon hash of the group DM. Only present for group DM channels.
-- `owner_id::Optional{Snowflake}` — ID of the creator of the group DM or thread. Present for group DMs and threads.
-- `application_id::Optional{Snowflake}` — application ID of the group DM creator if bot-created. Present for group DMs.
-- `managed::Optional{Bool}` — for group DM channels, whether the channel is managed by an application.
-- `parent_id::Optional{Snowflake}` — ID of the parent category or thread. Present for channel categories, threads, and some child channels.
-- `last_pin_timestamp::Optional{String}` — ISO8601 timestamp of when the last pinned message was pinned. May be null.
-- `rtc_region::Optional{String}` — voice region ID for the voice channel; automatic when set to `nothing`. Only for voice channels.
-- `video_quality_mode::Optional{Int}` — camera video quality mode of the voice channel. See `VideoQualityModes` (1 = auto, 2 = full).
-- `message_count::Optional{Int}` — approximate count of messages in a thread; stops counting at 50. Only for threads.
-- `member_count::Optional{Int}` — approximate count of members in a thread; stops counting at 50. Only for threads.
-- `thread_metadata::Optional{ThreadMetadata}` — thread-specific fields. Only for threads.
-- `member::Optional{ThreadMember}` — thread member object for the current user if they have joined the thread. Only present for threads.
-- `default_auto_archive_duration::Optional{Int}` — default duration for newly created threads. Only for text and forum/media channels.
-- `permissions::Optional{String}` — computed permissions for the invoking user in the channel, including overwrites. Only included when part of the `resolved` set received from an interaction.
-- `flags::Optional{Int}` — channel flags combined as a bitfield. See [`ChannelFlags`](@ref) module.
-- `total_message_sent::Optional{Int}` — number of messages ever sent in a thread. Similar to `message_count` but won't decrease when messages are deleted. Only for threads.
-- `available_tags::Optional{Vector{ForumTag}}` — set of tags that can be used in a `GUILD_FORUM` or `GUILD_MEDIA` channel. Only for those channel types.
-- `applied_tags::Optional{Vector{Snowflake}}` — IDs of the set of tags applied to a thread in a `GUILD_FORUM` or `GUILD_MEDIA` channel. Max 5. Only for threads in those channel types.
-- `default_reaction_emoji::Optional{DefaultReaction}` — emoji to show in the add reaction button on a thread in a `GUILD_FORUM` or `GUILD_MEDIA` channel. Only for those channel types.
-- `default_thread_rate_limit_per_user::Optional{Int}` — initial `rate_limit_per_user` to enable on newly created threads. Only for forum and text channels.
-- `default_sort_order::Optional{Int}` — default sort order type used to order posts in `GUILD_FORUM` and `GUILD_MEDIA` channels. See [`SortOrderTypes`](@ref) module.
-- `default_forum_layout::Optional{Int}` — default forum layout view used to display posts in `GUILD_FORUM` channels. See [`ForumLayoutTypes`](@ref) module.
+- `id::Snowflake`: The unique ID of the channel.
+- `type::Int`: The type of channel (see [`ChannelTypes`](@ref)).
+- `guild_id::Optional{Snowflake}`: The ID of the guild (missing for DMs).
+- `position::Optional{Int}`: Sorting position in the guild.
+- `permission_overwrites::Optional{Vector{Overwrite}}`: Explicit permission overwrites.
+- `name::Optional{String}`: The name of the channel.
+- `topic::Optional{String}`: The channel topic.
+- `nsfw::Optional{Bool}`: Whether the channel is marked as age-restricted.
+- `last_message_id::Optional{Snowflake}`: ID of the most recent message.
+- `bitrate::Optional{Int}`: Bitrate (in bits) for voice channels.
+- `user_limit::Optional{Int}`: Maximum users allowed in a voice channel.
+- `rate_limit_per_user::Optional{Int}`: Slowmode duration in seconds.
+- `recipients::Optional{Vector{User}}`: The recipients of a DM.
+- `icon::Optional{String}`: Icon hash for group DMs.
+- `owner_id::Optional{Snowflake}`: ID of the creator of a thread or group DM.
+- `application_id::Optional{Snowflake}`: Application ID of a bot-created group DM.
+- `managed::Optional{Bool}`: Whether a group DM is managed by an app.
+- `parent_id::Optional{Snowflake}`: ID of the category or parent channel.
+- `last_pin_timestamp::Optional{String}`: ISO8601 timestamp of the last pinned message.
+- `rtc_region::Optional{String}`: Voice region ID (automatic if null).
+- `video_quality_mode::Optional{Int}`: Video quality (1=auto, 2=full).
+- `message_count::Optional{Int}`: Approximate message count in threads.
+- `member_count::Optional{Int}`: Approximate member count in threads.
+- `thread_metadata::Optional{ThreadMetadata}`: Thread-specific metadata.
+- `member::Optional{ThreadMember}`: Thread member object for the current user.
+- `default_auto_archive_duration::Optional{Int}`: Default duration for new threads.
+- `permissions::Optional{String}`: Computed permissions for the user (in interactions).
+- `flags::Optional{Int}`: Channel flags (see [`ChannelFlags`](@ref)).
+- `total_message_sent::Optional{Int}`: Total messages ever sent in a thread.
+- `available_tags::Optional{Vector{ForumTag}}`: Tags available in forum channels.
+- `applied_tags::Optional{Vector{Snowflake}}`: Tags applied to a thread.
+- `default_reaction_emoji::Optional{DefaultReaction}`: Default forum reaction emoji.
+- `default_thread_rate_limit_per_user::Optional{Int}`: Initial slowmode for new threads.
+- `default_sort_order::Optional{Int}`: Default sort order for forum posts.
+- `default_forum_layout::Optional{Int}`: Default view layout for forum posts.
+
+# Example
+```julia
+channel = fetch_channel(client, id)
+println("Channel name: \$(channel.name)")
+```
+
+# See Also
+- [Discord API: Channel Object](https://discord.com/developers/docs/resources/channel#channel-object)
 """
 @discord_struct DiscordChannel begin
     id::Snowflake
