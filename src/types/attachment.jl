@@ -1,25 +1,27 @@
 """
     Attachment
 
-A file attached to a message. Received when a user uploads files or when the bot receives messages with attachments.
-
-[Discord docs](https://discord.com/developers/docs/resources/message#attachment-object)
+Represents a file attached to a Discord message. This can be an image, video,
+audio file, or any other type of file.
 
 # Fields
-- `id::Snowflake` — attachment ID.
-- `filename::String` — name of the file attached.
-- `title::Optional{String}` — title of the file (for audio files).
-- `description::Optional{String}` — description for the file (max 1024 characters).
-- `content_type::Optional{String}` — MIME type of the content.
-- `size::Int` — size of the file in bytes.
-- `url::String` — source URL of the file.
-- `proxy_url::String` — proxied URL of the file.
-- `height::Optional{Int}` — height of the file (if image).
-- `width::Optional{Int}` — width of the file (if image).
-- `ephemeral::Optional{Bool}` — whether this attachment is ephemeral. Ephemeral attachments will automatically be removed after a set period of time.
-- `duration_secs::Optional{Float64}` — duration of the audio file (currently for voice messages).
-- `waveform::Optional{String}` — base64 encoded bytearray representing a sampled waveform (currently for voice messages).
-- `flags::Optional{Int}` — attachment flags combined as a bitfield.
+- `id::Snowflake`: The unique ID of the attachment.
+- `filename::String`: The name of the file (e.g., "cat.png").
+- `title::Optional{String}`: The title of the file (usually for audio files).
+- `description::Optional{String}`: A description for the file (alt text, max 1024 characters).
+- `content_type::Optional{String}`: The MIME type of the file (e.g., "image/png").
+- `size::Int`: The size of the file in bytes.
+- `url::String`: The source URL of the file.
+- `proxy_url::String`: A proxied URL of the file.
+- `height::Optional{Int}`: The height of the file (if it is an image).
+- `width::Optional{Int}`: The width of the file (if it is an image).
+- `ephemeral::Optional{Bool}`: Whether this attachment is ephemeral (removed after a period).
+- `duration_secs::Optional{Float64}`: The duration of the audio file (for voice messages).
+- `waveform::Optional{String}`: Base64 encoded waveform data (for voice messages).
+- `flags::Optional{Int}`: Attachment flags (see [`AttachmentFlags`](@ref)).
+
+# See Also
+- [Discord API: Attachment Object](https://discord.com/developers/docs/resources/message#attachment-object)
 """
 @discord_struct Attachment begin
     id::Snowflake

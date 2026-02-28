@@ -1,18 +1,18 @@
 """
     StageInstance
 
-A Stage instance is a live event in a Stage channel. When a Stage instance is created, all users in the Stage channel are notified.
-
-[Discord docs](https://discord.com/developers/docs/resources/stage-instance#stage-instance-object)
+Represents a live event in a Discord Stage channel.
 
 # Fields
-- `id::Snowflake` — Unique ID of the Stage instance.
-- `guild_id::Snowflake` — Guild ID of the associated Stage channel.
-- `channel_id::Snowflake` — ID of the associated Stage channel.
-- `topic::String` — Topic of the Stage instance (1-120 characters).
-- `privacy_level::Int` — Privacy level of the Stage instance. See [`StageInstancePrivacyLevels`](@ref) module.
-- `discoverable_disabled::Optional{Bool}` — Whether or not Stage Discovery is disabled.
-- `guild_scheduled_event_id::Nullable{Snowflake}` — ID of the scheduled event for this Stage instance. `nothing` if not associated with an event.
+- `id::Snowflake`: Unique ID of the instance.
+- `guild_id::Snowflake`: Guild ID of the associated Stage channel.
+- `channel_id::Snowflake`: ID of the Stage channel.
+- `topic::String`: Topic of the stage (1-120 characters).
+- `privacy_level::Int`: Privacy level (see [`StageInstancePrivacyLevels`](@ref)).
+- `guild_scheduled_event_id::Nullable{Snowflake}`: ID of the associated scheduled event.
+
+# See Also
+- [Discord API: Stage Instance Object](https://discord.com/developers/docs/resources/stage-instance#stage-instance-object)
 """
 @discord_struct StageInstance begin
     id::Snowflake

@@ -1,14 +1,10 @@
 """
     StickerItem
 
-The smallest amount of data required to render a sticker. A partial representation of a larger sticker object.
+A partial representation of a [`Sticker`](@ref), used for rendering.
 
-[Discord docs](https://discord.com/developers/docs/resources/sticker#sticker-item-object)
-
-# Fields
-- `id::Snowflake` — ID of the sticker.
-- `name::String` — Name of the sticker.
-- `format_type::Int` — Type of sticker format. See [`StickerFormatTypes`](@ref) module.
+# See Also
+- [Discord API: Sticker Item Object](https://discord.com/developers/docs/resources/sticker#sticker-item-object)
 """
 @discord_struct StickerItem begin
     id::Snowflake
@@ -21,20 +17,21 @@ end
 
 Represents a sticker that can be sent in messages.
 
-[Discord docs](https://discord.com/developers/docs/resources/sticker#sticker-object)
-
 # Fields
-- `id::Snowflake` — ID of the sticker.
-- `pack_id::Optional{Snowflake}` — For standard stickers, ID of the pack the sticker is from.
-- `name::String` — Name of the sticker (2-30 characters).
-- `description::Nullable{String}` — Description of the sticker (empty string for guild stickers, may be `nothing` for standard stickers).
-- `tags::String` — Autocomplete/suggestion tags for the sticker (max 200 characters). For guild stickers, this is the emoji associated with the sticker.
-- `type::Int` — Type of sticker. See [`StickerTypes`](@ref) module.
-- `format_type::Int` — Type of sticker format. See [`StickerFormatTypes`](@ref) module.
-- `available::Optional{Bool}` — Whether this guild sticker can be used, may be false due to loss of Server Boosts.
-- `guild_id::Optional{Snowflake}` — ID of the guild that owns this sticker. Only for guild stickers.
-- `user::Optional{User}` — User that uploaded this sticker. Only for guild stickers.
-- `sort_value::Optional{Int}` — Standard sticker's sort order within its pack. Only for standard stickers.
+- `id::Snowflake`: Unique ID of the sticker.
+- `pack_id::Optional{Snowflake}`: ID of the pack (for standard stickers).
+- `name::String`: Name of the sticker.
+- `description::Nullable{String}`: Description of the sticker.
+- `tags::String`: Autocomplete tags or associated emoji.
+- `type::Int`: Sticker type (see [`StickerTypes`](@ref)).
+- `format_type::Int`: Format type (see [`StickerFormatTypes`](@ref)).
+- `available::Optional{Bool}`: Whether the sticker can be used.
+- `guild_id::Optional{Snowflake}`: ID of the guild that owns the sticker.
+- `user::Optional{User}`: The user who uploaded the sticker.
+- `sort_value::Optional{Int}`: Sort order within a pack.
+
+# See Also
+- [Discord API: Sticker Object](https://discord.com/developers/docs/resources/sticker#sticker-object)
 """
 @discord_struct Sticker begin
     id::Snowflake
@@ -53,18 +50,10 @@ end
 """
     StickerPack
 
-Represents a pack of standard stickers.
+Represents a collection of standard Discord stickers.
 
-[Discord docs](https://discord.com/developers/docs/resources/sticker#sticker-pack-object)
-
-# Fields
-- `id::Snowflake` — ID of the sticker pack.
-- `stickers::Vector{Sticker}` — Stickers in the pack.
-- `name::String` — Name of the sticker pack.
-- `sku_id::Snowflake` — ID of the pack's SKU.
-- `cover_sticker_id::Optional{Snowflake}` — ID of a sticker in the pack which is shown as the pack's icon.
-- `description::String` — Description of the sticker pack.
-- `banner_asset_id::Optional{Snowflake}` — ID of the sticker pack's banner image.
+# See Also
+- [Discord API: Sticker Pack Object](https://discord.com/developers/docs/resources/sticker#sticker-pack-object)
 """
 @discord_struct StickerPack begin
     id::Snowflake

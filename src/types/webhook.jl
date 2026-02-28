@@ -1,23 +1,22 @@
 """
     Webhook
 
-A webhook is a low-effort way to post messages to channels in Discord. They do not require a bot user or authentication to use.
-
-[Discord docs](https://discord.com/developers/docs/resources/webhook#webhook-object)
+Represents a Discord webhook. Webhooks allow bots and external services to 
+post messages to a channel without requiring a full bot user or authentication.
 
 # Fields
-- `id::Snowflake` — webhook ID.
-- `type::Int` — type of webhook. See [`WebhookTypes`](@ref) module.
-- `guild_id::Optional{Snowflake}` — guild ID this webhook is for. May not be present if the webhook was created by an OAuth2 app.
-- `channel_id::Nullable{Snowflake}` — channel ID this webhook is for. `nothing` if the webhook was created by an OAuth2 app.
-- `user::Optional{User}` — user that created this webhook. Not returned when receiving a message via webhook execution.
-- `name::Nullable{String}` — default name of the webhook. `nothing` if not set.
-- `avatar::Nullable{String}` — default avatar hash of the webhook. `nothing` if not set.
-- `token::Optional{String}` — secure token of the webhook. Returned for incoming webhooks.
-- `application_id::Nullable{Snowflake}` — OAuth2 application that created this webhook. `nothing` if not created by an OAuth2 app.
-- `source_guild::Optional{Any}` — guild of the channel that this webhook is following. Present for channel follower webhooks.
-- `source_channel::Optional{Any}` — channel that this webhook is following. Present for channel follower webhooks.
-- `url::Optional{String}` — URL used for executing the webhook. Returned for incoming webhooks.
+- `id::Snowflake`: The unique ID of the webhook.
+- `type::Int`: The type of webhook (see [`WebhookTypes`](@ref)).
+- `guild_id::Optional{Snowflake}`: The ID of the guild the webhook is in.
+- `channel_id::Nullable{Snowflake}`: The ID of the channel the webhook posts to.
+- `user::Optional{User}`: The user who created the webhook.
+- `name::Nullable{String}`: The default name of the webhook.
+- `avatar::Nullable{String}`: The default avatar hash.
+- `token::Optional{String}`: The secure token (for executing the webhook).
+- `url::Optional{String}`: The full execution URL.
+
+# See Also
+- [Discord API: Webhook Object](https://discord.com/developers/docs/resources/webhook#webhook-object)
 """
 @discord_struct Webhook begin
     id::Snowflake

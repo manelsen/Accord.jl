@@ -1,13 +1,14 @@
 """
     Ban
 
-A ban in a guild. Represents a user who has been banned and optionally the reason.
-
-[Discord docs](https://discord.com/developers/docs/resources/guild#ban-object)
+Represents a ban record in a guild.
 
 # Fields
-- `reason::Nullable{String}` — reason for the ban. `nothing` if no reason was provided.
-- `user::Optional{User}` — banned user information.
+- `reason::Nullable{String}`: The reason for the ban, if provided.
+- `user::Optional{User}`: The user who was banned.
+
+# See Also
+- [Discord API: Ban Object](https://discord.com/developers/docs/resources/guild#ban-object)
 """
 @discord_struct Ban begin
     reason::Nullable{String}

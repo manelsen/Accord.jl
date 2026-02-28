@@ -1,19 +1,20 @@
 """
     SoundboardSound
 
-Represents a sound that can be played in a voice channel's soundboard.
-
-[Discord docs](https://discord.com/developers/docs/resources/soundboard#soundboard-sound-object)
+Represents a sound that can be played in a Discord voice channel's soundboard.
 
 # Fields
-- `name::String` — Name of the sound (2-32 characters).
-- `sound_id::Snowflake` — Unique ID of the sound.
-- `volume::Float64` — Volume of the sound, from 0.0 to 1.0.
-- `emoji_id::Nullable{Snowflake}` — ID of the associated custom emoji. At least one of `emoji_id` or `emoji_name` will be set.
-- `emoji_name::Nullable{String}` — Unicode character of the associated emoji. At least one of `emoji_id` or `emoji_name` will be set.
-- `guild_id::Optional{Snowflake}` — Guild ID this sound belongs to. `nothing` for default sounds.
-- `available::Bool` — Whether this sound can be used.
-- `user::Optional{User}` — User who created this sound. `nothing` for default sounds.
+- `name::String`: Name of the sound.
+- `sound_id::Snowflake`: Unique ID of the sound.
+- `volume::Float64`: Default playback volume (0.0 to 1.0).
+- `emoji_id::Nullable{Snowflake}`: ID of the associated custom emoji.
+- `emoji_name::Nullable{String}`: Unicode name of the associated emoji.
+- `guild_id::Optional{Snowflake}`: Guild where the sound is hosted.
+- `available::Bool`: Whether the sound can be played.
+- `user::Optional{User}`: User who uploaded the sound.
+
+# See Also
+- [Discord API: Soundboard Sound Object](https://discord.com/developers/docs/resources/soundboard#soundboard-sound-object)
 """
 @discord_struct SoundboardSound begin
     name::String

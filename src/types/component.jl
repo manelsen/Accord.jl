@@ -1,16 +1,17 @@
 """
     SelectOption
 
-Represents an option in a select menu (string, user, role, mentionable, or channel select).
-
-[Discord docs](https://discord.com/developers/docs/interactions/message-components#select-menu-object-select-option-structure)
+An option within a select menu component.
 
 # Fields
-- `label::String` — user-facing name of the option (1-100 characters). Not shown for user/role/channel selects.
-- `value::String` — developer-defined value for the option (1-100 characters). Not shown for user/role/channel selects.
-- `description::Optional{String}` — additional description of the option (0-100 characters). Not shown for user/role/channel selects.
-- `emoji::Optional{Emoji}` — emoji to display with the option.
-- `default::Optional{Bool}` — whether this option is selected by default.
+- `label::String`: The user-facing name of the option.
+- `value::String`: The internal value sent to the bot when selected.
+- `description::Optional{String}`: Additional text describing the option.
+- `emoji::Optional{Emoji}`: Emoji to display with the option.
+- `default::Optional{Bool}`: Whether this option is selected by default.
+
+# See Also
+- [Discord API: Select Option](https://discord.com/developers/docs/interactions/message-components#select-menu-object-select-option-structure)
 """
 @discord_struct SelectOption begin
     label::String
@@ -23,40 +24,42 @@ end
 """
     Component
 
-A message component - buttons, select menus, text inputs, and action rows. Used to create interactive messages.
+Represents an interactive message component (Buttons, Select Menus, Text Inputs).
 
-[Discord docs](https://discord.com/developers/docs/interactions/message-components#component-object)
+Components are organized into "Action Rows" (type 1) and allow users to trigger
+interactions.
 
 # Fields
-- `type::Int` — component type. See [`ComponentTypes`](@ref) module.
-- `custom_id::Optional{String}` — custom ID for the component. Max 100 characters. Required for buttons, select menus, and text inputs.
-- `style::Optional{Int}` — button or text input style. See [`ButtonStyles`](@ref) or [`TextInputStyles`](@ref) modules.
-- `label::Optional{String}` — text that appears on the button or text input label. Max 80 characters.
-- `emoji::Optional{Emoji}` — emoji that appears on the button.
-- `url::Optional{String}` — URL for link-style buttons.
-- `disabled::Optional{Bool}` — whether the component is disabled. Default `false`.
-- `components::Optional{Vector{Component}}` — child components (for action rows). Max 5 children for action rows.
-- `options::Optional{Vector{SelectOption}}` — options for select menus. Max 25 options.
-- `channel_types::Optional{Vector{Int}}` — channel types to include in channel select. Only for channel select menus.
-- `placeholder::Optional{String}` — placeholder text shown when nothing is selected. Max 150 characters.
-- `default_values::Optional{Vector{Any}}` — default values for auto-populated select menus.
-- `min_values::Optional{Int}` — minimum number of items that must be chosen (0-25). Default 1.
-- `max_values::Optional{Int}` — maximum number of items that can be chosen (1-25). Default 1.
-- `min_length::Optional{Int}` — minimum input length for text inputs (0-4000).
-- `max_length::Optional{Int}` — maximum input length for text inputs (1-4000).
-- `required::Optional{Bool}` — whether the text input is required. Default `true`.
-- `value::Optional{String}` — pre-filled value for text inputs. Max 4000 characters.
-- `sku_id::Optional{Snowflake}` — SKU ID for premium buttons.
-- `content::Optional{String}` — component V2: content for display components.
-- `media::Optional{Any}` — component V2: media information.
-- `items::Optional{Vector{Any}}` — component V2: items in the component.
-- `accessory::Optional{Any}` — component V2: accessory component.
-- `spoiler::Optional{Bool}` — component V2: whether this component is a spoiler.
-- `description::Optional{String}` — component V2: description text.
-- `divider::Optional{Bool}` — component V2: whether this is a divider.
-- `spacing::Optional{Int}` — component V2: spacing value.
-- `color::Optional{Int}` — component V2: accent color.
-- `id::Optional{Int}` — component V2: component ID.
+- `type::Int`: Component type (see [`ComponentTypes`](@ref)).
+- `custom_id::Optional{String}`: Developer-defined ID for the component.
+- `style::Optional{Int}`: Visual style (see [`ButtonStyles`](@ref)).
+- `label::Optional{String}`: Text displayed on the component.
+- `emoji::Optional{Emoji}`: Emoji displayed on the component.
+- `url::Optional{String}`: URL for link buttons.
+- `disabled::Optional{Bool}`: Whether the component is inactive.
+- `components::Optional{Vector{Component}}`: Children (for Action Rows).
+- `options::Optional{Vector{SelectOption}}`: Choices for select menus.
+- `placeholder::Optional{String}`: Placeholder text.
+- `min_values::Optional{Int}`: Minimum number of items to select.
+- `max_values::Optional{Int}`: Maximum number of items to select.
+- `min_length::Optional{Int}`: Minimum input length (Text Input).
+- `max_length::Optional{Int}`: Maximum input length (Text Input).
+- `required::Optional{Bool}`: Whether input is mandatory.
+- `value::Optional{String}`: Pre-filled value.
+
+# Example
+```julia
+button = Component(
+    type = ComponentTypes.BUTTON,
+    style = ButtonStyles.PRIMARY,
+    label = "Click Me",
+    custom_id = "my_button"
+)
+row = Component(type=ComponentTypes.ACTION_ROW, components=[button])
+```
+
+# See Also
+- [Discord API: Component Object](https://discord.com/developers/docs/interactions/message-components#component-object)
 """
 @discord_struct Component begin
     type::Int

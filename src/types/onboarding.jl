@@ -1,20 +1,17 @@
 """
     OnboardingPromptOption
 
-An option shown in an onboarding prompt that a user can select.
-
-[Discord docs](https://discord.com/developers/docs/resources/guild#guild-onboarding-object-prompt-option-structure)
+An individual choice within an onboarding prompt.
 
 # Fields
-- `id::Snowflake` — ID of the prompt option.
-- `channel_ids::Vector{Snowflake}` — IDs for channels a member is added to when the option is selected.
-- `role_ids::Vector{Snowflake}` — IDs for roles assigned to a member when the option is selected.
-- `emoji::Optional{Emoji}` — Emoji of the option.
-- `emoji_id::Optional{Snowflake}` — Emoji ID of the option.
-- `emoji_name::Optional{String}` — Emoji name of the option.
-- `emoji_animated::Optional{Bool}` — Whether the emoji is animated.
-- `title::String` — Title of the option (1-50 characters).
-- `description::Nullable{String}` — Description of the option (1-100 characters).
+- `id::Snowflake`: Unique ID of the option.
+- `channel_ids::Vector{Snowflake}`: Channels assigned if selected.
+- `role_ids::Vector{Snowflake}`: Roles assigned if selected.
+- `title::String`: Label for the option.
+- `description::Nullable{String}`: Help text for the option.
+
+# See Also
+- [Discord API: Onboarding Prompt Option](https://discord.com/developers/docs/resources/guild#guild-onboarding-object-prompt-option-structure)
 """
 @discord_struct OnboardingPromptOption begin
     id::Snowflake
@@ -31,18 +28,10 @@ end
 """
     OnboardingPrompt
 
-A prompt shown during onboarding that users respond to by selecting one or more options.
+A question or choice shown to new members during guild onboarding.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#guild-onboarding-object-prompt-structure)
-
-# Fields
-- `id::Snowflake` — ID of the prompt.
-- `type::Int` — Type of the prompt. See `OnboardingPromptTypes` in `src/types/enums.jl`.
-- `options::Vector{OnboardingPromptOption}` — Options available within the prompt.
-- `title::String` — Title of the prompt (1-50 characters).
-- `single_select::Bool` — Whether users are limited to selecting one option.
-- `required::Bool` — Whether the prompt is required before completing onboarding.
-- `in_onboarding::Bool` — Whether the prompt is present in the onboarding flow.
+# See Also
+- [Discord API: Onboarding Prompt Object](https://discord.com/developers/docs/resources/guild#guild-onboarding-object-prompt-structure)
 """
 @discord_struct OnboardingPrompt begin
     id::Snowflake
@@ -57,16 +46,17 @@ end
 """
     Onboarding
 
-Onboarding configuration for a guild. Helps new members understand the rules and select roles/channels.
-
-[Discord docs](https://discord.com/developers/docs/resources/guild#guild-onboarding-object)
+The complete onboarding configuration for a guild.
 
 # Fields
-- `guild_id::Snowflake` — ID of the guild this onboarding is part of.
-- `prompts::Vector{OnboardingPrompt}` — Prompts shown during onboarding and in customize community.
-- `default_channel_ids::Vector{Snowflake}` — Channel IDs that members get opted into automatically.
-- `enabled::Bool` — Whether onboarding is enabled in the guild.
-- `mode::Int` — Current mode of onboarding. See [`OnboardingModes`](@ref) module.
+- `guild_id::Snowflake`: Guild ID.
+- `prompts::Vector{OnboardingPrompt}`: Questions shown during flow.
+- `default_channel_ids::Vector{Snowflake}`: Channels everyone gets.
+- `enabled::Bool`: Whether onboarding is active.
+- `mode::Int`: Onboarding mode (see [`OnboardingModes`](@ref)).
+
+# See Also
+- [Discord API: Onboarding Object](https://discord.com/developers/docs/resources/guild#guild-onboarding-object)
 """
 @discord_struct Onboarding begin
     guild_id::Snowflake

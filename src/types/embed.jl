@@ -1,14 +1,15 @@
 """
     EmbedFooter
 
-Footer information for an embed, displayed at the bottom.
-
-[Discord docs](https://discord.com/developers/docs/resources/message#embed-object-embed-footer-structure)
+The footer section of an [`Embed`](@ref).
 
 # Fields
-- `text::String` — footer text. Max 2048 characters.
-- `icon_url::Optional{String}` — URL of footer icon. Only supports http(s) and attachments.
-- `proxy_icon_url::Optional{String}` — proxied URL of footer icon.
+- `text::String`: The footer text (max 2048 characters).
+- `icon_url::Optional{String}`: URL of the footer icon (http/https/attachments only).
+- `proxy_icon_url::Optional{String}`: A proxied URL of the footer icon.
+
+# See Also
+- [Discord API: Embed Footer](https://discord.com/developers/docs/resources/message#embed-object-embed-footer-structure)
 """
 @discord_struct EmbedFooter begin
     text::String
@@ -19,15 +20,16 @@ end
 """
     EmbedImage
 
-Image information for an embed.
-
-[Discord docs](https://discord.com/developers/docs/resources/message#embed-object-embed-image-structure)
+Image information within an [`Embed`](@ref).
 
 # Fields
-- `url::String` — source URL of the image. Only supports http(s) and attachments.
-- `proxy_url::Optional{String}` — proxied URL of the image.
-- `height::Optional{Int}` — height of the image.
-- `width::Optional{Int}` — width of the image.
+- `url::String`: Source URL of the image.
+- `proxy_url::Optional{String}`: A proxied URL of the image.
+- `height::Optional{Int}`: Height of the image.
+- `width::Optional{Int}`: Width of the image.
+
+# See Also
+- [Discord API: Embed Image](https://discord.com/developers/docs/resources/message#embed-object-embed-image-structure)
 """
 @discord_struct EmbedImage begin
     url::String
@@ -39,15 +41,16 @@ end
 """
     EmbedThumbnail
 
-Thumbnail information for an embed, displayed at the top right.
-
-[Discord docs](https://discord.com/developers/docs/resources/message#embed-object-embed-thumbnail-structure)
+Thumbnail information for an [`Embed`](@ref), displayed at the top right.
 
 # Fields
-- `url::String` — source URL of the thumbnail. Only supports http(s) and attachments.
-- `proxy_url::Optional{String}` — proxied URL of the thumbnail.
-- `height::Optional{Int}` — height of the thumbnail.
-- `width::Optional{Int}` — width of the thumbnail.
+- `url::String`: Source URL of the thumbnail.
+- `proxy_url::Optional{String}`: A proxied URL of the thumbnail.
+- `height::Optional{Int}`: Height of the thumbnail.
+- `width::Optional{Int}`: Width of the thumbnail.
+
+# See Also
+- [Discord API: Embed Thumbnail](https://discord.com/developers/docs/resources/message#embed-object-embed-thumbnail-structure)
 """
 @discord_struct EmbedThumbnail begin
     url::String
@@ -59,15 +62,10 @@ end
 """
     EmbedVideo
 
-Video information for an embed.
+Video information within an [`Embed`](@ref).
 
-[Discord docs](https://discord.com/developers/docs/resources/message#embed-object-embed-video-structure)
-
-# Fields
-- `url::Optional{String}` — source URL of the video.
-- `proxy_url::Optional{String}` — proxied URL of the video.
-- `height::Optional{Int}` — height of the video.
-- `width::Optional{Int}` — width of the video.
+# See Also
+- [Discord API: Embed Video](https://discord.com/developers/docs/resources/message#embed-object-embed-video-structure)
 """
 @discord_struct EmbedVideo begin
     url::Optional{String}
@@ -79,13 +77,10 @@ end
 """
     EmbedProvider
 
-Provider information for an embed (e.g., YouTube, Twitter).
+Provider information for an [`Embed`](@ref) (e.g., YouTube, Twitter).
 
-[Discord docs](https://discord.com/developers/docs/resources/message#embed-object-embed-provider-structure)
-
-# Fields
-- `name::Optional{String}` — name of the provider.
-- `url::Optional{String}` — URL of the provider.
+# See Also
+- [Discord API: Embed Provider](https://discord.com/developers/docs/resources/message#embed-object-embed-provider-structure)
 """
 @discord_struct EmbedProvider begin
     name::Optional{String}
@@ -95,15 +90,16 @@ end
 """
     EmbedAuthor
 
-Author information for an embed, displayed at the top.
-
-[Discord docs](https://discord.com/developers/docs/resources/message#embed-object-embed-author-structure)
+Author information for an [`Embed`](@ref), displayed at the top.
 
 # Fields
-- `name::String` — name of the author. Max 256 characters.
-- `url::Optional{String}` — URL of the author.
-- `icon_url::Optional{String}` — URL of author icon. Only supports http(s) and attachments.
-- `proxy_icon_url::Optional{String}` — proxied URL of author icon.
+- `name::String`: Name of the author (max 256 characters).
+- `url::Optional{String}`: URL of the author (links the name).
+- `icon_url::Optional{String}`: URL of the author's icon.
+- `proxy_icon_url::Optional{String}`: A proxied URL of the author's icon.
+
+# See Also
+- [Discord API: Embed Author](https://discord.com/developers/docs/resources/message#embed-object-embed-author-structure)
 """
 @discord_struct EmbedAuthor begin
     name::String
@@ -115,14 +111,15 @@ end
 """
     EmbedField
 
-A field in an embed. Up to 25 fields can be added to an embed.
-
-[Discord docs](https://discord.com/developers/docs/resources/message#embed-object-embed-field-structure)
+A key-value field within an [`Embed`](@ref). Up to 25 fields can be added.
 
 # Fields
-- `name::String` — name of the field. Max 256 characters.
-- `value::String` — value of the field. Max 1024 characters.
-- `inline::Optional{Bool}` — whether this field should display inline.
+- `name::String`: Name of the field (max 256 characters).
+- `value::String`: Value of the field (max 1024 characters).
+- `inline::Optional{Bool}`: Whether the field should display inline with others.
+
+# See Also
+- [Discord API: Embed Field](https://discord.com/developers/docs/resources/message#embed-object-embed-field-structure)
 """
 @discord_struct EmbedField begin
     name::String
@@ -133,24 +130,38 @@ end
 """
     Embed
 
-A rich embed object that can be sent with messages. Embeds provide a structured way to present content with titles, descriptions, images, fields, and more.
+Represents a rich embed object that can be sent with messages. 
 
-[Discord docs](https://discord.com/developers/docs/resources/message#embed-object)
+Embeds allow bots to present structured content with colors, images, and 
+multiple fields.
 
 # Fields
-- `title::Optional{String}` — title of the embed. Max 256 characters.
-- `type::Optional{String}` — type of embed (always "rich" for webhook embeds).
-- `description::Optional{String}` — description of the embed. Max 4096 characters.
-- `url::Optional{String}` — URL of the embed.
-- `timestamp::Optional{String}` — ISO8601 timestamp of the embed content.
-- `color::Optional{Int}` — color code of the embed as an integer.
-- `footer::Optional{EmbedFooter}` — footer information.
-- `image::Optional{EmbedImage}` — image information.
-- `thumbnail::Optional{EmbedThumbnail}` — thumbnail information.
-- `video::Optional{EmbedVideo}` — video information.
-- `provider::Optional{EmbedProvider}` — provider information.
-- `author::Optional{EmbedAuthor}` — author information.
-- `fields::Optional{Vector{EmbedField}}` — fields information. Max 25 fields.
+- `title::Optional{String}`: Title of the embed (max 256 characters).
+- `type::Optional{String}`: Type of embed (default "rich").
+- `description::Optional{String}`: Main content of the embed (max 4096 characters).
+- `url::Optional{String}`: URL of the embed (links the title).
+- `timestamp::Optional{String}`: ISO8601 timestamp displayed in the embed.
+- `color::Optional{Int}`: Color code of the embed (integer).
+- `footer::Optional{EmbedFooter}`: Footer information.
+- `image::Optional{EmbedImage}`: Main image information.
+- `thumbnail::Optional{EmbedThumbnail}`: Thumbnail information.
+- `video::Optional{EmbedVideo}`: Video information (read-only).
+- `provider::Optional{EmbedProvider}`: Provider information (read-only).
+- `author::Optional{EmbedAuthor}`: Author information.
+- `fields::Optional{Vector{EmbedField}}`: Up to 25 fields.
+
+# Example
+```julia
+embed = Embed(
+    title = "System Status",
+    description = "All systems operational.",
+    color = 0x00ff00
+)
+push!(embed.fields, EmbedField(name="CPU", value="15%", inline=true))
+```
+
+# See Also
+- [Discord API: Embed Object](https://discord.com/developers/docs/resources/message#embed-object)
 """
 @discord_struct Embed begin
     title::Optional{String}

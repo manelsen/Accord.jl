@@ -1,14 +1,15 @@
 """
     AutoModActionMetadata
 
-Additional data used when an action is executed.
-
-[Discord docs](https://discord.com/developers/docs/resources/auto-moderation#auto-moderation-action-object-action-metadata)
+Metadata associated with an [`AutoModAction`](@ref).
 
 # Fields
-- `channel_id::Optional{Snowflake}` — ID of channel to which user content should be logged. Only for `SEND_ALERT_MESSAGE` action type.
-- `duration_seconds::Optional{Int}` — Timeout duration in seconds. Maximum 2419200 seconds (4 weeks). Only for `TIMEOUT` action type.
-- `custom_message::Optional{String}` — Additional explanation that will be shown to members whenever their message is blocked. Maximum 150 characters. Only for `BLOCK_MESSAGE` action type.
+- `channel_id::Optional{Snowflake}`: Channel to log alerts to (for `SEND_ALERT_MESSAGE`).
+- `duration_seconds::Optional{Int}`: Timeout duration (for `TIMEOUT`).
+- `custom_message::Optional{String}`: Message shown to the user (for `BLOCK_MESSAGE`).
+
+# See Also
+- [Discord API: Auto Moderation Action Metadata](https://discord.com/developers/docs/resources/auto-moderation#auto-moderation-action-object-action-metadata)
 """
 @discord_struct AutoModActionMetadata begin
     channel_id::Optional{Snowflake}
@@ -19,13 +20,14 @@ end
 """
     AutoModAction
 
-An action which will execute whenever a rule is triggered.
-
-[Discord docs](https://discord.com/developers/docs/resources/auto-moderation#auto-moderation-action-object)
+An action to take when an [`AutoModRule`](@ref) is triggered.
 
 # Fields
-- `type::Int` — Type of action. See [`AutoModActionTypes`](@ref) module.
-- `metadata::Optional{AutoModActionMetadata}` — Additional metadata needed during execution for this specific action type.
+- `type::Int`: Action type (see [`AutoModActionTypes`](@ref)).
+- `metadata::Optional{AutoModActionMetadata}`: Additional data for the action.
+
+# See Also
+- [Discord API: Auto Moderation Action Object](https://discord.com/developers/docs/resources/auto-moderation#auto-moderation-action-object)
 """
 @discord_struct AutoModAction begin
     type::Int
@@ -35,17 +37,17 @@ end
 """
     AutoModTriggerMetadata
 
-Additional data used to determine whether a rule should be triggered.
-
-[Discord docs](https://discord.com/developers/docs/resources/auto-moderation#auto-moderation-rule-object-trigger-metadata)
+Configuration for what triggers an [`AutoModRule`](@ref).
 
 # Fields
-- `keyword_filter::Optional{Vector{String}}` — Substrings which will be searched for in content. Maximum 1000. Only for `KEYWORD` trigger type.
-- `regex_patterns::Optional{Vector{String}}` — Regular expression patterns which will be matched against content. Maximum 10. Only for `KEYWORD` trigger type.
-- `presets::Optional{Vector{Int}}` — The internally pre-defined wordsets which will be searched for in content. See [`AutoModKeywordPresetTypes`](@ref) module. Only for `KEYWORD_PRESET` trigger type.
-- `allow_list::Optional{Vector{String}}` — Substrings which should not trigger the rule. Maximum 100 or 1000 depending on trigger type. For `KEYWORD` and `KEYWORD_PRESET` trigger types.
-- `mention_total_limit::Optional{Int}` — Total number of unique role and user mentions allowed per message. Maximum 50. Only for `MENTION_SPAM` trigger type.
-- `mention_raid_protection_enabled::Optional{Bool}` — Whether to automatically detect mention raids. Only for `MENTION_SPAM` trigger type.
+- `keyword_filter::Optional{Vector{String}}`: Substrings to search for.
+- `regex_patterns::Optional{Vector{String}}`: Regex patterns to match.
+- `presets::Optional{Vector{Int}}`: Predefined wordsets (see [`AutoModKeywordPresetTypes`](@ref)).
+- `allow_list::Optional{Vector{String}}`: Substrings that are exempt from the rule.
+- `mention_total_limit::Optional{Int}`: Max unique mentions allowed.
+
+# See Also
+- [Discord API: Auto Moderation Trigger Metadata](https://discord.com/developers/docs/resources/auto-moderation#auto-moderation-rule-object-trigger-metadata)
 """
 @discord_struct AutoModTriggerMetadata begin
     keyword_filter::Optional{Vector{String}}
@@ -59,22 +61,25 @@ end
 """
     AutoModRule
 
-A rule which defines the trigger and actions for auto moderation.
+Represents a rule for the Discord Auto Moderation system.
 
-[Discord docs](https://discord.com/developers/docs/resources/auto-moderation#auto-moderation-rule-object)
+Rules define what content is filtered and what actions are taken automatically.
 
 # Fields
-- `id::Snowflake` — Unique ID of the rule.
-- `guild_id::Snowflake` — ID of the guild which this rule belongs to.
-- `name::String` — Rule name (1-255 characters).
-- `creator_id::Snowflake` — User which first created this rule.
-- `event_type::Int` — Event type indicating in what event context a rule should be checked. See [`AutoModEventTypes`](@ref) module.
-- `trigger_type::Int` — Trigger type indicating what type of information to check for. See [`AutoModTriggerTypes`](@ref) module.
-- `trigger_metadata::Optional{AutoModTriggerMetadata}` — Additional data used to determine whether a rule should be triggered.
-- `actions::Vector{AutoModAction}` — Actions which will execute when the rule is triggered.
-- `enabled::Bool` — Whether the rule is enabled.
-- `exempt_roles::Vector{Snowflake}` — Role IDs that should not be affected by the rule (Maximum 20).
-- `exempt_channels::Vector{Snowflake}` — Channel IDs that should not be affected by the rule (Maximum 50).
+- `id::Snowflake`: Unique ID of the rule.
+- `guild_id::Snowflake`: ID of the guild the rule belongs to.
+- `name::String`: Name of the rule.
+- `creator_id::Snowflake`: ID of the user who created the rule.
+- `event_type::Int`: Event context (see [`AutoModEventTypes`](@ref)).
+- `trigger_type::Int`: What triggers the rule (see [`AutoModTriggerTypes`](@ref)).
+- `trigger_metadata::Optional{AutoModTriggerMetadata}`: Details about the trigger.
+- `actions::Vector{AutoModAction}`: Actions to perform on trigger.
+- `enabled::Bool`: Whether the rule is active.
+- `exempt_roles::Vector{Snowflake}`: Roles exempt from this rule.
+- `exempt_channels::Vector{Snowflake}`: Channels exempt from this rule.
+
+# See Also
+- [Discord API: Auto Moderation Rule Object](https://discord.com/developers/docs/resources/auto-moderation#auto-moderation-rule-object)
 """
 @discord_struct AutoModRule begin
     id::Snowflake

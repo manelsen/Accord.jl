@@ -1,13 +1,10 @@
 """
     PollMedia
 
-Media object containing text and/or emoji to display in a poll.
+Media content (text and/or emoji) for a poll question or answer.
 
-[Discord docs](https://discord.com/developers/docs/resources/poll#poll-media-object)
-
-# Fields
-- `text::Optional{String}` — Text of the poll answer. Maximum 55 characters for questions, 55 for answers.
-- `emoji::Optional{Emoji}` — Emoji to display with the text.
+# See Also
+- [Discord API: Poll Media Object](https://discord.com/developers/docs/resources/poll#poll-media-object)
 """
 @discord_struct PollMedia begin
     text::Optional{String}
@@ -17,13 +14,10 @@ end
 """
     PollAnswer
 
-Represents an answer in a poll, including the answer ID and the media to display.
+Represents an individual answer option in a [`Poll`](@ref).
 
-[Discord docs](https://discord.com/developers/docs/resources/poll#poll-answer-object)
-
-# Fields
-- `answer_id::Int` — ID of the answer. Indexes start at 1.
-- `poll_media::Optional{PollMedia}` — Data of the answer.
+# See Also
+- [Discord API: Poll Answer Object](https://discord.com/developers/docs/resources/poll#poll-answer-object)
 """
 @discord_struct PollAnswer begin
     answer_id::Int
@@ -33,14 +27,10 @@ end
 """
     PollAnswerCount
 
-Represents the count of votes for a particular answer.
+The vote count for a specific poll answer.
 
-[Discord docs](https://discord.com/developers/docs/resources/poll#poll-results-object-poll-answer-count-object)
-
-# Fields
-- `id::Int` — ID of the answer this count is for.
-- `count::Int` — Number of votes for this answer.
-- `me_voted::Bool` — Whether the current user voted for this answer.
+# See Also
+- [Discord API: Poll Answer Count Object](https://discord.com/developers/docs/resources/poll#poll-results-object-poll-answer-count-object)
 """
 @discord_struct PollAnswerCount begin
     id::Int
@@ -51,13 +41,10 @@ end
 """
     PollResults
 
-Results of a poll, including vote counts for each answer.
+The results of a poll, containing vote counts for each answer.
 
-[Discord docs](https://discord.com/developers/docs/resources/poll#poll-results-object)
-
-# Fields
-- `is_finalized::Bool` — Whether the votes have been precisely counted.
-- `answer_counts::Vector{PollAnswerCount}` — Counts for each answer. Not all answers may be present.
+# See Also
+- [Discord API: Poll Results Object](https://discord.com/developers/docs/resources/poll#poll-results-object)
 """
 @discord_struct PollResults begin
     is_finalized::Bool
@@ -67,17 +54,20 @@ end
 """
     Poll
 
-Represents a poll in a message. Allows users to vote on one or more answers.
+Represents a native Discord poll within a message.
 
-[Discord docs](https://discord.com/developers/docs/resources/poll#poll-object)
+Polls allow users to vote on predefined answers and see real-time results.
 
 # Fields
-- `question::Optional{PollMedia}` — Question of the poll. Maximum 300 characters total across both text and emoji.
-- `answers::Vector{PollAnswer}` — Each of the answers available in the poll. Maximum 10 answers.
-- `expiry::Optional{String}` — ISO8601 timestamp when the poll ends. `nothing` for non-expiring polls.
-- `allow_multiselect::Bool` — Whether a user can select multiple answers.
-- `layout_type::Int` — Layout type of the poll. See `PollLayoutTypes` (1 = default).
-- `results::Optional{PollResults}` — Results of the poll. Not present when fetching the poll, must be requested separately.
+- `question::Optional{PollMedia}`: The poll's question.
+- `answers::Vector{PollAnswer}`: Up to 10 answer options.
+- `expiry::Optional{String}`: ISO8601 timestamp of when the poll ends.
+- `allow_multiselect::Bool`: Whether users can pick multiple answers.
+- `layout_type::Int`: The visual layout (default 1).
+- `results::Optional{PollResults}`: The current vote counts.
+
+# See Also
+- [Discord API: Poll Object](https://discord.com/developers/docs/resources/poll#poll-object)
 """
 @discord_struct Poll begin
     question::Optional{PollMedia}
