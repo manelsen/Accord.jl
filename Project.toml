@@ -16,6 +16,7 @@ Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 PrecompileTools = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
 Sockets = "6462fe0b-24de-5631-8697-dd941f90decc"
 StructTypes = "856f2bd8-1eba-4b0a-8007-ebc267875bd4"
+UUIDs = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 libsodium_jll = "a9144af2-ca23-56d9-984f-0d03f7b5ccf8"
 
 [compat]
@@ -36,8 +37,12 @@ ReTestItems = "1"
 Sockets = "1"
 StructTypes = "1"
 Test = "1"
+UUIDs = "1.11.0"
 julia = "1.11"
 libsodium_jll = "1"
+
+[comonicon.bin]
+accord = "Accord.AccordCLI.command_main"
 
 [extras]
 AbbreviatedStackTraces = "ac637c84-cc71-43bf-9c33-c1b4316be3d4"
@@ -48,6 +53,3 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["Aqua", "JET", "Test", "AbbreviatedStackTraces", "ReTestItems"]
-
-[comonicon.bin]
-accord = "Accord.AccordCLI.command_main"
