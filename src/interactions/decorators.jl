@@ -182,15 +182,13 @@ julia> @check has_permissions(:MANAGE_GUILD);
 
 julia> @check is_owner();
 
-julia> length(Accord._PENDING_CHECKS) # Verifies checks were queued
+julia> length(Accord.pending_checks()) # Verifies checks were queued
 2
 ```
 """
 macro check(expr)
     quote
-        lock($(@__MODULE__)._CHECKS_LOCK) do
-            push!($(@__MODULE__)._PENDING_CHECKS, $(esc(expr)))
-        end
+        $(@__MODULE__).push_pending_check!($(esc(expr)))
     end
 end
 

@@ -387,11 +387,13 @@ the interaction.
 function create_interaction_response(rl::RateLimiter, interaction_id::Snowflake, interaction_token::String; token::String, body::Dict, files=nothing)
     url = "$(API_BASE)/interactions/$(interaction_id)/$(interaction_token)/callback"
     headers = [
-        "Authorization" => token,
         "Content-Type" => "application/json",
         "User-Agent" => USER_AGENT,
     ]
-    HTTP.post(url, headers, JSON3.write(body); status_exception=false, retry=false)
+
+    # This endpoint is explicitly unauthenticated by Discord docs.
+    _ = token
+    rl.request_handler("POST", url, headers, JSON3.write(body))
 end
 
 """

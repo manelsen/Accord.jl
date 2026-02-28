@@ -19,7 +19,7 @@ The bot will:
 =#
 
 using Accord
-using Accord: JSON3
+using Accord: JSON3, reply, bulk_overwrite_guild_application_commands
 
 # ─── Config ──────────────────────────────────────────────────────────────────
 

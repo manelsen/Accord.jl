@@ -59,6 +59,20 @@ CommandTree() = CommandTree(
     Dict{String, Function}(),
 )
 
+function _normalize_options(options::AbstractVector)::Vector{Dict{String, Any}}
+    normalized = Dict{String, Any}[]
+    for opt in options
+        if opt isa Dict{String, Any}
+            push!(normalized, opt)
+        elseif opt isa AbstractDict
+            push!(normalized, Dict{String, Any}(string(k) => v for (k, v) in opt))
+        else
+            throw(ArgumentError("Command options must be dictionaries; got $(typeof(opt))."))
+        end
+    end
+    return normalized
+end
+
 """
     register_command!(tree::CommandTree, name::String, description::String, handler::Function; type=1, options=[], guild_id=missing, checks=[])
 
@@ -88,11 +102,19 @@ end)
 """
 function register_command!(tree::CommandTree, name::String, description::String, handler::Function;
     type::Int = ApplicationCommandTypes.CHAT_INPUT,
-    options::Vector = [],
+    options::AbstractVector = Dict{String, Any}[],
     guild_id::Optional{Snowflake} = missing,
-    checks::Vector = Function[],
+    checks::AbstractVector{<:Function} = Function[],
 )
-    tree.commands[name] = CommandDefinition(name, description, type, options, handler, guild_id, Function[checks...])
+    tree.commands[name] = CommandDefinition(
+        name,
+        description,
+        type,
+        _normalize_options(options),
+        handler,
+        guild_id,
+        Function[checks...],
+    )
 end
 
 """
@@ -101,17 +123,17 @@ end
 Register a subcommand into a list of options for a parent command or group.
 Internal helper used by the `@group` and `@subcommand` macros.
 """
-function register_subcommand!(parent_options::Vector, name::String, description::String, handler::Function;
-    options::Vector = [],
-    checks::Vector = Function[],
+function register_subcommand!(parent_options::Vector{Dict{String, Any}}, name::String, description::String, handler::Function;
+    options::AbstractVector = Dict{String, Any}[],
+    checks::AbstractVector{<:Function} = Function[],
 )
     push!(parent_options, Dict{String, Any}(
         "type" => ApplicationCommandOptionTypes.SUB_COMMAND,
         "name" => name,
         "description" => description,
-        "options" => options,
+        "options" => _normalize_options(options),
         "_handler" => handler, # Internal marker for routing
-        "_checks" => checks
+        "_checks" => Function[checks...]
     ))
 end
 
@@ -274,7 +296,7 @@ function sync_commands!(client, tree::CommandTree; guild_id=nothing)
     end
 end
 
-function _dispatch_command(handler::Function, checks::Vector{Function}, options::Vector, ctx::InteractionContext)
+function _dispatch_command(handler::Function, checks::Vector{Function}, options::Vector{Dict{String, Any}}, ctx::InteractionContext)
     # 1. Run checks for this level
     if !isempty(checks)
         run_checks(checks, ctx) || return
@@ -299,7 +321,14 @@ function _dispatch_command(handler::Function, checks::Vector{Function}, options:
                 # We need to shift the context or just pass it along
                 # Discord subcommands are nested, but InteractionContext points to the root.
                 # The handler can use get_option to find nested values.
-                return _dispatch_command(sub_def["_handler"], sub_def["_checks"], get(sub_def, "options", []), ctx)
+                sub_checks = get(sub_def, "_checks", Function[])
+                sub_options = get(sub_def, "options", Dict{String, Any}[])
+                return _dispatch_command(
+                    sub_def["_handler"],
+                    Function[sub_checks...],
+                    _normalize_options(sub_options),
+                    ctx,
+                )
             end
         end
     end

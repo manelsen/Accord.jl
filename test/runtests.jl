@@ -2,10 +2,15 @@ using ReTestItems
 using Accord
 
 # ── Accord.jl Granular Test Runner ─────────────────────────────────────────
+const DEFAULT_REPORT_DIR = joinpath(@__DIR__, "reports")
 
 function run_accord_tests()
     category = !isempty(ARGS) ? ARGS[1] : "default"
     println("▶ Accord.jl Runner | Category: $category")
+    report_dir = get(ENV, "RETESTITEMS_REPORT_LOCATION", DEFAULT_REPORT_DIR)
+    mkpath(report_dir)
+    ENV["RETESTITEMS_REPORT_LOCATION"] = report_dir
+    println("▶ JUnit XML reports: $report_dir")
 
     # Definimos a função de filtro baseada na categoria
     function ti_filter(ti)

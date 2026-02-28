@@ -1,7 +1,7 @@
 @testitem "REST Application and Client Layer" tags=[:integration] begin
     include("rest_test_utils.jl")
     using Accord, HTTP, JSON3
-    using Accord: Connection, Integration, WelcomeScreen, Onboarding, SoundboardSound, SKU, Entitlement, Subscription, parse_response, parse_response_array, url, API_BASE, JSON3
+    using Accord: Connection, Integration, WelcomeScreen, Onboarding, SoundboardSound, SKU, Entitlement, Subscription, parse_response, parse_response_array, url, API_BASE, JSON3, Route
 
     @testset "Application Endpoints" begin
         @testset "get_current_application" begin

@@ -60,6 +60,54 @@ function modify_channel(rl::RateLimiter, channel_id::Snowflake; token::String, b
 end
 
 """
+    modify_thread(rl::RateLimiter, channel_id::Snowflake; token::String, name=nothing, archived=nothing, locked=nothing, auto_archive_duration=nothing, reason=nothing) -> DiscordChannel
+
+Modify a thread channel's metadata.
+
+Use this to rename a thread, archive it, lock it, or change its auto-archive duration
+after it has been created.
+
+# Arguments
+- `rl::RateLimiter`: The rate limiter instance.
+- `channel_id::Snowflake`: The ID of the thread channel.
+
+# Keyword Arguments
+- `token::String`: Bot authentication token.
+- `name::String`: New name for the thread (1–100 characters).
+- `archived::Bool`: Whether to archive the thread.
+- `locked::Bool`: Whether to lock the thread (only moderators can unarchive).
+- `auto_archive_duration::Int`: Minutes until archive after inactivity (60, 1440, 4320, 10080).
+- `reason::String`: Audit log reason (optional).
+
+# Errors
+- Throws `ArgumentError` if no keyword is provided.
+- HTTP 403 if missing `MANAGE_THREADS` permission.
+- HTTP 404 if the thread does not exist.
+
+[Discord docs](https://discord.com/developers/docs/resources/channel#modify-channel)
+"""
+function modify_thread(rl::RateLimiter, channel_id::Snowflake;
+    token::String,
+    name = nothing,
+    archived = nothing,
+    locked = nothing,
+    auto_archive_duration = nothing,
+    reason = nothing,
+)
+    body = Dict{String, Any}()
+    !isnothing(name)                  && (body["name"] = name)
+    !isnothing(archived)              && (body["archived"] = archived)
+    !isnothing(locked)                && (body["locked"] = locked)
+    !isnothing(auto_archive_duration) && (body["auto_archive_duration"] = auto_archive_duration)
+    isempty(body) && throw(ArgumentError(
+        "modify_thread requires at least one keyword argument (name, archived, locked, or auto_archive_duration)"
+    ))
+    resp = discord_patch(rl, "/channels/$(channel_id)";
+        token, body, reason, major_params=["channel_id" => string(channel_id)])
+    parse_response(DiscordChannel, resp)
+end
+
+"""
     delete_channel(rl::RateLimiter, channel_id::Snowflake; token::String, reason=nothing) -> DiscordChannel
 
 Delete a channel or close a private message.
@@ -719,4 +767,171 @@ function list_joined_private_archived_threads(rl::RateLimiter, channel_id::Snowf
     resp = discord_get(rl, "/channels/$(channel_id)/users/@me/threads/archived/private"; token,
         query=["limit" => string(limit)], major_params=["channel_id" => string(channel_id)])
     JSON3.read(resp.body, Dict{String, Any})
+end
+
+# Forum tag management
+
+function _forum_tags_or_empty(channel::DiscordChannel)
+    tags = channel.available_tags
+    return ismissing(tags) ? ForumTag[] : copy(tags)
+end
+
+function _forum_tag_payload(tag::ForumTag)
+    payload = Dict{String, Any}(
+        "id" => string(tag.id),
+        "name" => tag.name,
+        "moderated" => tag.moderated,
+    )
+    !isnothing(tag.emoji_id) && (payload["emoji_id"] = string(tag.emoji_id))
+    !isnothing(tag.emoji_name) && (payload["emoji_name"] = tag.emoji_name)
+    return payload
+end
+
+"""
+    create_forum_tag(rl::RateLimiter, channel_id::Snowflake; token::String, name::String, emoji_id=nothing, emoji_name=nothing, moderated::Bool=false) -> ForumTag
+
+Add a new tag to a forum channel.
+
+Use this to create filterable tags on a `GUILD_FORUM` channel. Tags can have
+a text name and optionally an emoji (standard unicode or custom guild emoji).
+
+# Arguments
+- `rl::RateLimiter`: The rate limiter instance.
+- `channel_id::Snowflake`: The ID of the forum channel.
+
+# Keyword Arguments
+- `token::String`: Bot authentication token.
+- `name::String`: Tag name (0–20 characters).
+- `emoji_id::Snowflake`: ID of a custom guild emoji (mutually exclusive with `emoji_name`).
+- `emoji_name::String`: Unicode emoji character (mutually exclusive with `emoji_id`).
+- `moderated::Bool`: Whether this tag can only be applied by moderators (default false).
+
+# Errors
+- HTTP 403 if the bot lacks `MANAGE_CHANNELS` permission.
+- HTTP 404 if the channel does not exist or is not a forum.
+
+[Discord docs](https://discord.com/developers/docs/resources/channel#modify-channel)
+"""
+function create_forum_tag(rl::RateLimiter, channel_id::Snowflake;
+    token::String,
+    name::String,
+    emoji_id = nothing,
+    emoji_name = nothing,
+    moderated::Bool = false,
+)
+    new_tag = Dict{String, Any}("name" => name, "moderated" => moderated)
+    !isnothing(emoji_id)   && (new_tag["emoji_id"] = string(emoji_id))
+    !isnothing(emoji_name) && (new_tag["emoji_name"] = emoji_name)
+
+    existing = get_channel(rl, channel_id; token)
+    tags = [_forum_tag_payload(tag) for tag in _forum_tags_or_empty(existing)]
+    push!(tags, new_tag)
+
+    body = Dict{String, Any}("available_tags" => tags)
+    resp = discord_patch(rl, "/channels/$(channel_id)";
+        token, body, major_params=["channel_id" => string(channel_id)])
+    channel = parse_response(DiscordChannel, resp)
+
+    tags_out = channel.available_tags
+    ismissing(tags_out) && return nothing
+    return last(tags_out)
+end
+
+"""
+    modify_forum_tag(rl::RateLimiter, channel_id::Snowflake, tag_id::Snowflake; token::String, name=nothing, emoji_id=nothing, emoji_name=nothing, moderated=nothing) -> ForumTag
+
+Update an existing tag on a forum channel.
+
+# Arguments
+- `rl::RateLimiter`: The rate limiter instance.
+- `channel_id::Snowflake`: The ID of the forum channel.
+- `tag_id::Snowflake`: The ID of the tag to modify.
+
+# Keyword Arguments
+- `token::String`: Bot authentication token.
+- `name::String`: New tag name.
+- `emoji_id::Snowflake`: New custom emoji ID.
+- `emoji_name::String`: New unicode emoji.
+- `moderated::Bool`: New moderated flag.
+
+# Errors
+- Throws `ArgumentError` if no keyword is provided.
+- HTTP 403 if missing `MANAGE_CHANNELS`.
+- HTTP 404 if the channel or tag does not exist.
+
+[Discord docs](https://discord.com/developers/docs/resources/channel#modify-channel)
+"""
+function modify_forum_tag(rl::RateLimiter, channel_id::Snowflake, tag_id::Snowflake;
+    token::String,
+    name = nothing,
+    emoji_id = nothing,
+    emoji_name = nothing,
+    moderated = nothing,
+)
+    all(isnothing, (name, emoji_id, emoji_name, moderated)) && throw(ArgumentError(
+        "modify_forum_tag requires at least one keyword argument (name, emoji_id, emoji_name, or moderated)"
+    ))
+    existing = get_channel(rl, channel_id; token)
+
+    updated = Dict{String, Any}[]
+    for tag in _forum_tags_or_empty(existing)
+        patch = _forum_tag_payload(tag)
+        if tag.id == tag_id
+            !isnothing(name)       && (patch["name"] = name)
+            !isnothing(emoji_id)   && (patch["emoji_id"] = string(emoji_id))
+            !isnothing(emoji_name) && (patch["emoji_name"] = emoji_name)
+            !isnothing(moderated)  && (patch["moderated"] = moderated)
+        end
+        push!(updated, patch)
+    end
+
+    body = Dict{String, Any}("available_tags" => updated)
+    resp = discord_patch(rl, "/channels/$(channel_id)";
+        token, body, major_params=["channel_id" => string(channel_id)])
+    channel = parse_response(DiscordChannel, resp)
+
+    tags_out = channel.available_tags
+    ismissing(tags_out) && return nothing
+
+    for tag in tags_out
+        tag.id == tag_id && return tag
+    end
+    return nothing
+end
+
+"""
+    delete_forum_tag(rl::RateLimiter, channel_id::Snowflake, tag_id::Snowflake; token::String, reason=nothing)
+
+Remove a tag from a forum channel.
+
+# Arguments
+- `rl::RateLimiter`: The rate limiter instance.
+- `channel_id::Snowflake`: The ID of the forum channel.
+- `tag_id::Snowflake`: The ID of the tag to delete.
+
+# Keyword Arguments
+- `token::String`: Bot authentication token.
+- `reason::String`: Audit log reason (optional).
+
+# Errors
+- HTTP 403 if missing `MANAGE_CHANNELS`.
+- HTTP 404 if the channel or tag does not exist.
+
+[Discord docs](https://discord.com/developers/docs/resources/channel#modify-channel)
+"""
+function delete_forum_tag(rl::RateLimiter, channel_id::Snowflake, tag_id::Snowflake;
+    token::String,
+    reason = nothing,
+)
+    existing = get_channel(rl, channel_id; token)
+    filtered = Dict{String, Any}[]
+    for tag in _forum_tags_or_empty(existing)
+        tag.id == tag_id && continue
+        push!(filtered, _forum_tag_payload(tag))
+    end
+
+    body = Dict{String, Any}("available_tags" => filtered)
+    discord_patch(rl, "/channels/$(channel_id)";
+        token, body, reason, major_params=["channel_id" => string(channel_id)])
+    return nothing
 end

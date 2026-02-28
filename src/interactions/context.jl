@@ -272,10 +272,15 @@ function respond(ctx::InteractionContext;
             InteractionCallbackTypes.CHANNEL_MESSAGE_WITH_SOURCE
 
         body = Dict("type" => response_type, "data" => data)
-        create_interaction_response(
+        resp = create_interaction_response(
             ctx.client.ratelimiter, ctx.interaction.id, ctx.interaction.token;
             token=ctx.client.token, body, files
         )
+
+        if resp.status >= 300
+            @warn "Failed to respond to interaction" status=resp.status body=String(resp.body)
+            return resp
+        end
     end
     ctx.responded[] = true
 end
@@ -424,6 +429,14 @@ function show_modal(ctx::InteractionContext;
     custom_id::String,
     components::Vector,
 )
+    ctx.responded[] && throw(ArgumentError(
+        "Cannot show modal: interaction already responded. " *
+        "show_modal must be the first and only response to an interaction."
+    ))
+    ctx.deferred[] && throw(ArgumentError(
+        "Cannot show modal: interaction already deferred. " *
+        "Modals cannot follow a defer() call."
+    ))
     body = Dict(
         "type" => InteractionCallbackTypes.MODAL,
         "data" => Dict(
@@ -432,8 +445,10 @@ function show_modal(ctx::InteractionContext;
             "components" => components,
         )
     )
-    create_interaction_response(
+    result = create_interaction_response(
         ctx.client.ratelimiter, ctx.interaction.id, ctx.interaction.token;
         token=ctx.client.token, body
     )
+    ctx.responded[] = true
+    return result
 end

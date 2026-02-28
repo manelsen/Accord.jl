@@ -6,15 +6,41 @@
 # "permission denied" message is sent automatically.
 
 """
-    _PENDING_CHECKS
+    pending_checks() -> Vector{Function}
 
 Use this internal accumulator to collect checks before they're applied to the next command.
 
-Module-level accumulator for `@check` macro. Each `@check` pushes a check
-function here, and the next `@slash_command` drains it.
+Return a copy of checks accumulated by `@check` for the current `Task`.
+Checks are task-local to avoid cross-task leakage when commands are declared in
+parallel contexts (e.g., test workers or async setup code).
 """
-const _PENDING_CHECKS = Function[]
-const _CHECKS_LOCK = ReentrantLock()
+const _CHECKS_TLS_KEY = :accord_pending_checks
+
+function _pending_checks_ref()::Vector{Function}
+    tls = task_local_storage()
+    checks = get(tls, _CHECKS_TLS_KEY, nothing)
+    if checks isa Vector{Function}
+        return checks
+    end
+    fresh = Function[]
+    tls[_CHECKS_TLS_KEY] = fresh
+    return fresh
+end
+
+function pending_checks()::Vector{Function}
+    return copy(_pending_checks_ref())
+end
+
+"""
+    push_pending_check!(check::Function)
+
+Use this internal function to append a check to the task-local pending stack.
+Called by `@check`.
+"""
+function push_pending_check!(check::Function)
+    push!(_pending_checks_ref(), check)
+    return nothing
+end
 
 """
     drain_pending_checks!() -> Vector{Function}
@@ -24,12 +50,11 @@ Use this internal function to retrieve and clear accumulated permission checks.
 Drain all pending checks accumulated by `@check` macros.
 Called internally by `@slash_command`.
 """
-function drain_pending_checks!()
-    lock(_CHECKS_LOCK) do
-        checks = copy(_PENDING_CHECKS)
-        empty!(_PENDING_CHECKS)
-        return checks
-    end
+function drain_pending_checks!()::Vector{Function}
+    checks_ref = _pending_checks_ref()
+    checks = copy(checks_ref)
+    empty!(checks_ref)
+    return checks
 end
 
 # === Permission symbol mapping ===
@@ -285,7 +310,7 @@ Run all check functions against a context. Returns `true` if all pass.
 If a check fails and the interaction hasn't been responded to, sends
 a default ephemeral error message.
 """
-function run_checks(checks::AbstractVector, ctx)
+function run_checks(checks::AbstractVector{<:Function}, ctx::InteractionContext)
     for check_fn in checks
         try
             result = check_fn(ctx)

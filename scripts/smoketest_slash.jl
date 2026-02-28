@@ -23,12 +23,14 @@ Usage:
 =#
 
 using Accord
-using Accord: JSON3, InteractionCreate, InteractionTypes, InteractionCallbackTypes
+using Accord: JSON3, InteractionCreate, InteractionTypes, InteractionCallbackTypes,
+    bulk_overwrite_guild_application_commands, create_interaction_response
 using Dates
 
 const TOKEN = get(ENV, "DISCORD_TOKEN", "")
 const GUILD_ID = get(ENV, "TEST_GUILD_ID", "")
 const CHANNEL_ID = get(ENV, "TEST_CHANNEL_ID", "")
+const SMOKE_WINDOW_SECONDS = parse(Float64, get(ENV, "SMOKE_WINDOW_SECONDS", "60"))
 
 isempty(TOKEN) && error("Set DISCORD_TOKEN")
 isempty(GUILD_ID) && error("Set TEST_GUILD_ID")
@@ -65,7 +67,7 @@ function record_timing!(t::InteractionTiming)
 end
 
 # ─── Direct response with timing ─────────────────────────────────────────────
-# Bypass the Accord respond() to capture the HTTP status code
+# Use the library interaction endpoint helper directly so behavior matches Accord.
 
 function timed_respond(ctx, content::String; ephemeral=false, embeds=[], command_name="unknown", event_time=time())
     handler_start = time()
@@ -80,15 +82,13 @@ function timed_respond(ctx, content::String; ephemeral=false, embeds=[], command
         "data" => data,
     )
 
-    # Direct HTTP call — no rate limiter queue
-    url = "https://discord.com/api/v10/interactions/$(ctx.interaction.id)/$(ctx.interaction.token)/callback"
-    headers = [
-        "Authorization" => ctx.client.token,
-        "Content-Type" => "application/json",
-        "User-Agent" => "Accord.jl",
-    ]
-
-    resp = HTTP.post(url, headers, JSON3.write(body); status_exception=false, retry=false)
+    resp = create_interaction_response(
+        ctx.client.ratelimiter,
+        ctx.interaction.id,
+        ctx.interaction.token;
+        token=ctx.client.token,
+        body=body,
+    )
     response_time = time()
 
     record_timing!(InteractionTiming(
@@ -99,7 +99,9 @@ function timed_respond(ctx, content::String; ephemeral=false, embeds=[], command
         @warn "  Response failed" status=resp.status body=String(resp.body)
     end
 
-    ctx.responded[] = true
+    if resp.status < 300
+        ctx.responded[] = true
+    end
     return resp
 end
 
@@ -111,21 +113,22 @@ function timed_defer(ctx; command_name="unknown", event_time=time())
         "data" => Dict{String,Any}(),
     )
 
-    url = "https://discord.com/api/v10/interactions/$(ctx.interaction.id)/$(ctx.interaction.token)/callback"
-    headers = [
-        "Authorization" => ctx.client.token,
-        "Content-Type" => "application/json",
-        "User-Agent" => "Accord.jl",
-    ]
-
-    resp = HTTP.post(url, headers, JSON3.write(body); status_exception=false, retry=false)
+    resp = create_interaction_response(
+        ctx.client.ratelimiter,
+        ctx.interaction.id,
+        ctx.interaction.token;
+        token=ctx.client.token,
+        body=body,
+    )
     response_time = time()
 
     record_timing!(InteractionTiming(
         "$(command_name) [defer]", event_time, handler_start, response_time, resp.status,
     ))
 
-    ctx.deferred[] = true
+    if resp.status < 300
+        ctx.deferred[] = true
+    end
     return resp
 end
 
@@ -142,6 +145,16 @@ function main()
     # We inject event_time by wrapping the InteractionCreate handler
     interaction_times = Dict{String, Float64}()  # interaction_id → time received
     interaction_times_lock = ReentrantLock()
+    seen_interactions = Set{String}()
+    seen_interactions_lock = ReentrantLock()
+
+    function claim_interaction!(interaction_id::String)
+        lock(seen_interactions_lock) do
+            interaction_id in seen_interactions && return false
+            push!(seen_interactions, interaction_id)
+            return true
+        end
+    end
 
     # Hook into raw InteractionCreate to record event arrival time
     on(client, InteractionCreate) do c, event
@@ -152,18 +165,32 @@ function main()
 
     # ── /ping — immediate response ────────────────────────────────────────
     @slash_command client guild_sf "ping" "Immediate text response" function(ctx)
+        interaction_id = string(ctx.interaction.id)
+        if !claim_interaction!(interaction_id)
+            @warn "Duplicate interaction ignored" command="ping" interaction_id=interaction_id
+            return
+        end
         event_time = lock(interaction_times_lock) do
-            get(interaction_times, string(ctx.interaction.id), time())
+            get(interaction_times, interaction_id, time())
         end
         timed_respond(ctx, "Pong!"; command_name="ping", event_time)
     end
 
     # ── /pingdefer — defer then edit ──────────────────────────────────────
     @slash_command client guild_sf "pingdefer" "Defer then edit response" function(ctx)
-        event_time = lock(interaction_times_lock) do
-            get(interaction_times, string(ctx.interaction.id), time())
+        interaction_id = string(ctx.interaction.id)
+        if !claim_interaction!(interaction_id)
+            @warn "Duplicate interaction ignored" command="pingdefer" interaction_id=interaction_id
+            return
         end
-        timed_defer(ctx; command_name="pingdefer", event_time)
+        event_time = lock(interaction_times_lock) do
+            get(interaction_times, interaction_id, time())
+        end
+        defer_resp = timed_defer(ctx; command_name="pingdefer", event_time)
+        if defer_resp.status >= 300
+            @warn "Skipping deferred edit due failed defer callback" status=defer_resp.status body=String(defer_resp.body)
+            return
+        end
 
         # Simulate some work
         sleep(1.0)
@@ -177,8 +204,13 @@ function main()
 
     # ── /pingembed — embed response ───────────────────────────────────────
     @slash_command client guild_sf "pingembed" "Respond with embed" function(ctx)
+        interaction_id = string(ctx.interaction.id)
+        if !claim_interaction!(interaction_id)
+            @warn "Duplicate interaction ignored" command="pingembed" interaction_id=interaction_id
+            return
+        end
         event_time = lock(interaction_times_lock) do
-            get(interaction_times, string(ctx.interaction.id), time())
+            get(interaction_times, interaction_id, time())
         end
         embed = Dict{String,Any}(
             "title" => "Pong!",
@@ -191,8 +223,13 @@ function main()
 
     # ── /pingephemeral — ephemeral response ───────────────────────────────
     @slash_command client guild_sf "pingephemeral" "Ephemeral response" function(ctx)
+        interaction_id = string(ctx.interaction.id)
+        if !claim_interaction!(interaction_id)
+            @warn "Duplicate interaction ignored" command="pingephemeral" interaction_id=interaction_id
+            return
+        end
         event_time = lock(interaction_times_lock) do
-            get(interaction_times, string(ctx.interaction.id), time())
+            get(interaction_times, interaction_id, time())
         end
         timed_respond(ctx, "Ephemeral pong! Only you can see this.";
             ephemeral=true, command_name="pingephemeral", event_time)
@@ -200,8 +237,13 @@ function main()
 
     # ── /pingtime — responds with its own latency ─────────────────────────
     @slash_command client guild_sf "pingtime" "Shows measured latency" function(ctx)
+        interaction_id = string(ctx.interaction.id)
+        if !claim_interaction!(interaction_id)
+            @warn "Duplicate interaction ignored" command="pingtime" interaction_id=interaction_id
+            return
+        end
         event_time = lock(interaction_times_lock) do
-            get(interaction_times, string(ctx.interaction.id), time())
+            get(interaction_times, interaction_id, time())
         end
         handler_start = time()
         dispatch_ms = round((handler_start - event_time) * 1000; digits=1)
@@ -223,14 +265,10 @@ function main()
     @info "  /pingephemeral — ephemeral"
     @info "  /pingtime      — shows latency in response"
     @info ""
-    @info "Press Ctrl+C to stop and see summary."
-
-    try
-        while true
-            sleep(1.0)
-        end
-    catch e
-        e isa InterruptException || rethrow()
+    @info "Running for $(round(SMOKE_WINDOW_SECONDS; digits=1))s before auto-stop and summary."
+    deadline = time() + SMOKE_WINDOW_SECONDS
+    while time() < deadline
+        sleep(1.0)
     end
 
     # ── Report ────────────────────────────────────────────────────────────
@@ -279,5 +317,4 @@ function main()
     stop(client)
 end
 
-using HTTP
 main()

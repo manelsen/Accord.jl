@@ -21,7 +21,10 @@ The bot will:
 =#
 
 using Accord
-using Accord: JSON3, HeartbeatState
+using Accord: JSON3, HeartbeatState,
+    GuildUpdate, ChannelUpdate, MessageUpdate, MessageDelete,
+    GuildRoleCreate, GuildRoleUpdate, GuildRoleDelete,
+    GuildEmojisUpdate, GuildStickersUpdate
 using Dates
 
 # ─── Config ──────────────────────────────────────────────────────────────────

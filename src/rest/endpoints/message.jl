@@ -402,6 +402,56 @@ end
 # Polls
 
 """
+    create_poll(rl::RateLimiter, channel_id::Snowflake; token::String, question::String, answers::Vector{String}, duration_hours::Int=24, allow_multiselect::Bool=false) -> Message
+
+Create a poll in a channel.
+
+Use this to post a poll message that users can vote on. The poll is embedded in
+a regular message and managed by Discord's native poll system.
+
+# Arguments
+- `rl::RateLimiter`: The rate limiter instance.
+- `channel_id::Snowflake`: The ID of the channel.
+
+# Keyword Arguments
+- `token::String`: Bot authentication token.
+- `question::String`: The poll question text (max 300 characters).
+- `answers::Vector{String}`: Answer options (1–10 items, each max 55 characters).
+- `duration_hours::Int`: How long the poll runs in hours (1–168, default 24).
+- `allow_multiselect::Bool`: Whether users may vote for multiple answers (default false).
+
+# Errors
+- Throws `ArgumentError` if `answers` is empty or `duration_hours` is out of range.
+- HTTP 403 if the bot lacks `SEND_MESSAGES` permission.
+- HTTP 404 if the channel does not exist.
+
+[Discord docs](https://discord.com/developers/docs/resources/poll#poll-object)
+"""
+function create_poll(rl::RateLimiter, channel_id::Snowflake;
+    token::String,
+    question::String,
+    answers::Vector{String},
+    duration_hours::Int = 24,
+    allow_multiselect::Bool = false,
+)
+    isempty(answers) && throw(ArgumentError("answers cannot be empty"))
+    (duration_hours < 1 || duration_hours > 168) &&
+        throw(ArgumentError("duration_hours must be between 1 and 168, got $duration_hours"))
+
+    poll_body = Dict{String, Any}(
+        "question"         => Dict("text" => question),
+        "answers"          => [Dict("poll_media" => Dict("text" => a)) for a in answers],
+        "duration"         => duration_hours,
+        "allow_multiselect" => allow_multiselect,
+        "layout_type"      => 1,
+    )
+    body = Dict{String, Any}("poll" => poll_body)
+    resp = discord_post(rl, "/channels/$(channel_id)/messages";
+        token, body, major_params=["channel_id" => string(channel_id)])
+    parse_response(Message, resp)
+end
+
+"""
     get_answer_voters(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake, answer_id::Int; token::String, limit::Int=25) -> Dict
 
 Get users who voted for a specific poll answer.

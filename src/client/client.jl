@@ -11,7 +11,7 @@ and a `Channel` that receives the matching event.
 struct EventWaiter
     event_type::Type{<:AbstractEvent}
     check::Function
-    channel::Channel{Any}
+    channel::Channel
 end
 
 """
@@ -45,12 +45,12 @@ end
 start(client)
 ```
 """
-mutable struct Client <: AbstractClient
+mutable struct Client{S} <: AbstractClient
     token::String
     application_id::Nullable{Snowflake}
     intents::UInt32
     state::State
-    state_data::Any
+    state_data::S
     event_handler::EventHandler
     command_tree::CommandTree
     ratelimiter::RateLimiter
@@ -67,7 +67,7 @@ end
 function Client(token::String;
     intents::Union{Intents, UInt32, Integer} = IntentAllNonPrivileged,
     num_shards::Int = 1,
-    state::Any = nothing,
+    state = nothing,
     guild_strategy::CacheStrategy = CacheForever(),
     channel_strategy::CacheStrategy = CacheForever(),
     user_strategy::CacheStrategy = CacheLRU(10_000),
@@ -90,7 +90,7 @@ function Client(token::String;
 
     tree = CommandTree()
 
-    client = Client(
+    client = Client{typeof(state)}(
         actual_token,
         nothing,
         intents_val,
@@ -303,7 +303,7 @@ end
 ```
 """
 function wait_for(check::Function, client::Client, ::Type{T}; timeout::Real=30.0) where T <: AbstractEvent
-    ch = Channel{Any}(1)
+    ch = Channel{T}(1)
     waiter = EventWaiter(T, check, ch)
 
     lock(client._waiters_lock) do
