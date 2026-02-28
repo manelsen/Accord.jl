@@ -17,19 +17,19 @@ Represents a Discord user.
 @discord_struct User begin
     id::Snowflake
     username::String
-    discriminator::Optional{String}
-    global_name::Optional{String}
-    avatar::Nullable{String}
-    bot::Optional{Bool}
-    system::Optional{Bool}
-    mfa_enabled::Optional{Bool}
-    banner::Optional{String}
-    accent_color::Optional{Int}
-    locale::Optional{String}
-    verified::Optional{Bool}
-    email::Optional{String}
-    flags::Optional{Int}
-    premium_type::Optional{Int}
-    public_flags::Optional{Int}
-    avatar_decoration_data::Optional{Any}
+    discriminator::Maybe{String}
+    global_name::Maybe{String}
+    avatar::Maybe{String}
+    bot::Maybe{Bool}
+    system::Maybe{Bool}
+    mfa_enabled::Maybe{Bool}
+    banner::Maybe{String}
+    accent_color::Maybe{Int}
+    locale::Maybe{String}
+    verified::Maybe{Bool}
+    email::Maybe{String}
+    flags::Maybe{Int}
+    premium_type::Maybe{Int}
+    public_flags::Maybe{Int}
+    avatar_decoration_data::Maybe{Any}
 end

@@ -21,17 +21,17 @@ A guild member. This struct is received whenever information about a guild membe
 - `avatar_decoration_data::Optional{Any}` — data for the member's guild avatar decoration.
 """
 @discord_struct Member begin
-    user::Optional{User}
-    nick::Optional{String}
-    avatar::Optional{String}
+    user::Maybe{User}
+    nick::Maybe{String}
+    avatar::Maybe{String}
     roles::Vector{Snowflake}
     joined_at::String
-    premium_since::Optional{String}
-    deaf::Optional{Bool}
-    mute::Optional{Bool}
+    premium_since::Maybe{String}
+    deaf::Maybe{Bool}
+    mute::Maybe{Bool}
     flags::Int
-    pending::Optional{Bool}
-    permissions::Optional{String}
-    communication_disabled_until::Optional{String}
-    avatar_decoration_data::Optional{Any}
+    pending::Maybe{Bool}
+    permissions::Maybe{String}
+    communication_disabled_until::Maybe{String}
+    avatar_decoration_data::Maybe{Any}
 end

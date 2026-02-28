@@ -1,3 +1,36 @@
+# Timestamp field name heuristic — fields matching these patterns hold ISO8601 strings
+function _is_timestamp_field(name::Symbol)::Bool
+    s = string(name)
+    return s == "timestamp" || s == "expiry" || s == "end_" ||
+           endswith(s, "_at") || endswith(s, "_since") ||
+           endswith(s, "_until") || endswith(s, "_timestamp")
+end
+
+const _TS_FMT_MS = dateformat"yyyy-mm-ddTHH:MM:SS.sss"
+const _TS_FMT_S  = dateformat"yyyy-mm-ddTHH:MM:SS"
+
+"""
+    parse_timestamp(s) -> Union{DateTime, Missing}
+
+Parse a Discord ISO8601 timestamp string into a Julia `DateTime`.
+Returns `missing` if `s` is `missing`, empty, or unparseable (with a `@warn`).
+Sub-millisecond precision is silently truncated to milliseconds.
+"""
+function parse_timestamp(s::AbstractString)::Union{DateTime, Missing}
+    isempty(s) && return missing
+    try
+        if length(s) >= 23 && s[20] == '.'
+            return DateTime(s[1:23], _TS_FMT_MS)
+        else
+            return DateTime(s[1:min(19, length(s))], _TS_FMT_S)
+        end
+    catch
+        @warn "Failed to parse Discord timestamp" timestamp=s
+        return missing
+    end
+end
+parse_timestamp(::Missing) = missing
+
 """
     @discord_struct Name begin
         field::Type
@@ -31,7 +64,8 @@ true
 """
 macro discord_struct(name, block)
     field_exprs = []
-    
+    timestamp_fields = Symbol[]
+
     for expr in block.args
         if expr isa LineNumberNode
             push!(field_exprs, expr)
@@ -58,6 +92,7 @@ macro discord_struct(name, block)
         end
 
         if !isnothing(fname)
+            fname isa Symbol && _is_timestamp_field(fname) && push!(timestamp_fields, fname)
             ftype_expr = esc(ftype)
             fname_expr = esc(fname)
             
@@ -69,6 +104,9 @@ macro discord_struct(name, block)
                 if ftype isa Expr && ftype.head == :curly
                     wrapper = ftype.args[1]
                     if wrapper == :Optional || (wrapper isa Expr && wrapper.head == :. && wrapper.args[2] isa QuoteNode && wrapper.args[2].value == :Optional)
+                        push!(field_exprs, Expr(:(=), :($(fname_expr)::$(ftype_expr)), :missing))
+                        found_wrapper = true
+                    elseif wrapper == :Maybe || (wrapper isa Expr && wrapper.head == :. && wrapper.args[2] isa QuoteNode && wrapper.args[2].value == :Maybe)
                         push!(field_exprs, Expr(:(=), :($(fname_expr)::$(ftype_expr)), :missing))
                         found_wrapper = true
                     elseif wrapper == :Nullable || (wrapper isa Expr && wrapper.head == :. && wrapper.args[2] isa QuoteNode && wrapper.args[2].value == :Nullable)
@@ -101,6 +139,22 @@ macro discord_struct(name, block)
 
     esc_name = esc(name)
 
+    getprop_block = if isempty(timestamp_fields)
+        :()
+    else
+        checks = [:(name === $(QuoteNode(f))) for f in timestamp_fields]
+        is_ts = reduce((a, b) -> :($a || $b), checks)
+        quote
+            function Base.getproperty(obj::$esc_name, name::Symbol)
+                val = getfield(obj, name)
+                if $is_ts && val isa AbstractString
+                    return parse_timestamp(val)
+                end
+                return val
+            end
+        end
+    end
+
     quote
         Base.@kwdef mutable struct $esc_name
             $(field_exprs...)
@@ -108,6 +162,8 @@ macro discord_struct(name, block)
 
         $StructTypes.StructType(::Type{$esc_name}) = $StructTypes.Mutable()
         $StructTypes.omitempties(::Type{$esc_name}) = true
+
+        $getprop_block
     end
 end
 

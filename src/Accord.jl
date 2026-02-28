@@ -3,12 +3,13 @@ module Accord
 # === Constants ===
 const API_VERSION = 10
 const API_BASE = "https://discord.com/api/v$(API_VERSION)"
-const ACCORD_VERSION = v"0.1.0"
+const ACCORD_VERSION = v"0.3.0-alpha"
 const USER_AGENT = "DiscordBot (Accord.jl, $ACCORD_VERSION)"
 
 # === Type aliases ===
 const Optional{T} = Union{T, Missing}
 const Nullable{T} = Union{T, Nothing}
+const Maybe{T} = Union{T, Missing, Nothing}
 
 # === Dependencies ===
 using Dates
@@ -130,54 +131,71 @@ include("voice/client.jl")
 include("utils/permissions.jl")
 include("diagnostics/Diagnoser.jl")
 
+# === Internal namespace ===
+# Stable escape hatch for non-public APIs used by advanced users and tests.
+module Internals
+using ..Accord
+
+# Voice internals
+const VoiceGatewaySession = Accord.VoiceGatewaySession
+const CRYPTO_SECRETBOX_KEYBYTES = Accord.CRYPTO_SECRETBOX_KEYBYTES
+const CRYPTO_SECRETBOX_NONCEBYTES = Accord.CRYPTO_SECRETBOX_NONCEBYTES
+const ENCRYPTION_MODES = Accord.ENCRYPTION_MODES
+const select_encryption_mode = Accord.select_encryption_mode
+const xsalsa20_poly1305_encrypt = Accord.xsalsa20_poly1305_encrypt
+const rtp_header = Accord.rtp_header
+const VoiceOpcodes = Accord.VoiceOpcodes
+
+# Command/check internals
+const pending_checks = Accord.pending_checks
+const push_pending_check! = Accord.push_pending_check!
+const drain_pending_checks! = Accord.drain_pending_checks!
+const run_checks = Accord.run_checks
+const register_command! = Accord.register_command!
+const register_component! = Accord.register_component!
+const register_modal! = Accord.register_modal!
+const dispatch_interaction! = Accord.dispatch_interaction!
+
+# REST infra internals
+const RateLimiter = Accord.RateLimiter
+const Route = Accord.Route
+end
+
+const internals = Internals
+
 # === Exports ===
 
 # Core & Snowflake
-export Snowflake, timestamp, Optional, Nullable
+export Snowflake, timestamp, Optional, Nullable, Internals, internals
 
 # Main Discord Types
 export User, Guild, UnavailableGuild, DiscordChannel, Message, Member, Role, Emoji
-export Embed, Attachment, Reaction, Component, Interaction, SelectOption
+export Embed, Attachment, Component, Interaction
 export Invite, Webhook, AuditLog, AutoModRule, ScheduledEvent, Poll
 export Presence, Activity, VoiceState, VoiceRegion
 export InteractionContext, InteractionData, InteractionDataOption, ApplicationCommand
-export Overwrite, Ban, ThreadMetadata, ThreadMember, ForumTag
-export Sticker, StickerItem, StickerPack, StageInstance, GuildTemplate
-export MessageReference, MessageActivity, AllowedMentions
+export Overwrite, Ban, ThreadMember
+export Sticker, StageInstance, GuildTemplate
 
 # Client & Lifecycle
 export Client, start, stop, wait_until_ready, on, on_error
 export wait_for, EventWaiter
-export reply, create_message, edit_message, delete_message, create_reaction
+export create_message, edit_message, delete_message, create_reaction
+export create_poll, modify_thread
+export create_forum_tag, modify_forum_tag, delete_forum_tag
 export get_channel, get_guild, get_user
 export update_voice_state, update_presence, request_guild_members
 
 # Events
-export AbstractEvent, UnknownEvent, ReadyEvent, ResumedEvent
-export ChannelCreate, ChannelUpdate, ChannelDelete, ChannelPinsUpdate
-export ThreadCreate, ThreadUpdate, ThreadDelete, ThreadListSync, ThreadMemberUpdate, ThreadMembersUpdate
-export GuildCreate, GuildUpdate, GuildDelete, GuildAuditLogEntryCreate
-export GuildBanAdd, GuildBanRemove, GuildEmojisUpdate, GuildStickersUpdate
-export GuildIntegrationsUpdate
-export GuildMemberAdd, GuildMemberRemove, GuildMemberUpdate, GuildMembersChunk
-export GuildRoleCreate, GuildRoleUpdate, GuildRoleDelete
-export GuildScheduledEventCreate, GuildScheduledEventUpdate, GuildScheduledEventDelete
-export GuildScheduledEventUserAdd, GuildScheduledEventUserRemove
-export GuildSoundboardSoundCreate, GuildSoundboardSoundUpdate, GuildSoundboardSoundDelete
-export GuildSoundboardSoundsUpdate, SoundboardSounds
-export IntegrationCreate, IntegrationUpdate, IntegrationDelete
-export InteractionCreate, MessageCreate, MessageUpdate, MessageDelete, MessageDeleteBulk
-export MessageReactionAdd, MessageReactionRemove, MessageReactionRemoveAll, MessageReactionRemoveEmoji
-export MessagePollVoteAdd, MessagePollVoteRemove
-export PresenceUpdate, TypingStart, UserUpdate
-export VoiceStateUpdateEvent, VoiceServerUpdate, VoiceChannelEffectSend, WebhooksUpdate
-export EntitlementCreate, EntitlementUpdate, EntitlementDelete
-export SubscriptionCreate, SubscriptionUpdate, SubscriptionDelete
-export AutoModerationRuleCreate, AutoModerationRuleUpdate, AutoModerationRuleDelete
-export AutoModerationActionExecution
+export AbstractEvent, UnknownEvent, ReadyEvent
+export ChannelCreate, ChannelDelete
+export GuildCreate, GuildDelete
+export GuildMemberAdd, GuildMemberRemove, GuildMemberUpdate
+export InteractionCreate, MessageCreate
+export PresenceUpdate, TypingStart
 
 # State & Cache
-export State, Store, CacheStrategy, CacheForever, CacheNever, CacheLRU, CacheTTL
+export State, Store, CacheForever, CacheNever, CacheLRU, CacheTTL
 
 # Macros (The Public Interface)
 export @slash_command, @user_command, @message_command
@@ -188,57 +206,48 @@ export @on, @embed, @group, @subcommand
 # Interactions Helpers
 export get_options, get_option, custom_id, selected_values, modal_values, target
 export respond, defer, edit_response, followup, show_modal
-export sync_commands!, register_command!, register_component!, register_modal!, dispatch_interaction!
-export CommandTree
+export sync_commands!
 
 # Check guards
 export has_permissions, is_owner, is_in_guild, cooldown
 
 # Component Builders
 export action_row, button, string_select, select_option
-export user_select, role_select, mentionable_select, channel_select
 export text_input, embed, command_option
 export embed_field, embed_footer, embed_author, activity
 export container, section, text_display, thumbnail, media_gallery, media_gallery_item, file_component, separator, unfurled_media
 
 # Enums (as modules)
-export ChannelTypes, MessageTypes, InteractionTypes, InteractionCallbackTypes
+export ChannelTypes, MessageTypes, InteractionTypes
 export ApplicationCommandTypes, ApplicationCommandOptionTypes
 export ComponentTypes, ButtonStyles, TextInputStyles
-export ActivityTypes, StatusTypes, WebhookTypes, AuditLogEventTypes
-export AutoModTriggerTypes, AutoModEventTypes, AutoModActionTypes
-export ScheduledEventStatuses, ScheduledEventEntityTypes
-export StickerTypes, StickerFormatTypes
-export Locales, GuildFeatures
+export ActivityTypes
+export StickerTypes
 
 # Flags & Intents
-export Intents, IntentGuilds, IntentGuildMembers, IntentGuildModeration
-export IntentGuildExpressions, IntentGuildIntegrations, IntentGuildWebhooks
-export IntentGuildInvites, IntentGuildVoiceStates, IntentGuildPresences
-export IntentGuildMessages, IntentGuildMessageReactions, IntentGuildMessageTyping
-export IntentDirectMessages, IntentDirectMessageReactions, IntentDirectMessageTyping
-export IntentMessageContent, IntentGuildScheduledEvents
-export IntentAutoModerationConfiguration, IntentAutoModerationExecution
-export IntentGuildMessagePolls, IntentDirectMessagePolls
+export Intents, IntentGuilds, IntentGuildMembers
+export IntentGuildPresences
+export IntentGuildMessages
+export IntentMessageContent
 export IntentAllNonPrivileged, IntentAll
 export has_flag
 
 export Permissions
-export PermAdministrator, PermManageChannels, PermManageGuild, PermKickMembers, PermBanMembers
+export PermAdministrator, PermManageGuild, PermKickMembers, PermBanMembers
 export PermSendMessages, PermEmbedLinks, PermAttachFiles, PermReadMessageHistory
-export PermConnect, PermSpeak, PermMuteMembers, PermDeafenMembers, PermMoveMembers
-export PermManageRoles, PermManageWebhooks, PermViewChannel, PermManageMessages, PermViewAuditLog
+export PermConnect, PermSpeak
+export PermViewChannel, PermManageMessages
 
 export MessageFlags, MsgFlagEphemeral, MsgFlagSuppressEmbeds
-export UserFlags, SystemChannelFlags, ChannelFlags, GuildMemberFlags, RoleFlags, AttachmentFlags
 
 # Voice
 export VoiceClient, connect!, disconnect!
-export AbstractAudioSource, PCMSource, FileSource, FFmpegSource
+export AbstractAudioSource, PCMSource, FileSource, FFmpegSource, SilenceSource
 export AudioPlayer, play!, stop!, pause!, resume!, is_playing
-
-# REST Internals (needed by tests)
-export RateLimiter, Route
+export OpusEncoder, OpusDecoder, opus_encode, opus_decode, set_bitrate!, set_signal!
+export OPUS_SAMPLE_RATE, OPUS_CHANNELS, OPUS_FRAME_SIZE, OPUS_FRAME_DURATION_MS, OPUS_MAX_PACKET_SIZE
+export OPUS_APPLICATION_AUDIO, OPUS_APPLICATION_VOIP
+export read_frame, close_source
 
 # Initialize libsodium on module load
 function __init__()
