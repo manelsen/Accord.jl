@@ -1,192 +1,192 @@
 # DECISIONS.md — Accord.jl Architecture Decision Records
 
-Registro formal de decisões de design com impacto não-óbvio.
-Cada entrada segue o formato ADR (Architecture Decision Record).
+Formal record of design decisions with non-obvious impact.
+Each entry follows the ADR (Architecture Decision Record) format.
 
 ---
 
-## ADR-001 — HandlerGroup em vez de sistema de Cogs
+## ADR-001 — HandlerGroup instead of Cogs system
 
-**Data:** 2026-02-23
-**Status:** Aceito
-**Contexto:** Planejamento v0.4.0 (parity com discord.py)
+**Date:** 2026-02-23
+**Status:** Accepted
+**Context:** v0.4.0 Planning (parity with discord.py)
 
-### Contexto
+### Context
 
-O plano de paridade funcional com discord.py (v0.4.0) incluía, como M6,
-a implementação de um sistema de Cogs — a abstração do discord.py que
-agrupa comandos, event listeners e estado relacionados em uma classe Python
-com ciclo de vida de load/unload.
+The functional parity plan with discord.py (v0.4.0) included, as M6,
+the implementation of a Cogs system — the discord.py abstraction that
+groups related commands, event listeners, and state into a Python class
+with a load/unload lifecycle.
 
-O problema que Cogs resolvem tem três partes:
-1. **Organização** — agrupar handlers relacionados em uma unidade nomeada.
-2. **Estado compartilhado** — um grupo de handlers (ex: módulo de música)
-   precisa de estado comum (filas, players) acessível entre eles.
-3. **Load/unload em runtime** — habilitar ou desabilitar um conjunto de
-   features sem reiniciar o bot.
+The problem Cogs solve has three parts:
+1. **Organization** — grouping related handlers into a named unit.
+2. **Shared State** — a group of handlers (e.g., music module)
+   needs common state (queues, players) accessible among them.
+3. **Runtime load/unload** — enabling or disabling a set of
+   features without restarting the bot.
 
-### Decisão
+### Decision
 
-**Não implementar Cogs.** Implementar `HandlerGroup` — uma abstração
-mínima que resolve apenas o problema (3), o único que Julia não resolve
-nativamente.
+**Do not implement Cogs.** Implement `HandlerGroup` — a minimal
+abstraction that solves only problem (3), the only one Julia doesn't
+natively solve.
 
-API aprovada:
+Approved API:
 
 ```julia
-# Criar grupo nomeado
+# Create named group
 group = HandlerGroup("music")
 
-# Registrar handlers no grupo (mesma API pública de sempre)
-@slash_command group "play" "Toca uma música" begin
+# Register handlers in the group (same public API as always)
+@slash_command group "play" "Plays a song" begin
     ...
 end
-@slash_command group "stop" "Para a reprodução" begin
+@slash_command group "stop" "Stops playback" begin
     ...
 end
 @on group MessageCreate begin
     ...
 end
 
-# Carregar no client (registra todos os handlers do grupo de uma vez)
+# Load into the client (registers all group handlers at once)
 load!(client, group)
 
-# Descarregar em runtime (remove todos os handlers do grupo)
+# Unload at runtime (removes all group handlers)
 unload!(client, "music")
 ```
 
-### Justificativa
+### Justification
 
-**Por que Cogs não fazem sentido em Julia:**
+**Why Cogs don't make sense in Julia:**
 
-Cogs existem em Python porque a linguagem não oferece outro mecanismo para
-associar funções a estado compartilhado sem classes. O decorador
-`@commands.command` em um método de instância só funciona porque há uma
-classe (`self`) por baixo.
+Cogs exist in Python because the language offers no other mechanism for
+associating functions with shared state without classes. The
+`@commands.command` decorator on an instance method only works because there is a
+class (`self`) underneath.
 
-Julia já resolve os problemas (1) e (2) com mecanismos nativos:
+Julia already solves problems (1) and (2) with native mechanisms:
 
-- **Organização (1):** módulos Julia são a unidade natural de namespacing.
-  Um arquivo `cogs/music.jl` com `module Music ... end` já resolve isso
-  sem nenhum código de biblioteca.
+- **Organization (1):** Julia modules are the natural unit of namespacing.
+  A `cogs/music.jl` file with `module Music ... end` already solves this
+  without any library code.
 
-- **Estado compartilhado (2):** closures capturam estado sem cerimônia.
-  Um `Dict` definido antes dos handlers é acessível em todos eles
-  automaticamente — sem `self`, sem instância de classe.
+- **Shared State (2):** closures capture state seamlessly.
+  A `Dict` defined before the handlers is automatically accessible in all
+  of them — no `self`, no class instance.
 
 ```julia
-# Julia: estado compartilhado via closure, sem abstração extra
+# Julia: shared state via closure, no extra abstraction
 queue = Dict{Snowflake, Vector{String}}()
 
-@slash_command client "play" "Toca" begin
+@slash_command client "play" "Play" begin
     push!(queue[ctx.guild_id], get_option(ctx, "url"))
 end
 
-@slash_command client "skip" "Pula" begin
+@slash_command client "skip" "Skip" begin
     popfirst!(queue[ctx.guild_id])
 end
 ```
 
-O único problema que Julia **não** resolve nativamente é (3): não há
-mecanismo built-in para remover em runtime um conjunto nomeado de handlers
-já registrados no `CommandTree`. `HandlerGroup` resolve exclusivamente isso.
+The only problem Julia **doesn't** solve natively is (3): there is no
+built-in mechanism to remove at runtime a named set of handlers
+already registered in the `CommandTree`. `HandlerGroup` solves exactly this.
 
-**Por que não apenas módulos com `register!(client)`:**
+**Why not just Julia modules with `register!(client)`:**
 
-Isso resolve (1) e (2) mas sacrifica (3) completamente. O bot precisaria
-reiniciar para desativar um módulo.
+This solves (1) and (2) but completely sacrifices (3). The bot would need
+to restart to deactivate a module.
 
-### Consequências no plano v0.4.0
+### Consequences on v0.4.0 plan
 
-Os requisitos RF-009, RF-010, RF-011 e RS-003 do plano original são
-substituídos:
+Requirements RF-009, RF-010, RF-011, and RS-003 of the original plan are
+replaced:
 
-| Original | Substituído por |
+| Original | Replaced by |
 |---|---|
 | RF-009 `load_cog!(client, cog)` | RF-009 `load!(client, group::HandlerGroup)` |
 | RF-010 `unload_cog!(client, name)` | RF-010 `unload!(client, name::String)` |
-| RF-011 `@cog` macro | RF-011 `HandlerGroup(name)` construtor simples |
-| RS-003 colisão de nome de cog | RS-003 colisão de nome de grupo (sem mudança) |
+| RF-011 `@cog` macro | RF-011 `HandlerGroup(name)` simple constructor |
+| RS-003 cog name collision | RS-003 group name collision (no change) |
 
-**Impacto em exports:** substituir `load_cog!`, `unload_cog!`, `@cog`,
-`AbstractCog` por `load!`, `unload!`, `HandlerGroup`.
+**Impact on exports:** replace `load_cog!`, `unload_cog!`, `@cog`,
+`AbstractCog` with `load!`, `unload!`, `HandlerGroup`.
 
-**Impacto em arquivos:** `src/interactions/cog.jl` → renomear para
+**Impact on files:** `src/interactions/cog.jl` → rename to
 `src/interactions/handler_group.jl`.
 
-### Alternativas consideradas
+### Alternatives considered
 
-| Alternativa | Motivo da rejeição |
+| Alternative | Reason for rejection |
 |---|---|
-| Port direto de Cogs (struct + macro `@cog`) | Padrão OOP-Python sem equivalente idiomático em Julia; adiciona complexidade sem benefício |
-| Apenas módulos Julia + convenção `register!` | Não resolve load/unload em runtime |
-| Nenhuma abstração (sem M6) | Bots grandes sem mecanismo de load/unload têm DX ruim para features opcionais |
+| Direct port of Cogs (struct + `@cog` macro) | Python-OOP pattern without an idiomatic equivalent in Julia; adds complexity without benefit |
+| Just Julia modules + `register!` convention | Doesn't solve runtime load/unload |
+| No abstraction (without M6) | Large bots without a load/unload mechanism have poor DX for optional features |
 
-### Referências
+### References
 
-- Discussão interna: conversa de design de 2026-02-23
+- Internal discussion: design meeting 2026-02-23
 - discord.py Cogs: https://discordpy.readthedocs.io/en/stable/ext/commands/cogs.html
-  (referência de design, não de API Discord)
+  (design reference, not Discord API reference)
 
 ---
 
-## ADR-002 — Estratégia de Confiabilidade baseada em Testes de Contrato com Fixtures
+## ADR-002 — Reliability Strategy based on Contract Tests with Fixtures
 
-**Data:** 2026-02-25
-**Status:** Aceito
-**Contexto:** Robustez de parser/eventos/REST frente a drift da API Discord
+**Date:** 2026-02-25
+**Status:** Accepted
+**Context:** Parser/event/REST robustness against Discord API drift
 
-### Contexto
+### Context
 
-O Accord já possui boa cobertura unitária e integração com mocks, mas
-fixtures reais ainda cobrem uma fração da superfície suportada (gateway
-e REST). Isso aumenta risco de regressão silenciosa em mudanças de:
+Accord already has good unit coverage and integration with mocks, but
+real fixtures still cover a fraction of the supported surface (gateway
+and REST). This increases the risk of silent regression in changes to:
 
-1. Tipos (`@discord_struct`, `Optional`/`Nullable`)
-2. Dispatch de eventos (`EVENT_TYPES`)
-3. Parsing de respostas REST
+1. Types (`@discord_struct`, `Optional`/`Nullable`)
+2. Event dispatch (`EVENT_TYPES`)
+3. Parsing of REST responses
 
-Para uma biblioteca resiliente, o ponto de detecção de falhas deve ser
-o PR (CI), não produção.
+For a resilient library, the point of failure detection must be
+the PR (CI), not production.
 
-### Decisão
+### Decision
 
-Adotar como padrão de confiabilidade um modelo híbrido:
+Adopt as a reliability standard a hybrid model:
 
-1. **Testes de contrato com fixtures** como guardrail principal.
-2. **Fixtures reais capturadas** sempre que viável.
-3. **Fixtures sintéticas validadas por contrato** quando evento é raro ou
-   difícil de reproduzir em ambiente de captura.
-4. **Gate de cobertura em CI** para impedir regressão de contrato.
+1. **Contract tests with fixtures** as the primary guardrail.
+2. **Captured real fixtures** whenever feasible.
+3. **Synthetic fixtures validated by contract** when an event is rare or
+   difficult to reproduce in a capture environment.
+4. **Coverage gate in CI** to prevent contract regression.
 
-### Consequências
+### Consequences
 
-1. O projeto passa a exigir manutenção ativa do inventário de fixtures.
-2. Novos eventos/rotas suportados devem vir acompanhados de cobertura
-   declarada (fixture + teste).
-3. Refactors em gateway/tipos/REST tornam-se mais seguros e previsíveis.
-4. O custo inicial de curadoria de fixtures aumenta, mas com redução de
-   bugs de integração no médio prazo.
+1. The project now requires active maintenance of the fixture inventory.
+2. New supported events/routes must be accompanied by declared coverage
+   (fixture + test).
+3. Refactors in gateway/types/REST become safer and more predictable.
+4. The initial cost of fixture curation increases, but with a reduction of
+   integration bugs in the medium term.
 
-### Escopo da primeira sprint
+### Scope of the first sprint
 
-A execução inicial está documentada em:
+Initial execution is documented in:
 
 - `docs/PLAN-reliability-sprint.md`
 
-Esse plano define baseline, metas mensuráveis, backlog por custo/benefício,
-ferramentas Julia utilizadas e Definition of Done.
+This plan defines the baseline, measurable goals, backlog by cost/benefit,
+Julia tools used, and Definition of Done.
 
-### Alternativas consideradas
+### Alternatives considered
 
-| Alternativa | Motivo da rejeição |
+| Alternative | Reason for rejection |
 |---|---|
-| Manter apenas mocks sintéticos | Bom para rota/método, fraco contra drift real de payload |
-| Buscar 100% de eventos reais em uma sprint | Não realista para eventos raros/condicionais |
-| Confiar só em testes manuais com bot online | Alto custo operacional e baixa reprodutibilidade |
+| Maintain only synthetic mocks | Good for route/method, weak against real payload drift |
+| Aim for 100% real events in one sprint | Not realistic for rare/conditional events |
+| Rely only on manual tests with online bot | High operational cost and low reproducibility |
 
-### Referências
+### References
 
-- Manifesto de fixtures: `test/integration/fixtures/_manifest.json`
-- Mapeamento de eventos suportados: `src/gateway/events.jl` (`EVENT_TYPES`)
-- Plano de execução: `docs/PLAN-reliability-sprint.md`
+- Fixtures manifest: `test/integration/fixtures/_manifest.json`
+- Supported events mapping: `src/gateway/events.jl` (`EVENT_TYPES`)
+- Execution plan: `docs/PLAN-reliability-sprint.md`

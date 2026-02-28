@@ -1,8 +1,8 @@
 using Accord
 using Dates
 
-# ─── 1. Estrutura de Estado (O "Coração" do seu Bot) ─────────────────────────
-# Em Julia, evitamos variáveis globais. Injetamos este estado no Contexto.
+# ─── 1. State Structure (The "Heart" of your Bot) ─────────────────────────
+# In Julia, we avoid global variables. We inject this state into the Context.
 mutable struct BotState
     start_time::DateTime
     commands_run::Int
@@ -10,35 +10,35 @@ mutable struct BotState
     admin_users::Vector{Snowflake}
 end
 
-# ─── 2. Guardas Personalizados ────────────────────────────────────────────────
-# Podemos criar nossos próprios checks reusáveis.
+# ─── 2. Custom Guards ────────────────────────────────────────────────
+# We can create our own reusable checks.
 function is_bot_admin()
     return function(ctx)
-        if ctx.state.commands_run > 1000 # Exemplo de lógica dinâmica
+        if ctx.state.commands_run > 1000 # Example of dynamic logic
             return true
         end
-        # Verifica na nossa lista de admins injetada no estado
+        # Check against our admin list injected into the state
         return ctx.user.id in ctx.state.admin_users
     end
 end
 
-# ─── 3. Inicialização ────────────────────────────────────────────────────────
-state = BotState(now(), 0, 0, [Snowflake(0)]) # Adicione seu ID aqui
+# ─── 3. Initialization ────────────────────────────────────────────────────────
+state = BotState(now(), 0, 0, [Snowflake(0)]) # Add your ID here
 
-client = Client(get(ENV, "DISCORD_TOKEN", "SEU_TOKEN");
+client = Client(get(ENV, "DISCORD_TOKEN", "YOUR_TOKEN");
     intents = IntentGuilds | IntentGuildMessages | IntentMessageContent,
-    state = state # Injeção de estado! Acessível via ctx.state
+    state = state # State injection! Accessible via ctx.state
 )
 
-# ─── 4. Eventos de Ciclo de Vida ──────────────────────────────────────────────
+# ─── 4. Lifecycle Events ──────────────────────────────────────────────
 on(client, ReadyEvent) do c, event
-    @info "Bot conectado como $(event.user.username)"
-    # Sincroniza comandos globalmente
+    @info "Bot connected as $(event.user.username)"
+    # Sync commands globally
     sync_commands!(c, c.command_tree)
 end
 
-# ─── 5. Comandos Slash com Opções ────────────────────────────────────────────
-@slash_command client "stats" "Mostra estatísticas do bot" function(ctx)
+# ─── 5. Slash Commands with Options ────────────────────────────────────────────
+@slash_command client "stats" "Shows bot statistics" function(ctx)
     ctx.state.commands_run += 1
     uptime = canonicalize(Dates.CompoundPeriod(now() - ctx.state.start_time))
     
@@ -47,8 +47,8 @@ end
         color = 0x5865F2,
         fields = [
             embed_field("Uptime", "$uptime", true),
-            embed_field("Comandos", "$(ctx.state.commands_run)", true),
-            embed_field("Feedbacks", "$(ctx.state.feedback_count)", true)
+            embed_field("Commands", "$(ctx.state.commands_run)", true),
+            embed_field("Feedback", "$(ctx.state.feedback_count)", true)
         ],
         footer = embed_footer("Powered by Julia")
     )
@@ -56,57 +56,57 @@ end
     respond(ctx; embeds=[embed_data])
 end
 
-# ─── 6. Comandos de Contexto (Clique Direito) ────────────────────────────────
-@user_command client "Informações do Membro" function(ctx)
-    target_user = target(ctx) # Pega o usuário que recebeu o clique
-    respond(ctx; content="Você selecionou **$(target_user.username)** (ID: $(target_user.id))", ephemeral=true)
+# ─── 6. Context Commands (Right Click) ────────────────────────────────
+@user_command client "Member Info" function(ctx)
+    target_user = target(ctx) # Gets the user that was clicked
+    respond(ctx; content="You selected **$(target_user.username)** (ID: $(target_user.id))", ephemeral=true)
 end
 
-# ─── 7. Componentes e Modais ─────────────────────────────────────────────────
-@slash_command client "feedback" "Envia um feedback para os desenvolvedores" function(ctx)
-    # Mostra um botão para abrir o Modal
-    btn = button(ButtonStyles.PRIMARY, "abrir_feedback"; label="Enviar Feedback")
+# ─── 7. Components and Modals ─────────────────────────────────────────────────
+@slash_command client "feedback" "Sends feedback to the developers" function(ctx)
+    # Shows a button to open the Modal
+    btn = button(ButtonStyles.PRIMARY, "open_feedback"; label="Send Feedback")
     row = action_row([btn])
     
     respond(ctx; 
-        content="Clique no botão abaixo para abrir o formulário de feedback.",
+        content="Click the button below to open the feedback form.",
         components=[row],
         ephemeral=true
     )
 end
 
-# Handler do Botão
-@button_handler client "abrir_feedback" function(ctx)
-    # Abre um formulário (Modal)
-    show_modal(ctx, "modal_feedback", "Formulário de Feedback", [
+# Button Handler
+@button_handler client "open_feedback" function(ctx)
+    # Opens a form (Modal)
+    show_modal(ctx, "modal_feedback", "Feedback Form", [
         action_row([
-            text_input("fb_title", "Assunto"; placeholder="Ex: Bug no comando stats")
+            text_input("fb_title", "Subject"; placeholder="E.g.: Bug in the stats command")
         ]),
         action_row([
-            text_input("fb_body", "Mensagem"; style=TextInputStyles.PARAGRAPH)
+            text_input("fb_body", "Message"; style=TextInputStyles.PARAGRAPH)
         ])
     ])
 end
 
-# Handler do Modal
+# Modal Handler
 @modal_handler client "modal_feedback" function(ctx)
-    vals = modal_values(ctx) # Dicionário com os inputs
+    vals = modal_values(ctx) # Dictionary with inputs
     ctx.state.feedback_count += 1
     
-    @info "Feedback recebido" titulo=vals["fb_title"] corpo=vals["fb_body"]
+    @info "Feedback received" title=vals["fb_title"] body=vals["fb_body"]
     
-    respond(ctx; content="Obrigado pelo feedback! Registrado como #$(ctx.state.feedback_count)", ephemeral=true)
+    respond(ctx; content="Thank you for the feedback! Registered as #$(ctx.state.feedback_count)", ephemeral=true)
 end
 
-# ─── 8. Comandos Restritos (Checks) ──────────────────────────────────────────
-@check is_owner() # Apenas o dono do bot
-@slash_command client "shutdown" "Desliga o bot remotamente" function(ctx)
-    respond(ctx; content="Encerrando processos... Tchau!")
+# ─── 8. Restricted Commands (Checks) ──────────────────────────────────────────
+@check is_owner() # Only the bot owner
+@slash_command client "shutdown" "Remotely shuts down the bot" function(ctx)
+    respond(ctx; content="Shutting down processes... Bye!")
     sleep(1.0)
     stop(ctx.client)
     exit(0)
 end
 
-# ─── 9. Execução ─────────────────────────────────────────────────────────────
-@info "Iniciando bot..."
+# ─── 9. Execution ─────────────────────────────────────────────────────────────
+@info "Starting bot..."
 start(client)

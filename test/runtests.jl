@@ -12,7 +12,7 @@ function run_accord_tests()
     ENV["RETESTITEMS_REPORT_LOCATION"] = report_dir
     println("▶ JUnit XML reports: $report_dir")
 
-    # Definimos a função de filtro baseada na categoria
+    # Define filter function based on category
     function ti_filter(ti)
         if category == "unit"
             return :unit in ti.tags

@@ -1,45 +1,45 @@
 using Accord
 using DotEnv
 
-# Carrega variáveis de ambiente do arquivo .env (se existir)
+# Load environment variables from .env file (if it exists)
 DotEnv.config()
 
-# Token do Bot
+# Bot Token
 const TOKEN = get(ENV, "DISCORD_TOKEN", "")
 
 if isempty(TOKEN)
-    println("Erro: DISCORD_TOKEN não encontrado. Crie um arquivo .env ou defina a variável de ambiente.")
+    println("Error: DISCORD_TOKEN not found. Create a .env file or set the environment variable.")
     exit(1)
 end
 
-# Inicializa o Cliente
-# Intents básicos: Guilds (para comandos slash)
+# Initialize Client
+# Basic Intents: Guilds (for slash commands)
 client = Client(TOKEN; intents = IntentGuilds)
 
-# --- Eventos ---
+# --- Events ---
 
 on(client, ReadyEvent) do c, event
-    @info "Bot conectado! Logado como $(event.user.username)"
+    @info "Bot connected! Logged in as $(event.user.username)"
     
-    # Registra os comandos slash definidos abaixo
-    # Em produção, você pode querer registrar globalmente (pode demorar 1h)
-    # ou por guilda (imediato) passando guild_id=...
+    # Register slash commands defined below
+    # In production, you might want to register globally (may take 1h)
+    # or per guild (immediate) by passing guild_id=...
     sync_commands!(c)
 end
 
-# --- Comandos ---
+# --- Commands ---
 
-@slash_command client "ping" "Verifica a latência do bot" function(ctx)
-    # Responde à interação
+@slash_command client "ping" "Check bot latency" function(ctx)
+    # Respond to interaction
     respond(ctx; content="Pong! 🏓")
 end
 
-@slash_command client "hello" "Diz olá para o usuário" function(ctx)
+@slash_command client "hello" "Say hello to the user" function(ctx)
     user = ctx.user
-    respond(ctx; content="Olá, **$(user.username)**! Bem-vindo ao Accord.jl.")
+    respond(ctx; content="Hello, **$(user.username)**! Welcome to Accord.jl.")
 end
 
-# --- Execução ---
+# --- Execution ---
 
-@info "Iniciando o bot..."
+@info "Starting the bot..."
 start(client)

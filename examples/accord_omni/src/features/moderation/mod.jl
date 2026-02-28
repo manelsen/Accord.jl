@@ -3,7 +3,7 @@ module Moderation
 using Accord
 using Dates
 
-# Carrega submódulos locais
+# Load local submodules
 include("repository.jl")
 include("service.jl")
 
@@ -14,80 +14,80 @@ function install(client::Client)
     db = client.state.db
     Repository.init_tables(db)
     
-    # --- Comandos Slash ---
+    # --- Slash Commands ---
     
-    @slash_command client "ban" "Banir um usuário" function(ctx)
-        # Permissão: Check simples (num bot real seria @check has_permissions)
+    @slash_command client "ban" "Ban a user" function(ctx)
+        # Permission: Simple check (in a real bot use @check has_permissions)
         # if !has_permission(ctx.member, :BAN_MEMBERS) ... end
         
         target = get(ctx.options, "user", nothing)
-        reason = get(ctx.options, "reason", "Sem motivo especificado")
+        reason = get(ctx.options, "reason", "No reason specified")
         
         if isnothing(target)
-            respond(ctx, "Usuário inválido.", ephemeral=true)
+            respond(ctx, "Invalid user.", ephemeral=true)
             return
         end
         
-        # 1. Executa Ação no Discord
+        # 1. Execute Action on Discord
         try
             ban_member(ctx.client, ctx.guild_id, target.id; reason=reason)
         catch e
-            respond(ctx, "Falha ao banir: $(e)", ephemeral=true)
+            respond(ctx, "Failed to ban: $(e)", ephemeral=true)
             return
         end
         
-        # 2. Loga no DB (Service Layer)
+        # 2. Log in DB (Service Layer)
         case_id = Service.log_action(db, Int(ctx.guild_id), Int(target.id), Int(ctx.user.id), "BAN", reason)
         
-        # 3. Responde
+        # 3. Respond
         respond(ctx, "🔨 **Banned** $(target.username) (Case #$case_id)
-📄 Motivo: $reason")
+📄 Reason: $reason")
     end
     
-    @slash_command client "kick" "Expulsar um usuário" function(ctx)
+    @slash_command client "kick" "Kick a user" function(ctx)
         target = get(ctx.options, "user", nothing)
-        reason = get(ctx.options, "reason", "Sem motivo especificado")
+        reason = get(ctx.options, "reason", "No reason specified")
 
         if isnothing(target)
-            respond(ctx, "Usuário inválido.", ephemeral=true)
+            respond(ctx, "Invalid user.", ephemeral=true)
             return
         end
         
         try
             kick_member(ctx.client, ctx.guild_id, target.id; reason=reason)
         catch e
-            respond(ctx, "Falha ao expulsar: $(e)", ephemeral=true)
+            respond(ctx, "Failed to kick: $(e)", ephemeral=true)
             return
         end
         
         case_id = Service.log_action(db, Int(ctx.guild_id), Int(target.id), Int(ctx.user.id), "KICK", reason)
         respond(ctx, "👢 **Kicked** $(target.username) (Case #$case_id)
-📄 Motivo: $reason")
+📄 Reason: $reason")
     end
 
-    @slash_command client "warn" "Avisar um usuário" function(ctx)
+    @slash_command client "warn" "Warn a user" function(ctx)
         target = get(ctx.options, "user", nothing)
-        reason = get(ctx.options, "reason", "Sem motivo especificado")
+        reason = get(ctx.options, "reason", "No reason specified")
         
         if isnothing(target)
-            respond(ctx, "Usuário inválido.", ephemeral=true)
+            respond(ctx, "Invalid user.", ephemeral=true)
             return
         end
         
-        # Apenas DB, sem ação no Discord API além de avisar
+        # DB only, no Discord API action other than warning
         case_id = Service.log_action(db, Int(ctx.guild_id), Int(target.id), Int(ctx.user.id), "WARN", reason)
         
         respond(ctx, "⚠️ **Warned** $(target.username) (Case #$case_id)
-📄 Motivo: $reason")
+📄 Reason: $reason")
         
-        # Tenta enviar DM pro usuário (falha silenciosamente se DM fechada)
+        # Try to send DM to user (silently fails if DM is closed)
         try
             dm_channel = create_dm(ctx.client, target.id)
-            create_message(ctx.client, dm_channel.id; content="Você recebeu um aviso em $(ctx.guild_id): $reason")
+            create_message(ctx.client, dm_channel.id; content="You received a warning in $(ctx.guild_id): $reason")
         catch end
     end
     
-    @slash_command client "modlogs" "Ver histórico de punições" function(ctx)
+    @slash_command client "modlogs" "View moderation history" function(ctx)
         target = get(ctx.options, "user", ctx.user)
         
         history = Service.get_history(db, Int(ctx.guild_id), Int(target.id))
@@ -97,18 +97,18 @@ function install(client::Client)
             dt = unix2datetime(row.created_at)
             push!(fields, embed_field(
                 "Case #$(row.case_id) - $(row.type)", 
-                "**Motivo:** $(row.reason)
+                "**Reason:** $(row.reason)
 **Mod:** <@$(row.moderator_id)>
-**Data:** $(dt)", 
+**Date:** $(dt)", 
                 false
             ))
         end
         
         if isempty(fields)
-            respond(ctx, "Nenhum registro encontrado para $(target.username).")
+            respond(ctx, "No records found for $(target.username).")
         else
             embed_data = embed(
-                title = "Histórico de Moderação: $(target.username)",
+                title = "Moderation History: $(target.username)",
                 color = 0xFF0000,
                 fields = fields
             )
@@ -121,19 +121,19 @@ function install(client::Client)
         if event.message.author.bot return end
         
         if Service.check_automod(event.message.content)
-            # 1. Deleta a mensagem
+            # 1. Delete the message
             delete_message(c, event.message.channel_id, event.message.id)
             
-            # 2. Loga o Warn automático
-            Service.log_action(db, Int(event.message.guild_id), Int(event.message.author.id), Int(c.user.id), "WARN", "Automod: Palavra proibida")
+            # 2. Log the automatic Warn
+            Service.log_action(db, Int(event.message.guild_id), Int(event.message.author.id), Int(c.user.id), "WARN", "Automod: Prohibited word")
             
-            # 3. Avisa no canal (temporário)
-            msg = create_message(c, event.message.channel_id; content="⚠️ <@$(event.message.author.id)>, cuidado com o linguajar! (Aviso registrado)")
-            # Em um bot real, deletaríamos esse aviso após 5s
+            # 3. Warn in channel (temporary)
+            msg = create_message(c, event.message.channel_id; content="⚠️ <@$(event.message.author.id)>, watch your language! (Warning recorded)")
+            # In a real bot, we would delete this warning after 5s
         end
     end
     
-    @info "Feature [Moderation] carregada."
+    @info "Feature [Moderation] loaded."
 end
 
 end

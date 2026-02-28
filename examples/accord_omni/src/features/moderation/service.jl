@@ -1,26 +1,22 @@
 module Service
 
-using Dates
+using Accord
 using ..Repository
 
-# Lógica de Negócio
-
-function log_action(db, guild_id::Int, user_id::Int, moderator_id::Int, type::String, reason::String)
-    ts = datetime2unix(now())
-    case_id = Repository.add_case(db, guild_id, user_id, moderator_id, type, reason, ts)
-    return case_id
+# Business Logic
+function log_action(db, guild_id, target_id, mod_id, type, reason)
+    return Repository.insert_log(db, guild_id, target_id, mod_id, type, reason)
 end
 
-function get_history(db, guild_id::Int, user_id::Int)
-    return Repository.get_user_history(db, guild_id, user_id)
+function get_history(db, guild_id, target_id)
+    return Repository.fetch_logs(db, guild_id, target_id)
 end
 
 function check_automod(content::String)
-    # Lista proibida hardcoded (num bot real, viria do DB por guilda)
-    bad_words = [r"badword", r"spam"]
-    
-    for pattern in bad_words
-        if occursin(pattern, lowercase(content))
+    # Simple example: prohibited word check
+    prohibited = ["badword", "spamexample"]
+    for word in prohibited
+        if occursin(word, lowercase(content))
             return true
         end
     end

@@ -8,20 +8,20 @@ DotEnv.config()
 const TOKEN = get(ENV, "DISCORD_TOKEN", "")
 const OPENAI_KEY = get(ENV, "OPENAI_API_KEY", "")
 
-# Cache de conversas: Armazena as últimas 10 mensagens de cada usuário
-# Chave: user_id, Valor: Vector{Dict} (histórico)
+# Conversation Cache: Stores the last 10 messages for each user
+# Key: user_id, Value: Vector{Dict} (history)
 const CONVERSATIONS = LRU{Int, Vector{Dict{Symbol, String}}}(maxsize=100)
 
 client = Client(TOKEN; intents = IntentGuilds)
 
-# --- Função de API (Simulada/Real) ---
+# --- API Function (Real/Mock) ---
 function ask_gpt(history)
     if isempty(OPENAI_KEY)
-        return "⚠️ **Erro:** API Key não configurada. Configure `OPENAI_API_KEY` no .env."
+        return "⚠️ **Error:** API Key not configured. Set `OPENAI_API_KEY` in .env."
     end
 
     try
-        # Chamada real à API da OpenAI
+        # Real call to OpenAI API
         resp = HTTP.post("https://api.openai.com/v1/chat/completions",
             ["Authorization" => "Bearer $OPENAI_KEY", "Content-Type" => "application/json"],
             JSON3.write(Dict(
@@ -32,50 +32,50 @@ function ask_gpt(history)
         json = JSON3.read(resp.body)
         return json.choices[1].message.content
     catch e
-        @error "Erro na API AI" exception=e
-        return "Desculpe, tive um problema ao processar sua solicitação."
+        @error "AI API Error" exception=e
+        return "Sorry, I had a problem processing your request."
     end
 end
 
-# --- Comandos ---
+# --- Commands ---
 
-@slash_command client "chat" "Converse com a IA" options=[
-    command_option(name="prompt", description="Sua mensagem", required=true)
+@slash_command client "chat" "Chat with the AI" options=[
+    command_option(name="prompt", description="Your message", required=true)
 ] function(ctx)
     prompt = get_option(ctx, "prompt")
     user_id = Int(ctx.user.id)
     
-    # 1. Recupera ou cria histórico
+    # 1. Retrieve or create history
     history = get!(CONVERSATIONS, user_id) do
         Dict{Symbol, String}[]
     end
     
-    # 2. Adiciona msg do usuário
+    # 2. Add user message
     push!(history, Dict(:role => "user", :content => prompt))
     
-    # Mantém histórico curto (últimas 6 msgs) para economizar tokens
+    # Keep history short (last 6 msgs) to save tokens
     if length(history) > 6
         popfirst!(history)
     end
     
-    defer(ctx) # API pode demorar
+    defer(ctx) # API might take some time
     
-    # 3. Chama a IA (em uma Task separada para não bloquear o Gateway)
+    # 3. Call the AI (in a separate Task to not block the Gateway)
     @async begin
         reply_content = ask_gpt(history)
         
-        # 4. Adiciona resposta da IA ao histórico
+        # 4. Add AI response to history
         push!(history, Dict(:role => "assistant", :content => reply_content))
         
-        # 5. Responde no Discord (limitado a 2000 chars)
+        # 5. Respond on Discord (limited to 2000 chars)
         respond(ctx; content=first(reply_content, 2000))
     end
 end
 
-@slash_command client "reset" "Apaga o histórico da conversa" function(ctx)
+@slash_command client "reset" "Clear conversation history" function(ctx)
     user_id = Int(ctx.user.id)
     delete!(CONVERSATIONS, user_id)
-    respond(ctx; content="🧠 Memória apagada. Podemos começar do zero!", ephemeral=true)
+    respond(ctx; content="🧠 Memory cleared. We can start fresh!", ephemeral=true)
 end
 
 on(client, ReadyEvent) do c, event
