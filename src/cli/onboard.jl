@@ -36,7 +36,7 @@ function onboard_impl(name::String; modules::String="")
     mod_list = isempty(modules) ? String[] : split(modules, ",")
     mod_list = map(strip, mod_list)
     
-    extra_deps = ""
+    unique_deps = Dict{String, String}()
     module_includes = ""
     module_setups = ""
     
@@ -63,11 +63,21 @@ function onboard_impl(name::String; modules::String="")
         # Read deps
         deps_file = joinpath(mod_src_dir, "deps.txt")
         if isfile(deps_file)
-            deps_content = read(deps_file, String)
-            if !isempty(strip(deps_content))
-                extra_deps *= deps_content * "\n"
+            for line in eachline(deps_file)
+                line = strip(line)
+                isempty(line) && continue
+                # Match "Key = \"UUID\""
+                m = match(r"^\s*([A-Za-z0-9_]+)\s*=\s*\"([A-Za-z0-9-]+)\"\s*$", line)
+                if !isnothing(m)
+                    unique_deps[m.captures[1]] = m.captures[2]
+                end
             end
         end
+    end
+
+    extra_deps_str = ""
+    for (pkg, uuid) in unique_deps
+        extra_deps_str *= "$pkg = \"$uuid\"\n"
     end
 
     # 3. Personalization
@@ -78,7 +88,7 @@ function onboard_impl(name::String; modules::String="")
         content = read(project_path, String)
         content = replace(content, "{{BOT_NAME}}" => name)
         content = replace(content, "{{UUID}}" => string(uuid4()))
-        content = replace(content, "{{EXTRA_DEPS}}" => chomp(extra_deps))
+        content = replace(content, "{{EXTRA_DEPS}}" => chomp(extra_deps_str))
         write(project_path, content)
     end
 
