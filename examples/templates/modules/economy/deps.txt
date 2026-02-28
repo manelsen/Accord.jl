@@ -1,0 +1,2 @@
+SQLite = "0a514795-09ce-53aa-9e4c-71d704f76443"
+DBInterface = "a10d1c49-ce27-4219-8d33-6db1a4562965"

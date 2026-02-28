@@ -13,10 +13,10 @@ Onboard a new Accord.jl bot project.
 - `name`: The name of your new bot project.
 
 # Options
-- `-t, --template <type>`: The template to use (basic, music, ai_chat). Defaults to "basic".
+- `-m, --modules <list>`: Comma-separated list of modules to include (e.g., moderation, economy, tickets).
 """
-@cast function onboard(name::String; template::String="basic")
-    onboard_impl(name; template)
+@cast function onboard(name::String; modules::String="")
+    onboard_impl(name; modules)
 end
 
 """
