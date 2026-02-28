@@ -117,17 +117,18 @@ Nenhuma dependencia nova e obrigatoria para esta sprint.
 
 ---
 
-## Checklist de Rollout (0.3.0-alpha)
+## Checklist de Rollout (0.3.0 Stable)
 
 - [x] Rodar `test/unit/fault_injection_test.jl` e garantir pass em 429/heartbeat.
 - [x] Verificar cobertura de fixtures com `test/integration/fixture_coverage_test.jl`.
 - [x] Executar `scripts/run_all_smokes.jl` em Guild sandbox com token de QA.
-- [ ] Validar manualmente no Discord:
-    - [ ] Componentes (botões/selects) em mensagens.
-    - [ ] Modais com encadeamento.
-    - [ ] Voz: entrar/sair e tocar áudio curto.
-- [ ] Rotacionar `DISCORD_TOKEN` se exposto em logs durante o sprint.
-- [ ] Tag de release e atualização do `CHANGELOG.md`.
+- [x] Validar manualmente no Discord:
+    - [x] Componentes (botões/selects) em mensagens.
+    - [x] Modais com encadeamento.
+    - [x] Voz: entrar/sair e tocar áudio curto.
+- [x] Rotacionar `DISCORD_TOKEN` se exposto em logs durante o sprint.
+- [x] Tag de release e atualização do `CHANGELOG.md`.
+
 
 ---
 

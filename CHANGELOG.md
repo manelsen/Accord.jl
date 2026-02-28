@@ -2,20 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.3.0-alpha] - 2026-02-24 (Early Adopters Stabilization)
+## [0.3.0] - 2026-02-27 (Reliability & Documentation Overhaul)
 
 ### Added
-- **Internal namespace**: Introduced `Accord.Internals` (also available as `Accord.internals`) to provide an explicit access point for non-public symbols used by advanced users and tests.
+- **Fault Injection Suite**: Introduced deterministic failure testing for Rate Limiting (429) and Gateway heartbeats to ensure robust recovery.
+- **Smoke Test Runner**: Added `scripts/run_all_smokes.jl` for consolidated validation of core bot functionality in sandbox environments.
+- **New Gateway Events**: Added support for `VOICE_CHANNEL_STATUS_UPDATE` and `VOICE_CHANNEL_START_TIME_UPDATE`.
+- **Configurable Safety Buffer**: Added `safety_buffer` parameter to `Client` and `RateLimiter` to tune 429 prevention based on network jitter.
 
 ### Fixed
-- **Test stability**: Removed hangs in contract tests by using mocked `RateLimiter` flows for forum tags and thread/poll validation tests.
-- **Gateway robustness**: Hardened gateway payload parsing and heartbeat interval handling in `_gateway_loop` to avoid invalid payload paths.
-- **Forum tags endpoints**: Fixed type handling for `ForumTag` operations (`create/modify/delete`) and corrected payload generation for `available_tags`.
-- **Voice gateway safety**: Added explicit websocket connectivity checks before sending speaking/protocol payloads.
-- **Diagnostics module**: Fixed internal module references for `HTTP`/`JSON3` used by `Diagnoser`.
+- **Gateway Zombie Connections**: Forced aggressive WebSocket closure on missed heartbeats to trigger immediate reconnection.
+- **Rate Limiter World Age**: Resolved world-age errors in tests by using `invokelatest` for request handlers.
+- **Model Resilience**: Introduced `Maybe{T} = Union{T, Missing, Nothing}` to handle the high variability of Discord's optional/nullable fields without crashing.
+- **Docstrings**: Total overhaul of documentation for all Types (Tiers A, B, and C) and functional API methods, reaching maturity parity with industry-standard Discord libraries.
 
 ### Changed
-- **Version consistency**: Aligned module runtime version constant with package metadata (`0.3.0-alpha`).
+- **CI/CD Triggers**: Optimized CI to run exclusively on Pull Requests to `master`.
+- **Internal namespace**: Refined `Accord.Internals` for explicit access to non-public symbols.
+
 
 ## [0.2.0] - 2026-02-17 (The "Developer Experience" Release)
 

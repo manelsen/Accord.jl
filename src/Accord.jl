@@ -3,7 +3,7 @@ module Accord
 # === Constants ===
 const API_VERSION = 10
 const API_BASE = "https://discord.com/api/v$(API_VERSION)"
-const ACCORD_VERSION = v"0.3.0-alpha"
+const ACCORD_VERSION = v"0.3.0"
 const USER_AGENT = "DiscordBot (Accord.jl, $ACCORD_VERSION)"
 
 # === Type aliases ===

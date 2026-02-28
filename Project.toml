@@ -1,6 +1,6 @@
 name = "Accord"
 uuid = "e32180e5-4c2f-49c0-8021-11dfb7fed3fc"
-version = "0.3.0-alpha"
+version = "0.3.0"
 authors = ["Manelsen"]
 
 [deps]
