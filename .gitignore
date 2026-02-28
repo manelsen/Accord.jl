@@ -27,3 +27,7 @@ KANBAN.md
 *.log
 .agent/workflows/docbuild.md
 *audit.md
+
+# Test reports
+test/reports/*.xml
+report-Accord-*.xml
