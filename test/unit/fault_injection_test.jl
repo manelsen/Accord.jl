@@ -86,7 +86,7 @@ end
 @testitem "Fault Injection: Gateway" tags=[:unit, :fault_injection] begin
     using Accord, HTTP, JSON3, Dates
     # Import internal symbols for testing
-    import Accord: HeartbeatState, heartbeat_loop
+    using Accord: start_heartbeat, HeartbeatState, stop_heartbeat!
 
     mutable struct MockWebSocket
         sent::Vector{String}
@@ -102,30 +102,10 @@ end
         stop = Base.Event()
         
         interval = 100 # ms
-        state = HeartbeatState(interval)
-        state.ack_received = true
         
-        task = @async begin
-            try
-                # Mocking the loop directly to be deterministic
-                # We skip jitter
-                while state.running && !stop.set
-                    if !state.ack_received && state.last_send > 0
-                        state.running = false
-                        break
-                    end
-                    
-                    push!(ws.sent, "{\"op\":1,\"d\":null}")
-                    state.last_send = time()
-                    state.ack_received = false
-                    
-                    sleep(state.interval_ms / 1000.0)
-                end
-            finally
-                HTTP.WebSockets.close(ws)
-            end
-        end
+        task, state = start_heartbeat(ws, interval, seq_ref, stop)
         
+        # 1. Wait for first heartbeat to be sent
         timeout = 2.0
         start_t = time()
         while isempty(ws.sent) && (time() - start_t < timeout)
@@ -133,6 +113,9 @@ end
         end
         @test !isempty(ws.sent)
         @test state.ack_received == false
+        
+        # 2. We DO NOT call heartbeat_ack!(state).
+        # 3. Next iteration (after ~100ms) will see ack_received == false, close the ws, and exit.
         
         wait_t = time()
         while !istaskdone(task) && (time() - wait_t < timeout)

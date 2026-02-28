@@ -61,9 +61,10 @@ mutable struct RateLimiter
     task::Nullable{Task}
     running::Bool
     request_handler::Function # (method, url, headers, body) -> HTTP.Response
+    safety_buffer::Float64
 end
 
-function RateLimiter(;global_limit::Int=50)
+function RateLimiter(;global_limit::Int=50, safety_buffer::Float64=0.1)
     RateLimiter(
         Dict{String, BucketState}(),
         Dict{String, String}(),
@@ -76,7 +77,8 @@ function RateLimiter(;global_limit::Int=50)
             else
                 HTTP.request(m, u, h, b; status_exception=false, retry=false)
             end
-        end
+        end,
+        safety_buffer
     )
 end
 
@@ -150,8 +152,8 @@ function _process_job(rl::RateLimiter, job::RestJob)
         # Check global rate limit
         now = time()
         if now < rl.global_reset_at
-            # Add a small 100ms safety buffer for clock drift/network jitter
-            wait_time = (rl.global_reset_at - now) + 0.1
+            # Add safety buffer for clock drift/network jitter
+            wait_time = (rl.global_reset_at - now) + rl.safety_buffer
             @debug "Global rate limit, waiting" wait_time
             sleep(wait_time)
         end
@@ -162,8 +164,8 @@ function _process_job(rl::RateLimiter, job::RestJob)
         if !isnothing(bucket) && bucket.remaining <= 0
             now = time()
             if now < bucket.reset_at
-                # Add a small 100ms safety buffer for clock drift/network jitter
-                wait_time = (bucket.reset_at - now) + 0.1
+                # Add safety buffer for clock drift/network jitter
+                wait_time = (bucket.reset_at - now) + rl.safety_buffer
                 @debug "Bucket rate limit, waiting" bucket_key wait_time
                 sleep(wait_time)
             end
@@ -171,7 +173,8 @@ function _process_job(rl::RateLimiter, job::RestJob)
 
         # Execute request
         try
-            resp = rl.request_handler(job.method, job.url, job.headers, job.body)
+            # Use invokelatest to avoid world age issues in tests
+            resp = Base.invokelatest(rl.request_handler, job.method, job.url, job.headers, job.body)
 
             # Update rate limit state from headers
             _update_ratelimit(rl, job.route, resp)
@@ -188,7 +191,7 @@ function _process_job(rl::RateLimiter, job::RestJob)
                     @warn "Bucket rate limit hit" bucket_key retry_after
                 end
 
-                sleep(retry_after + 0.1) # Buffer also on explicit 429
+                sleep(retry_after + rl.safety_buffer) # Buffer also on explicit 429
                 continue  # Retry
             end
 
