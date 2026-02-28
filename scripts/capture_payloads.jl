@@ -11,11 +11,13 @@ Optional env vars:
     CAPTURE_DURATION   — seconds to stay connected (default: 30)
     TEST_CHANNEL_ID    — channel to send a test message to (enables REST capture)
     TEST_GUILD_ID      — guild for REST endpoint tests
+    SANITIZE_FIXTURES  — sanitize payloads before writing fixtures (default: true)
 =#
 
 using HTTP
 using JSON3
 using Dates
+include(joinpath(@__DIR__, "sanitize_fixtures.jl"))
 
 # ─── Config ──────────────────────────────────────────────────────────────────
 
@@ -24,13 +26,14 @@ const TOKEN = startswith(_raw_token, "Bot ") ? _raw_token : "Bot $_raw_token"
 const DURATION = parse(Int, get(ENV, "CAPTURE_DURATION", "30"))
 const TEST_CHANNEL = get(ENV, "TEST_CHANNEL_ID", "")
 const TEST_GUILD = get(ENV, "TEST_GUILD_ID", "")
+const SANITIZE_FIXTURES = lowercase(get(ENV, "SANITIZE_FIXTURES", "true")) in ("1", "true", "yes", "on")
 
 const API_BASE = "https://discord.com/api/v10"
 const GATEWAY_URL = "wss://gateway.discord.gg/?v=10&encoding=json"
 const FIXTURES_DIR = joinpath(@__DIR__, "..", "test", "integration", "fixtures")
 
-# Minimal intents: guilds + guild messages + message content + auto mod
-const INTENTS = UInt32(1 << 0 | 1 << 9 | 1 << 15 | 1 << 20 | 1 << 21)
+# Intents: guilds + members + voice + guild messages + reactions + content + auto mod
+const INTENTS = UInt32(1 << 0 | 1 << 1 | 1 << 7 | 1 << 9 | 1 << 10 | 1 << 15 | 1 << 20 | 1 << 21)
 
 isempty(TOKEN) && error("Set DISCORD_TOKEN env var (e.g. 'Bot your_token_here')")
 
@@ -49,11 +52,18 @@ function save_payload!(category::String, payload::Dict{String,Any})
 end
 
 function flush_fixtures()
+    sanitizer_state = SANITIZE_FIXTURES ? SanitizerState() : nothing
+
     lock(capture_lock) do
         for (category, payloads) in captured
+            payloads_to_write = payloads
+            if SANITIZE_FIXTURES
+                # Deep copy before sanitizing, so in-memory captured payloads remain untouched.
+                payloads_to_write = sanitize_any!(sanitizer_state, JSON3.read(JSON3.write(payloads), Any))
+            end
             path = joinpath(FIXTURES_DIR, "$(category).json")
             open(path, "w") do io
-                JSON3.pretty(io, payloads)
+                JSON3.pretty(io, payloads_to_write)
             end
             @info "Saved $(length(payloads)) payload(s)" category path
         end
@@ -63,9 +73,13 @@ function flush_fixtures()
     manifest = Dict(
         "captured_at" => string(now()),
         "duration_seconds" => DURATION,
+        "sanitized" => SANITIZE_FIXTURES,
         "categories" => sort(collect(keys(captured))),
         "counts" => Dict(k => length(v) for (k, v) in captured),
     )
+    if SANITIZE_FIXTURES
+        manifest["sanitized_at"] = Dates.format(Dates.now(), dateformat"yyyy-mm-ddTHH:MM:SS")
+    end
     open(joinpath(FIXTURES_DIR, "_manifest.json"), "w") do io
         JSON3.pretty(io, manifest)
     end
@@ -290,7 +304,8 @@ end
 # ─── Main ────────────────────────────────────────────────────────────────────
 
 function main()
-    @info "Accord.jl Payload Capture" token_prefix=TOKEN[1:min(10,length(TOKEN))]*"..." duration=DURATION
+    @info "Accord.jl Payload Capture" token_prefix=TOKEN[1:min(10,length(TOKEN))]*"..." duration=DURATION sanitize=SANITIZE_FIXTURES
+    !SANITIZE_FIXTURES && @warn "Fixture sanitization is disabled; captured payloads may contain sensitive data."
 
     # REST first (doesn't need WebSocket)
     capture_rest_payloads()
