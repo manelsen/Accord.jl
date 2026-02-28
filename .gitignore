@@ -22,12 +22,13 @@ lcov.info
 Thumbs.db
 KANBAN.md
 
-# Integration test fixtures (manifest only by default, but we need the files for CI)
-# test/integration/fixtures/
+# Logs & Reports
 *.log
-.agent/workflows/docbuild.md
-*audit.md
-
-# Test reports
 test/reports/*.xml
 report-Accord-*.xml
+scripts/endurance_report_*.txt
+chaos_output.txt
+
+# Local & Infrastructure
+.local/
+.retestitems/
