@@ -39,6 +39,12 @@ function start_heartbeat(ws, interval_ms::Int, seq_ref::Ref, stop_event::Base.Ev
             if !state.ack_received && state.last_send > 0
                 @warn "Heartbeat ACK not received — zombie connection detected"
                 state.running = false
+                # Actively close the WebSocket to unblock the main receive loop
+                try
+                    HTTP.WebSockets.close(ws)
+                catch
+                    # Ignore close errors, we just want it dead
+                end
                 break
             end
 
