@@ -248,6 +248,99 @@ julia> # Guild-specific command (Guild ID 123)
 ```
 """
 macro slash_command(client, args...)
+    # Check if we have a block syntax: @slash_command client [guild_id] begin ... end
+    block_idx = findfirst(a -> a isa Expr && (a.head == :begin || a.head == :block), args)
+    
+    if !isnothing(block_idx)
+        # Block syntax found!
+        block = args[block_idx]
+        guild_id = block_idx == 2 ? args[1] : nothing
+        
+        # We need to extract name, description, options and the handler
+        # The handler is usually the function defined right after the macro call.
+        # But wait, in the modular templates, I wrote:
+        # @slash_command client begin ... end
+        # function my_handler(ctx) ... end
+        # This means the macro needs to "look ahead" or we need to change how it registers.
+        
+        # Actually, let's make it work like @group: the handler is the last expression in the block
+        # OR it registers a placeholder and we provide a way to set the handler.
+        
+        # Simpler: @slash_command client [guild_id] begin
+        #    name = "..."
+        #    description = "..."
+        #    handler = ctx -> ...
+        #    @option ...
+        # end
+        
+        # Actually, let's look at how I wrote the templates:
+        # @slash_command client begin
+        #    name = "kick"
+        #    ...
+        # end
+        # function kick_command(ctx) ... end
+        
+        # This style requires the macro to register the command with a "pending" handler 
+        # that gets filled by the NEXT function definition. This is complex in Julia.
+        
+        # Better: @slash_command client name description [options] handler
+        # OR @slash_command client [guild_id] begin
+        #    name = "..."
+        #    description = "..."
+        #    @option ...
+        #    handler = ctx -> ...
+        # end
+        
+        # Let's support the block syntax by extracting assignments.
+        exprs = block.args
+        name_expr = nothing
+        desc_expr = nothing
+        handler_expr = nothing
+        opts_sym = gensym(:options)
+        
+        # We'll transform @option calls into pushes to opts_sym
+        transformed_exprs = Any[]
+        push!(transformed_exprs, :($opts_sym = Dict{String, Any}[]))
+        
+        for ex in exprs
+            if ex isa Expr && ex.head == :(=) && ex.args[1] == :name
+                name_expr = ex.args[2]
+            elseif ex isa Expr && ex.head == :(=) && ex.args[1] == :description
+                desc_expr = ex.args[2]
+            elseif ex isa Expr && ex.head == :(=) && ex.args[1] == :handler
+                handler_expr = ex.args[2]
+            elseif ex isa Expr && ex.head == :macrocall && (ex.args[1] == Symbol("@option") || (ex.args[1] isa Expr && ex.args[1].head == :. && ex.args[1].args[2] == QuoteNode(:option)))
+                # Transform @option to push to opts_sym
+                # We reuse the @option implementation but redirect it
+                opt_call = copy(ex)
+                push!(transformed_exprs, :(push!($opts_sym, $(esc(opt_call)))))
+            else
+                push!(transformed_exprs, esc(ex))
+            end
+        end
+        
+        if isnothing(name_expr) || isnothing(desc_expr)
+            error("@slash_command block requires 'name' and 'description' assignments.")
+        end
+        
+        handler_val = isnothing(handler_expr) ? :(ctx -> nothing) : handler_expr
+
+        return quote
+            let
+                $(transformed_exprs...)
+                _checks_ = $(@__MODULE__).drain_pending_checks!()
+                if isnothing($(esc(guild_id)))
+                    $(@__MODULE__).register_command!($(esc(client)).command_tree, $(esc(name_expr)), $(esc(desc_expr)), $(esc(handler_val));
+                        options=$opts_sym, checks=_checks_)
+                else
+                    $(@__MODULE__).register_command!($(esc(client)).command_tree, $(esc(name_expr)), $(esc(desc_expr)), $(esc(handler_val));
+                        options=$opts_sym, guild_id=$(@__MODULE__).Snowflake($(esc(guild_id))), checks=_checks_)
+                end
+            end
+        end
+    end
+
+    # Fallback to positional syntax
     if length(args) == 3
         # @slash_command client name description handler
         name, desc, handler = args
