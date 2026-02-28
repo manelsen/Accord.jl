@@ -15,7 +15,7 @@ function setup_economy(client::Client)
         )
     """)
 
-    # Helper function
+    # Local helper functions
     function add_balance(user_id::String, amount::Int)
         DBInterface.execute(db, "INSERT INTO users (id, balance) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET balance = balance + ?", (user_id, amount, amount))
     end
@@ -28,29 +28,17 @@ function setup_economy(client::Client)
         return 0
     end
 
-    @slash_command client begin
-        name = "balance"
-        description = "Check your current bank balance"
-    end
-    function balance_command(ctx)
+    @slash_command client "balance" "Check your current bank balance" do ctx
         user_id = string(ctx.interaction.member.user.id)
         bal = get_balance(user_id)
-        respond(ctx, content="💰 Your current balance is: **\$bal coins**.")
+        respond(ctx, content="💰 Your current balance is: **$bal coins**.")
     end
 
-    @slash_command client begin
-        name = "daily"
-        description = "Claim your daily reward"
-    end
-    function daily_command(ctx)
-        # Check cooldown to prevent spam (requires state management, simplified here)
+    @slash_command client "daily" "Claim your daily reward" do ctx
         user_id = string(ctx.interaction.member.user.id)
-        
-        # Add 100 coins
         add_balance(user_id, 100)
         bal = get_balance(user_id)
-        
-        respond(ctx, content="🎁 You claimed 100 daily coins! New balance: **\$bal coins**.")
+        respond(ctx, content="🎁 You claimed 100 daily coins! New balance: **$bal coins**.")
     end
 
     println("💸 Economy module loaded.")

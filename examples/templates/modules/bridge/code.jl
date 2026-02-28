@@ -5,29 +5,23 @@ using Accord
 
 function setup_bridge(client::Client)
 
-    @slash_command client begin
-        name = "webhook_setup"
-        description = "Configures a bridge webhook for this channel"
-        default_member_permissions = "32" # PermManageMessages
-    end
-    function webhook_setup_cmd(ctx)
+    @slash_command client "webhook_setup" "Configures a bridge webhook for this channel" do ctx
         ch_id = ctx.interaction.channel_id
         
         try
-            # Create a real Discord webhook for this channel
             wh = create_webhook(ctx.client.ratelimiter, ch_id; 
                 token=ctx.client.token, name="Accord Bridge")
             
             e = embed(
                 title="Bridge Configured",
-                description="Use the following URL to send data from external apps (GitHub, Zapier, etc.):",
+                description="Use the following URL to send data from external apps:",
                 color=0x57F287
             )
-            push!(e.fields, embed_field(name="Webhook URL", value="`\$(wh.url)`"))
+            push!(e.fields, embed_field(name="Webhook URL", value="`$(wh.url)`"))
             
             respond(ctx, embeds=[e], flags=MsgFlagEphemeral)
         catch e
-            respond(ctx, content="❌ Failed to create webhook. Ensure I have `MANAGE_WEBHOOKS` permission.", flags=MsgFlagEphemeral)
+            respond(ctx, content="❌ Failed to create webhook.", flags=MsgFlagEphemeral)
         end
     end
 

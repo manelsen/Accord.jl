@@ -5,18 +5,19 @@ using Accord
 
 function setup_music(client::Client)
     # Track active voice clients per guild
-    const voice_clients = Dict{Snowflake, VoiceClient}()
+    # Local to the setup function to avoid collisions
+    voice_clients = Dict{Snowflake, VoiceClient}()
 
-    @slash_command client begin
-        name = "join"
-        description = "Joins your current voice channel"
-    end
-    function join_cmd(ctx)
+    @slash_command client "join" "Joins your current voice channel" do ctx
         guild_id = ctx.interaction.guild_id
-        
-        # Find user's voice state
         guild = fetch_guild(ctx.client, guild_id)
-        vs = findfirst(s -> s.user_id == ctx.interaction.member.user.id, guild.voice_states)
+        
+        # Simple search for user's voice state
+        vs = nothing
+        if !ismissing(guild.voice_states)
+            idx = findfirst(s -> s.user_id == ctx.interaction.member.user.id, guild.voice_states)
+            vs = isnothing(idx) ? nothing : guild.voice_states[idx]
+        end
         
         if isnothing(vs) || ismissing(vs.channel_id) || isnothing(vs.channel_id)
             return respond(ctx, content="❌ You must be in a voice channel first!", flags=MsgFlagEphemeral)
@@ -25,15 +26,12 @@ function setup_music(client::Client)
         vc = connect!(ctx.client, guild_id, vs.channel_id)
         voice_clients[guild_id] = vc
         
-        respond(ctx, content="Joined <#\$(vs.channel_id)>! 🎶")
+        respond(ctx, content="Joined <#$(vs.channel_id)>! 🎶")
     end
 
-    @slash_command client begin
-        name = "play"
-        description = "Plays a stream (URL) in the voice channel"
-        @option url String "The URL to play (must be compatible with FFmpeg)" required=true
-    end
-    function play_cmd(ctx)
+    @slash_command client "play" "Plays a stream (URL) in the voice channel" [
+        @option String "url" "The URL to play" required=true
+    ] do ctx
         guild_id = ctx.interaction.guild_id
         url = get_option(ctx, "url")
         
@@ -44,20 +42,15 @@ function setup_music(client::Client)
         vc = voice_clients[guild_id]
         
         try
-            # Create FFmpeg source
             source = FFmpegSource(url)
             play!(vc, source)
-            respond(ctx, content="Now playing: \$(url) 🔊")
+            respond(ctx, content="Now playing: $(url) 🔊")
         catch e
-            respond(ctx, content="❌ Failed to play audio. Check the URL.", flags=MsgFlagEphemeral)
+            respond(ctx, content="❌ Failed to play audio.", flags=MsgFlagEphemeral)
         end
     end
 
-    @slash_command client begin
-        name = "stop"
-        description = "Stops playback and leaves the voice channel"
-    end
-    function stop_cmd(ctx)
+    @slash_command client "stop" "Stops playback and leaves the voice channel" do ctx
         guild_id = ctx.interaction.guild_id
         
         if haskey(voice_clients, guild_id)
