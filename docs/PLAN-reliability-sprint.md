@@ -1,28 +1,28 @@
 # PLAN-reliability-sprint.md
 
-Plano de sprint para elevar a confiabilidade do Accord com foco em testes de contrato baseados em fixtures.
+Sprint plan to elevate Accord's reliability focusing on fixture-based contract tests.
 
-Data de criação: 2026-02-25
-
----
-
-## Objetivo da Sprint
-
-Criar a base operacional para cobertura ampla de eventos Discord sem depender de rede em CI:
-
-1. Detectar regressão de parsing/serialização antes de merge.
-2. Reduzir drift entre payload real da API e modelos internos.
-3. Aumentar previsibilidade de refactors em gateway, tipos e REST.
+Created at: 2026-02-25
 
 ---
 
-## Baseline Atual (início da sprint)
+## Sprint Objective
 
-- `EVENT_TYPES` mapeados no gateway: 74.
-- Fixtures gateway DISPATCH disponíveis: 7 (`HELLO` e `HEARTBEAT_ACK` não entram nessa conta).
-- Fixtures REST disponíveis: 9.
-- Total de payloads no manifesto: 24 (média 1.33 por categoria).
-- Categorias com fixture existente mas sem validação semântica dedicada:
+Create the operational base for broad Discord event coverage without depending on network in CI:
+
+1. Detect parsing/serialization regressions before merge.
+2. Reduce drift between real API payloads and internal models.
+3. Increase predictability of refactors in gateway, types, and REST.
+
+---
+
+## Current Baseline (start of sprint)
+
+- `EVENT_TYPES` mapped in gateway: 74.
+- Gateway DISPATCH fixtures available: 7 (`HELLO` and `HEARTBEAT_ACK` not included).
+- REST fixtures available: 9.
+- Total payloads in manifest: 24 (average 1.33 per category).
+- Categories with existing fixtures but no dedicated semantic validation:
   - `gateway_message_delete`
   - `gateway_message_update`
   - `gateway_thread_create`
@@ -30,120 +30,119 @@ Criar a base operacional para cobertura ampla de eventos Discord sem depender de
 
 ---
 
-## Estratégia de Confiabilidade (Custo x Beneficio)
+## Reliability Strategy (Cost x Benefit)
 
-Prioridade da sprint (ordem de execucao):
+Sprint priority (execution order):
 
-1. **Contract Drift Guard** (baixo custo, beneficio muito alto)
-2. **Expansao de fixtures reais + validacao semantica** (custo medio, beneficio alto)
-3. **Replay deterministico + fault injection gateway** (custo medio, beneficio alto)
-4. **Quality gates no CI (Aqua/JET + suites de contrato)** (baixo custo, beneficio alto)
+1. **Contract Drift Guard** (low cost, very high benefit)
+2. **Expansion of real fixtures + semantic validation** (medium cost, high benefit)
+3. **Deterministic replay + gateway fault injection** (medium cost, high benefit)
+4. **Quality gates in CI (Aqua/JET + contract suites)** (low cost, high benefit)
 
-Meta de cobertura total de eventos permanece valida, mas sera alcançada em fases.
+The goal of total event coverage remains valid but will be achieved in phases.
 
 ---
 
-## Escopo Entregavel em 1 Sprint
+## Deliverable Scope in 1 Sprint
 
-### 1) Guardrails de cobertura de fixture
+### 1) Fixture coverage guardrails
 
-- Adicionar verificador automatico (script ou teste) que:
-  - lê `EVENT_TYPES`;
-  - mapeia fixtures gateway/rest presentes;
-  - falha quando categoria obrigatoria estiver faltando;
-  - gera relatorio em texto para CI.
+- Add automatic checker (script or test) that:
+  - reads `EVENT_TYPES`;
+  - maps present gateway/rest fixtures;
+  - fails when required category is missing;
+  - generates text report for CI.
 
-**Critério de aceite**
-- PR falha se remover fixture obrigatoria ou se novo evento suportado ficar sem cobertura declarada.
+**Acceptance Criteria**
+- PR fails if it removes a required fixture or if a new supported event lacks declared coverage.
 
-### 2) Validacao semantica das fixtures ja existentes
+### 2) Semantic validation of existing fixtures
 
-- Criar blocos dedicados para categorias que hoje so entram no parse generico:
+- Create dedicated blocks for categories that currently only enter generic parsing:
   - `gateway_message_delete`
   - `gateway_message_update`
   - `gateway_thread_create`
   - `rest_get_emojis`
 
-**Critério de aceite**
-- Cada categoria existente tem ao menos 1 teste semantico (nao apenas "parse sem crash").
+**Acceptance Criteria**
+- Each existing category has at least 1 semantic test (not just "parse without crash").
 
-### 3) Expansao de fixtures de alto risco
+### 3) High-risk fixtures expansion
 
-- Gateway (alvo minimo da sprint): adicionar fixtures para eventos de alto impacto operacional:
+- Gateway (sprint minimum target): add fixtures for high-impact operational events:
   - `GUILD_MEMBER_ADD`, `GUILD_MEMBER_UPDATE`, `GUILD_MEMBER_REMOVE`
   - `MESSAGE_REACTION_ADD`, `MESSAGE_REACTION_REMOVE`
   - `VOICE_STATE_UPDATE`, `VOICE_SERVER_UPDATE`
-  - `AUTO_MODERATION_ACTION_EXECUTION` (real, nao apenas opcional)
-- REST (alvo minimo da sprint): ampliar fixtures para recursos com maior volatilidade de payload:
+  - `AUTO_MODERATION_ACTION_EXECUTION` (real, not just optional)
+- REST (sprint minimum target): expand fixtures for resources with higher payload volatility:
   - webhooks, invites, stickers, automod, scheduled events, soundboard
 
-**Critério de aceite**
-- +10 novas categorias de fixture no manifesto (meta minima).
-- Cada nova categoria com validacao semantica minima.
+**Acceptance Criteria**
+- +10 new fixture categories in the manifest (minimum target).
+- Each new category with minimum semantic validation.
 
-### 4) Fault injection deterministico
+### 4) Deterministic fault injection
 
-- Reforcar testes de gateway/rate limiter com cenarios deterministas:
-  - heartbeat atrasado/ausente;
-  - reconnect e invalid session;
-  - resposta REST 429 com headers de bucket.
+- Strengthen gateway/rate limiter tests with deterministic scenarios:
+  - delayed/missing heartbeat;
+  - reconnect and invalid session;
+  - REST 429 response with bucket headers.
 
-**Critério de aceite**
-- Cenarios reprodutiveis local/CI sem dependencia de rede.
-
----
-
-## Ferramentas Julia (ecossistema atual do projeto)
-
-- `Test` (stdlib): assercoes, `@testset`, regressao deterministica.
-- `ReTestItems.jl`: execucao granular por tags (`:unit`, `:integration`, `:quality`), paralelismo e relatorio JUnit.
-- `Aqua.jl`: checks de qualidade de pacote.
-- `JET.jl`: analise estatica de inferencia/erros.
-- `JSON3.jl`: round-trip e validacao de contrato de payload.
-- `HTTP.jl` mocks internos ja usados na suite REST.
-
-Nenhuma dependencia nova e obrigatoria para esta sprint.
+**Acceptance Criteria**
+- Scenarios reproducible locally/CI without network dependency.
 
 ---
 
-## Progresso da Sprint (Dias 1-10)
+## Julia Tools (current project ecosystem)
 
-- [x] **Dia 1-2**: Implementado `fixture_coverage_check` + integração no runner (`test/integration/fixture_coverage_test.jl`).
-- [x] **Dia 3-4**: Validação semântica para `MESSAGE_DELETE`, `MESSAGE_UPDATE`, `THREAD_CREATE` e `rest_get_emojis`.
-- [x] **Dia 5-7**: Capturadas fixtures de `VOICE_STATE_UPDATE`, `MESSAGE_REACTION_ADD`, `GUILD_MEMBER_UPDATE` e eventos de voz internos.
-- [x] **Dia 8**: Adicionados cenários de **Fault Injection** determinístico (`test/unit/fault_injection_test.jl`) para 429/Rate Limiter e Missed Heartbeat.
-- [x] **Dia 9**: Criado runner consolidado de smoke tests (`scripts/run_all_smokes.jl`).
-- [x] **Dia 10**: Revisão de modelos core (`User`, `Member`) e introdução do tipo `Maybe{T}` para resiliência.
+- `Test` (stdlib): assertions, `@testset`, deterministic regression.
+- `ReTestItems.jl`: granular execution by tags (`:unit`, `:integration`, `:quality`), parallelism, and JUnit report.
+- `Aqua.jl`: package quality checks.
+- `JET.jl`: static analysis of inference/errors.
+- `JSON3.jl`: round-trip and payload contract validation.
+- `HTTP.jl` internal mocks already used in REST suite.
 
----
-
-## Checklist de Rollout (0.3.0 Stable)
-
-- [x] Rodar `test/unit/fault_injection_test.jl` e garantir pass em 429/heartbeat.
-- [x] Verificar cobertura de fixtures com `test/integration/fixture_coverage_test.jl`.
-- [x] Executar `scripts/run_all_smokes.jl` em Guild sandbox com token de QA.
-- [x] Validar manualmente no Discord:
-    - [x] Componentes (botões/selects) em mensagens.
-    - [x] Modais com encadeamento.
-    - [x] Voz: entrar/sair e tocar áudio curto.
-- [x] Rotacionar `DISCORD_TOKEN` se exposto em logs durante o sprint.
-- [x] Tag de release e atualização do `CHANGELOG.md`.
-
+No new mandatory dependencies for this sprint.
 
 ---
 
-## Definition of Done da Sprint
+## Sprint Progress (Days 1-10)
 
-1. CI falha em regressao de contrato de fixture.
-2. Todas as categorias de fixture existentes possuem validacao semantica dedicada.
-3. Manifesto ganha pelo menos 10 novas categorias com testes.
-4. Suite de confiabilidade executa offline (sem token/rede) e permanece deterministica.
-5. Documentacao de operacao atualizada para manutencao do ciclo de fixtures.
+- [x] **Day 1-2**: Implemented `fixture_coverage_check` + integration in runner (`test/integration/fixture_coverage_test.jl`).
+- [x] **Day 3-4**: Semantic validation for `MESSAGE_DELETE`, `MESSAGE_UPDATE`, `THREAD_CREATE`, and `rest_get_emojis`.
+- [x] **Day 5-7**: Captured fixtures for `VOICE_STATE_UPDATE`, `MESSAGE_REACTION_ADD`, `GUILD_MEMBER_UPDATE`, and internal voice events.
+- [x] **Day 8**: Added deterministic **Fault Injection** scenarios (`test/unit/fault_injection_test.jl`) for 429/Rate Limiter and Missed Heartbeat.
+- [x] **Day 9**: Created consolidated smoke test runner (`scripts/run_all_smokes.jl`).
+- [x] **Day 10**: Review of core models (`User`, `Member`) and introduction of `Maybe{T}` type for resilience.
 
 ---
 
-## Proximos Passos (apos sprint)
+## Rollout Checklist (0.3.0 Stable)
 
-1. Cobertura progressiva ate 100% dos eventos suportados em `EVENT_TYPES`.
-2. Politica de refresh de fixtures (ex.: quinzenal ou por release).
-3. Opcional: introduzir property-based testing para eventos com payload altamente combinatorio.
+- [x] Run `test/unit/fault_injection_test.jl` and ensure pass on 429/heartbeat.
+- [x] Verify fixture coverage with `test/integration/fixture_coverage_test.jl`.
+- [x] Execute `scripts/run_all_smokes.jl` in sandbox Guild with QA token.
+- [x] Manually validate on Discord:
+    - [x] Components (buttons/selects) in messages.
+    - [x] Chained modals.
+    - [x] Voice: join/leave and play short audio.
+- [x] Rotate `DISCORD_TOKEN` if exposed in logs during the sprint.
+- [x] Release tag and `CHANGELOG.md` update.
+
+---
+
+## Sprint Definition of Done
+
+1. CI fails on fixture contract regression.
+2. All existing fixture categories have dedicated semantic validation.
+3. Manifest gains at least 10 new categories with tests.
+4. Reliability suite runs offline (no token/network) and remains deterministic.
+5. Operational documentation updated for fixture cycle maintenance.
+
+---
+
+## Next Steps (post-sprint)
+
+1. Progressive coverage up to 100% of supported events in `EVENT_TYPES`.
+2. Fixture refresh policy (e.g., biweekly or per release).
+3. Optional: introduce property-based testing for events with highly combinatory payloads.

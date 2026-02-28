@@ -5,7 +5,7 @@ using FunSQL: From, Where, Select, Agg, render, Get, SQLCatalog, SQLTable, Group
 using DBInterface
 using SQLite
 
-# Define o Schema manualmente
+# Define the Schema manually
 const CATALOG = SQLCatalog(
     :user_xp => SQLTable(:user_xp, columns=[:user_id, :guild_id, :xp, :last_message_ts]);
     dialect = :sqlite

@@ -11,9 +11,9 @@ This release marks a major milestone for `Accord.jl`, focusing on extreme reliab
 - **Extreme Performance**: Implemented "Zero-Copy" event parsing and O(1) interaction dispatch, achieving up to 9x faster event processing compared to v0.2.0.
 - **Model Resilience**: Introduced the `Maybe{T}` type system to handle Discord's highly variable payloads without runtime crashes.
 
-### Performance (Medido)
+### Performance (Measured)
 
-| Métrica | v0.2.0 | v0.3.0 | Ganho |
+| Metric | v0.2.0 | v0.3.0 | Gain |
 | :--- | :--- | :--- | :--- |
 | **Parsing Throughput** | ~45k msg/s | **~283k msg/s** | **+530%** |
 | **Parsing Latency** | 22.1 μs | **3.5 μs** | **-84%** |
