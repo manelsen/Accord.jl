@@ -20,11 +20,7 @@ function parse_event(event_name::String, data::Union{Dict{String, Any}, String})
     end
 
     try
-        if data isa String
-            return _construct_event(EventType, data)
-        else
-            return _construct_event(EventType, data)
-        end
+        return _construct_event(EventType, data)
     catch e
         @warn "Failed to parse event, returning UnknownEvent" event_name exception=e
         dict_data = data isa String ? JSON3.read(data, Dict{String, Any}) : data
@@ -32,27 +28,41 @@ function parse_event(event_name::String, data::Union{Dict{String, Any}, String})
     end
 end
 
+const GatewayDict = Dict{String, Any}
+
+@inline _gateway_dict(data::String)::GatewayDict = JSON3.read(data, GatewayDict)
+@inline _decode_payload(data::String, ::Type{T}) where T = JSON3.read(data, T)
+@inline _decode_payload(data::Dict, ::Type{T}) where T = JSON3.read(JSON3.write(data), T)
+
+# Default path for events with dict-based constructors:
+# decode payload once and delegate to the Dict method.
+function _construct_event(T::Type{<:AbstractEvent}, data::String)
+    _construct_event(T, _gateway_dict(data))
+end
+
+"""
+    @wrap_resource_event EventType PayloadType
+
+Auto-generates the `String`/`Dict` overloads for events that just wrap a single resource struct.
+`EventType` is the dispatched event to build (e.g. `MessageCreate`) and `PayloadType` is the inner resource
+(e.g. `Message`). Use this macro for the simple cases so `parse_event` stays DRY, but keep custom logic
+in place for events that need extra parsing.
+"""
+macro wrap_resource_event(event_type, payload_type)
+    esc(quote
+        function _construct_event(::Type{$event_type}, data::String)
+            $event_type(_decode_payload(data, $payload_type))
+        end
+        function _construct_event(::Type{$event_type}, data::Dict)
+            $event_type(_decode_payload(data, $payload_type))
+        end
+    end)
+end
+
 # Construction helpers for events that wrap a single resource
-function _construct_event(::Type{ChannelCreate}, data::String)
-    ChannelCreate(JSON3.read(data, DiscordChannel))
-end
-function _construct_event(::Type{ChannelCreate}, data::Dict)
-    ChannelCreate(JSON3.read(JSON3.write(data), DiscordChannel))
-end
-
-function _construct_event(::Type{ChannelUpdate}, data::String)
-    ChannelUpdate(JSON3.read(data, DiscordChannel))
-end
-function _construct_event(::Type{ChannelUpdate}, data::Dict)
-    ChannelUpdate(JSON3.read(JSON3.write(data), DiscordChannel))
-end
-
-function _construct_event(::Type{ChannelDelete}, data::String)
-    ChannelDelete(JSON3.read(data, DiscordChannel))
-end
-function _construct_event(::Type{ChannelDelete}, data::Dict)
-    ChannelDelete(JSON3.read(JSON3.write(data), DiscordChannel))
-end
+@wrap_resource_event ChannelCreate DiscordChannel
+@wrap_resource_event ChannelUpdate DiscordChannel
+@wrap_resource_event ChannelDelete DiscordChannel
 
 function _construct_event(::Type{ChannelPinsUpdate}, data::Dict)
     ChannelPinsUpdate(
@@ -61,23 +71,9 @@ function _construct_event(::Type{ChannelPinsUpdate}, data::Dict)
         get(data, "last_pin_timestamp", missing),
     )
 end
-function _construct_event(T::Type{ChannelPinsUpdate}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
-end
 
-function _construct_event(::Type{ThreadCreate}, data::String)
-    ThreadCreate(JSON3.read(data, DiscordChannel))
-end
-function _construct_event(::Type{ThreadCreate}, data::Dict)
-    ThreadCreate(JSON3.read(JSON3.write(data), DiscordChannel))
-end
-
-function _construct_event(::Type{ThreadUpdate}, data::String)
-    ThreadUpdate(JSON3.read(data, DiscordChannel))
-end
-function _construct_event(::Type{ThreadUpdate}, data::Dict)
-    ThreadUpdate(JSON3.read(JSON3.write(data), DiscordChannel))
-end
+@wrap_resource_event ThreadCreate DiscordChannel
+@wrap_resource_event ThreadUpdate DiscordChannel
 
 function _construct_event(::Type{ThreadDelete}, data::Dict)
     ThreadDelete(
@@ -86,9 +82,6 @@ function _construct_event(::Type{ThreadDelete}, data::Dict)
         Snowflake(data["parent_id"]),
         data["type"],
     )
-end
-function _construct_event(T::Type{ThreadDelete}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
 end
 
 function _construct_event(::Type{ThreadListSync}, data::Dict)
@@ -99,17 +92,11 @@ function _construct_event(::Type{ThreadListSync}, data::Dict)
         JSON3.read(JSON3.write(get(data, "members", [])), Vector{ThreadMember}),
     )
 end
-function _construct_event(T::Type{ThreadListSync}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
-end
 
 function _construct_event(::Type{ThreadMemberUpdate}, data::Dict)
     guild_id = Snowflake(data["guild_id"])
     member = JSON3.read(JSON3.write(data), ThreadMember)
     ThreadMemberUpdate(member, guild_id)
-end
-function _construct_event(T::Type{ThreadMemberUpdate}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
 end
 
 function _construct_event(::Type{ThreadMembersUpdate}, data::Dict)
@@ -121,52 +108,23 @@ function _construct_event(::Type{ThreadMembersUpdate}, data::Dict)
         _get_snowflake_array(data, "removed_member_ids"),
     )
 end
-function _construct_event(T::Type{ThreadMembersUpdate}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
-end
 
-function _construct_event(::Type{GuildCreate}, data::String)
-    GuildCreate(JSON3.read(data, Guild))
-end
-function _construct_event(::Type{GuildCreate}, data::Dict)
-    GuildCreate(JSON3.read(JSON3.write(data), Guild))
-end
-
-function _construct_event(::Type{GuildUpdate}, data::String)
-    GuildUpdate(JSON3.read(data, Guild))
-end
-function _construct_event(::Type{GuildUpdate}, data::Dict)
-    GuildUpdate(JSON3.read(JSON3.write(data), Guild))
-end
-
-function _construct_event(::Type{GuildDelete}, data::String)
-    GuildDelete(JSON3.read(data, UnavailableGuild))
-end
-function _construct_event(::Type{GuildDelete}, data::Dict)
-    GuildDelete(JSON3.read(JSON3.write(data), UnavailableGuild))
-end
+@wrap_resource_event GuildCreate Guild
+@wrap_resource_event GuildUpdate Guild
+@wrap_resource_event GuildDelete UnavailableGuild
 
 function _construct_event(::Type{GuildAuditLogEntryCreate}, data::Dict)
     guild_id = Snowflake(pop!(data, "guild_id"))
     entry = JSON3.read(JSON3.write(data), AuditLogEntry)
     GuildAuditLogEntryCreate(entry, guild_id)
 end
-function _construct_event(T::Type{GuildAuditLogEntryCreate}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
-end
 
 function _construct_event(::Type{GuildBanAdd}, data::Dict)
     GuildBanAdd(Snowflake(data["guild_id"]), JSON3.read(JSON3.write(data["user"]), User))
 end
-function _construct_event(T::Type{GuildBanAdd}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
-end
 
 function _construct_event(::Type{GuildBanRemove}, data::Dict)
     GuildBanRemove(Snowflake(data["guild_id"]), JSON3.read(JSON3.write(data["user"]), User))
-end
-function _construct_event(T::Type{GuildBanRemove}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
 end
 
 function _construct_event(::Type{GuildEmojisUpdate}, data::Dict)
@@ -175,9 +133,6 @@ function _construct_event(::Type{GuildEmojisUpdate}, data::Dict)
         JSON3.read(JSON3.write(data["emojis"]), Vector{Emoji}),
     )
 end
-function _construct_event(T::Type{GuildEmojisUpdate}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
-end
 
 function _construct_event(::Type{GuildStickersUpdate}, data::Dict)
     GuildStickersUpdate(
@@ -185,15 +140,9 @@ function _construct_event(::Type{GuildStickersUpdate}, data::Dict)
         JSON3.read(JSON3.write(data["stickers"]), Vector{Sticker}),
     )
 end
-function _construct_event(T::Type{GuildStickersUpdate}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
-end
 
 function _construct_event(::Type{GuildIntegrationsUpdate}, data::Dict)
     GuildIntegrationsUpdate(Snowflake(data["guild_id"]))
-end
-function _construct_event(T::Type{GuildIntegrationsUpdate}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
 end
 
 function _construct_event(::Type{GuildMemberAdd}, data::Dict)
@@ -201,18 +150,12 @@ function _construct_event(::Type{GuildMemberAdd}, data::Dict)
     member = JSON3.read(JSON3.write(data), Member)
     GuildMemberAdd(member, guild_id)
 end
-function _construct_event(T::Type{GuildMemberAdd}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
-end
 
 function _construct_event(::Type{GuildMemberRemove}, data::Dict)
     GuildMemberRemove(
         Snowflake(data["guild_id"]),
         JSON3.read(JSON3.write(data["user"]), User),
     )
-end
-function _construct_event(T::Type{GuildMemberRemove}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
 end
 
 function _construct_event(::Type{GuildMemberUpdate}, data::Dict)
@@ -231,9 +174,6 @@ function _construct_event(::Type{GuildMemberUpdate}, data::Dict)
         get(data, "flags", missing),
     )
 end
-function _construct_event(T::Type{GuildMemberUpdate}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
-end
 
 function _construct_event(::Type{GuildMembersChunk}, data::Dict)
     GuildMembersChunk(
@@ -246,18 +186,12 @@ function _construct_event(::Type{GuildMembersChunk}, data::Dict)
         get(data, "nonce", missing),
     )
 end
-function _construct_event(T::Type{GuildMembersChunk}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
-end
 
 function _construct_event(::Type{GuildRoleCreate}, data::Dict)
     GuildRoleCreate(
         Snowflake(data["guild_id"]),
         JSON3.read(JSON3.write(data["role"]), Role),
     )
-end
-function _construct_event(T::Type{GuildRoleCreate}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
 end
 
 function _construct_event(::Type{GuildRoleUpdate}, data::Dict)
@@ -266,37 +200,14 @@ function _construct_event(::Type{GuildRoleUpdate}, data::Dict)
         JSON3.read(JSON3.write(data["role"]), Role),
     )
 end
-function _construct_event(T::Type{GuildRoleUpdate}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
-end
 
 function _construct_event(::Type{GuildRoleDelete}, data::Dict)
     GuildRoleDelete(Snowflake(data["guild_id"]), Snowflake(data["role_id"]))
 end
-function _construct_event(T::Type{GuildRoleDelete}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
-end
 
-function _construct_event(::Type{GuildScheduledEventCreate}, data::String)
-    GuildScheduledEventCreate(JSON3.read(data, ScheduledEvent))
-end
-function _construct_event(::Type{GuildScheduledEventCreate}, data::Dict)
-    GuildScheduledEventCreate(JSON3.read(JSON3.write(data), ScheduledEvent))
-end
-
-function _construct_event(::Type{GuildScheduledEventUpdate}, data::String)
-    GuildScheduledEventUpdate(JSON3.read(data, ScheduledEvent))
-end
-function _construct_event(::Type{GuildScheduledEventUpdate}, data::Dict)
-    GuildScheduledEventUpdate(JSON3.read(JSON3.write(data), ScheduledEvent))
-end
-
-function _construct_event(::Type{GuildScheduledEventDelete}, data::String)
-    GuildScheduledEventDelete(JSON3.read(data, ScheduledEvent))
-end
-function _construct_event(::Type{GuildScheduledEventDelete}, data::Dict)
-    GuildScheduledEventDelete(JSON3.read(JSON3.write(data), ScheduledEvent))
-end
+@wrap_resource_event GuildScheduledEventCreate ScheduledEvent
+@wrap_resource_event GuildScheduledEventUpdate ScheduledEvent
+@wrap_resource_event GuildScheduledEventDelete ScheduledEvent
 
 function _construct_event(::Type{GuildScheduledEventUserAdd}, data::Dict)
     GuildScheduledEventUserAdd(
@@ -304,9 +215,6 @@ function _construct_event(::Type{GuildScheduledEventUserAdd}, data::Dict)
         Snowflake(data["user_id"]),
         Snowflake(data["guild_id"]),
     )
-end
-function _construct_event(T::Type{GuildScheduledEventUserAdd}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
 end
 
 function _construct_event(::Type{GuildScheduledEventUserRemove}, data::Dict)
@@ -316,29 +224,12 @@ function _construct_event(::Type{GuildScheduledEventUserRemove}, data::Dict)
         Snowflake(data["guild_id"]),
     )
 end
-function _construct_event(T::Type{GuildScheduledEventUserRemove}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
-end
 
-function _construct_event(::Type{GuildSoundboardSoundCreate}, data::String)
-    GuildSoundboardSoundCreate(JSON3.read(data, SoundboardSound))
-end
-function _construct_event(::Type{GuildSoundboardSoundCreate}, data::Dict)
-    GuildSoundboardSoundCreate(JSON3.read(JSON3.write(data), SoundboardSound))
-end
-
-function _construct_event(::Type{GuildSoundboardSoundUpdate}, data::String)
-    GuildSoundboardSoundUpdate(JSON3.read(data, SoundboardSound))
-end
-function _construct_event(::Type{GuildSoundboardSoundUpdate}, data::Dict)
-    GuildSoundboardSoundUpdate(JSON3.read(JSON3.write(data), SoundboardSound))
-end
+@wrap_resource_event GuildSoundboardSoundCreate SoundboardSound
+@wrap_resource_event GuildSoundboardSoundUpdate SoundboardSound
 
 function _construct_event(::Type{GuildSoundboardSoundDelete}, data::Dict)
     GuildSoundboardSoundDelete(Snowflake(data["sound_id"]), Snowflake(data["guild_id"]))
-end
-function _construct_event(T::Type{GuildSoundboardSoundDelete}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
 end
 
 function _construct_event(::Type{GuildSoundboardSoundsUpdate}, data::Dict)
@@ -347,9 +238,6 @@ function _construct_event(::Type{GuildSoundboardSoundsUpdate}, data::Dict)
         JSON3.read(JSON3.write(data["soundboard_sounds"]), Vector{SoundboardSound}),
     )
 end
-function _construct_event(T::Type{GuildSoundboardSoundsUpdate}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
-end
 
 function _construct_event(::Type{SoundboardSounds}, data::Dict)
     SoundboardSounds(
@@ -357,24 +245,15 @@ function _construct_event(::Type{SoundboardSounds}, data::Dict)
         JSON3.read(JSON3.write(data["soundboard_sounds"]), Vector{SoundboardSound}),
     )
 end
-function _construct_event(T::Type{SoundboardSounds}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
-end
 
 function _construct_event(::Type{IntegrationCreate}, data::Dict)
     guild_id = Snowflake(pop!(data, "guild_id"))
     IntegrationCreate(JSON3.read(JSON3.write(data), Integration), guild_id)
 end
-function _construct_event(T::Type{IntegrationCreate}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
-end
 
 function _construct_event(::Type{IntegrationUpdate}, data::Dict)
     guild_id = Snowflake(pop!(data, "guild_id"))
     IntegrationUpdate(JSON3.read(JSON3.write(data), Integration), guild_id)
-end
-function _construct_event(T::Type{IntegrationUpdate}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
 end
 
 function _construct_event(::Type{IntegrationDelete}, data::Dict)
@@ -384,16 +263,8 @@ function _construct_event(::Type{IntegrationDelete}, data::Dict)
         _get_snowflake(data, "application_id"),
     )
 end
-function _construct_event(T::Type{IntegrationDelete}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
-end
 
-function _construct_event(::Type{InteractionCreate}, data::String)
-    InteractionCreate(JSON3.read(data, Interaction))
-end
-function _construct_event(::Type{InteractionCreate}, data::Dict)
-    InteractionCreate(JSON3.read(JSON3.write(data), Interaction))
-end
+@wrap_resource_event InteractionCreate Interaction
 
 function _construct_event(::Type{InviteCreate}, data::Dict)
     InviteCreate(
@@ -411,9 +282,6 @@ function _construct_event(::Type{InviteCreate}, data::Dict)
         data["uses"],
     )
 end
-function _construct_event(T::Type{InviteCreate}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
-end
 
 function _construct_event(::Type{InviteDelete}, data::Dict)
     InviteDelete(
@@ -422,23 +290,9 @@ function _construct_event(::Type{InviteDelete}, data::Dict)
         data["code"],
     )
 end
-function _construct_event(T::Type{InviteDelete}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
-end
 
-function _construct_event(::Type{MessageCreate}, data::String)
-    MessageCreate(JSON3.read(data, Message))
-end
-function _construct_event(::Type{MessageCreate}, data::Dict)
-    MessageCreate(JSON3.read(JSON3.write(data), Message))
-end
-
-function _construct_event(::Type{MessageUpdate}, data::String)
-    MessageUpdate(JSON3.read(data, Message))
-end
-function _construct_event(::Type{MessageUpdate}, data::Dict)
-    MessageUpdate(JSON3.read(JSON3.write(data), Message))
-end
+@wrap_resource_event MessageCreate Message
+@wrap_resource_event MessageUpdate Message
 
 function _construct_event(::Type{MessageDelete}, data::Dict)
     MessageDelete(
@@ -447,9 +301,6 @@ function _construct_event(::Type{MessageDelete}, data::Dict)
         _get_snowflake(data, "guild_id"),
     )
 end
-function _construct_event(T::Type{MessageDelete}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
-end
 
 function _construct_event(::Type{MessageDeleteBulk}, data::Dict)
     MessageDeleteBulk(
@@ -457,9 +308,6 @@ function _construct_event(::Type{MessageDeleteBulk}, data::Dict)
         Snowflake(data["channel_id"]),
         _get_snowflake(data, "guild_id"),
     )
-end
-function _construct_event(T::Type{MessageDeleteBulk}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
 end
 
 function _construct_event(::Type{MessageReactionAdd}, data::Dict)
@@ -476,9 +324,6 @@ function _construct_event(::Type{MessageReactionAdd}, data::Dict)
         get(data, "type", 0),
     )
 end
-function _construct_event(T::Type{MessageReactionAdd}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
-end
 
 function _construct_event(::Type{MessageReactionRemove}, data::Dict)
     MessageReactionRemove(
@@ -491,9 +336,6 @@ function _construct_event(::Type{MessageReactionRemove}, data::Dict)
         get(data, "type", 0),
     )
 end
-function _construct_event(T::Type{MessageReactionRemove}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
-end
 
 function _construct_event(::Type{MessageReactionRemoveAll}, data::Dict)
     MessageReactionRemoveAll(
@@ -501,9 +343,6 @@ function _construct_event(::Type{MessageReactionRemoveAll}, data::Dict)
         Snowflake(data["message_id"]),
         _get_snowflake(data, "guild_id"),
     )
-end
-function _construct_event(T::Type{MessageReactionRemoveAll}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
 end
 
 function _construct_event(::Type{MessageReactionRemoveEmoji}, data::Dict)
@@ -513,9 +352,6 @@ function _construct_event(::Type{MessageReactionRemoveEmoji}, data::Dict)
         Snowflake(data["message_id"]),
         JSON3.read(JSON3.write(data["emoji"]), Emoji),
     )
-end
-function _construct_event(T::Type{MessageReactionRemoveEmoji}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
 end
 
 function _construct_event(::Type{MessagePollVoteAdd}, data::Dict)
@@ -527,9 +363,6 @@ function _construct_event(::Type{MessagePollVoteAdd}, data::Dict)
         data["answer_id"],
     )
 end
-function _construct_event(T::Type{MessagePollVoteAdd}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
-end
 
 function _construct_event(::Type{MessagePollVoteRemove}, data::Dict)
     MessagePollVoteRemove(
@@ -539,9 +372,6 @@ function _construct_event(::Type{MessagePollVoteRemove}, data::Dict)
         _get_snowflake(data, "guild_id"),
         data["answer_id"],
     )
-end
-function _construct_event(T::Type{MessagePollVoteRemove}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
 end
 
 function _construct_event(::Type{PresenceUpdate}, data::String)
@@ -574,26 +404,9 @@ function _construct_event(::Type{PresenceUpdate}, data::Dict)
     ))
 end
 
-function _construct_event(::Type{StageInstanceCreate}, data::String)
-    StageInstanceCreate(JSON3.read(data, StageInstance))
-end
-function _construct_event(::Type{StageInstanceCreate}, data::Dict)
-    StageInstanceCreate(JSON3.read(JSON3.write(data), StageInstance))
-end
-
-function _construct_event(::Type{StageInstanceUpdate}, data::String)
-    StageInstanceUpdate(JSON3.read(data, StageInstance))
-end
-function _construct_event(::Type{StageInstanceUpdate}, data::Dict)
-    StageInstanceUpdate(JSON3.read(JSON3.write(data), StageInstance))
-end
-
-function _construct_event(::Type{StageInstanceDelete}, data::String)
-    StageInstanceDelete(JSON3.read(data, StageInstance))
-end
-function _construct_event(::Type{StageInstanceDelete}, data::Dict)
-    StageInstanceDelete(JSON3.read(JSON3.write(data), StageInstance))
-end
+@wrap_resource_event StageInstanceCreate StageInstance
+@wrap_resource_event StageInstanceUpdate StageInstance
+@wrap_resource_event StageInstanceDelete StageInstance
 
 function _construct_event(::Type{TypingStart}, data::Dict)
     TypingStart(
@@ -604,29 +417,12 @@ function _construct_event(::Type{TypingStart}, data::Dict)
         haskey(data, "member") ? JSON3.read(JSON3.write(data["member"]), Member) : missing,
     )
 end
-function _construct_event(T::Type{TypingStart}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
-end
 
-function _construct_event(::Type{UserUpdate}, data::String)
-    UserUpdate(JSON3.read(data, User))
-end
-function _construct_event(::Type{UserUpdate}, data::Dict)
-    UserUpdate(JSON3.read(JSON3.write(data), User))
-end
-
-function _construct_event(::Type{VoiceStateUpdateEvent}, data::String)
-    VoiceStateUpdateEvent(JSON3.read(data, VoiceState))
-end
-function _construct_event(::Type{VoiceStateUpdateEvent}, data::Dict)
-    VoiceStateUpdateEvent(JSON3.read(JSON3.write(data), VoiceState))
-end
+@wrap_resource_event UserUpdate User
+@wrap_resource_event VoiceStateUpdateEvent VoiceState
 
 function _construct_event(::Type{VoiceServerUpdate}, data::Dict)
     VoiceServerUpdate(data["token"], Snowflake(data["guild_id"]), get(data, "endpoint", nothing))
-end
-function _construct_event(T::Type{VoiceServerUpdate}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
 end
 
 function _construct_event(::Type{VoiceChannelEffectSend}, data::Dict)
@@ -641,9 +437,6 @@ function _construct_event(::Type{VoiceChannelEffectSend}, data::Dict)
         get(data, "sound_volume", missing),
     )
 end
-function _construct_event(T::Type{VoiceChannelEffectSend}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
-end
 
 function _construct_event(::Type{VoiceChannelStatusUpdate}, data::Dict)
     VoiceChannelStatusUpdate(
@@ -651,9 +444,6 @@ function _construct_event(::Type{VoiceChannelStatusUpdate}, data::Dict)
         Snowflake(data["id"]),
         get(data, "status", missing),
     )
-end
-function _construct_event(T::Type{VoiceChannelStatusUpdate}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
 end
 
 function _construct_event(::Type{VoiceChannelStartTimeUpdate}, data::Dict)
@@ -663,79 +453,20 @@ function _construct_event(::Type{VoiceChannelStartTimeUpdate}, data::Dict)
         get(data, "voice_start_time", missing),
     )
 end
-function _construct_event(T::Type{VoiceChannelStartTimeUpdate}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
-end
 
 function _construct_event(::Type{WebhooksUpdate}, data::Dict)
     WebhooksUpdate(Snowflake(data["guild_id"]), Snowflake(data["channel_id"]))
 end
-function _construct_event(T::Type{WebhooksUpdate}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
-end
 
-function _construct_event(::Type{EntitlementCreate}, data::String)
-    EntitlementCreate(JSON3.read(data, Entitlement))
-end
-function _construct_event(::Type{EntitlementCreate}, data::Dict)
-    EntitlementCreate(JSON3.read(JSON3.write(data), Entitlement))
-end
-
-function _construct_event(::Type{EntitlementUpdate}, data::String)
-    EntitlementUpdate(JSON3.read(data, Entitlement))
-end
-function _construct_event(::Type{EntitlementUpdate}, data::Dict)
-    EntitlementUpdate(JSON3.read(JSON3.write(data), Entitlement))
-end
-
-function _construct_event(::Type{EntitlementDelete}, data::String)
-    EntitlementDelete(JSON3.read(data, Entitlement))
-end
-function _construct_event(::Type{EntitlementDelete}, data::Dict)
-    EntitlementDelete(JSON3.read(JSON3.write(data), Entitlement))
-end
-
-function _construct_event(::Type{SubscriptionCreate}, data::String)
-    SubscriptionCreate(JSON3.read(data, Subscription))
-end
-function _construct_event(::Type{SubscriptionCreate}, data::Dict)
-    SubscriptionCreate(JSON3.read(JSON3.write(data), Subscription))
-end
-
-function _construct_event(::Type{SubscriptionUpdate}, data::String)
-    SubscriptionUpdate(JSON3.read(data, Subscription))
-end
-function _construct_event(::Type{SubscriptionUpdate}, data::Dict)
-    SubscriptionUpdate(JSON3.read(JSON3.write(data), Subscription))
-end
-
-function _construct_event(::Type{SubscriptionDelete}, data::String)
-    SubscriptionDelete(JSON3.read(data, Subscription))
-end
-function _construct_event(::Type{SubscriptionDelete}, data::Dict)
-    SubscriptionDelete(JSON3.read(JSON3.write(data), Subscription))
-end
-
-function _construct_event(::Type{AutoModerationRuleCreate}, data::String)
-    AutoModerationRuleCreate(JSON3.read(data, AutoModRule))
-end
-function _construct_event(::Type{AutoModerationRuleCreate}, data::Dict)
-    AutoModerationRuleCreate(JSON3.read(JSON3.write(data), AutoModRule))
-end
-
-function _construct_event(::Type{AutoModerationRuleUpdate}, data::String)
-    AutoModerationRuleUpdate(JSON3.read(data, AutoModRule))
-end
-function _construct_event(::Type{AutoModerationRuleUpdate}, data::Dict)
-    AutoModerationRuleUpdate(JSON3.read(JSON3.write(data), AutoModRule))
-end
-
-function _construct_event(::Type{AutoModerationRuleDelete}, data::String)
-    AutoModerationRuleDelete(JSON3.read(data, AutoModRule))
-end
-function _construct_event(::Type{AutoModerationRuleDelete}, data::Dict)
-    AutoModerationRuleDelete(JSON3.read(JSON3.write(data), AutoModRule))
-end
+@wrap_resource_event EntitlementCreate Entitlement
+@wrap_resource_event EntitlementUpdate Entitlement
+@wrap_resource_event EntitlementDelete Entitlement
+@wrap_resource_event SubscriptionCreate Subscription
+@wrap_resource_event SubscriptionUpdate Subscription
+@wrap_resource_event SubscriptionDelete Subscription
+@wrap_resource_event AutoModerationRuleCreate AutoModRule
+@wrap_resource_event AutoModerationRuleUpdate AutoModRule
+@wrap_resource_event AutoModerationRuleDelete AutoModRule
 
 function _construct_event(::Type{AutoModerationActionExecution}, data::Dict)
     AutoModerationActionExecution(
@@ -752,9 +483,6 @@ function _construct_event(::Type{AutoModerationActionExecution}, data::Dict)
         get(data, "matched_content", missing),
     )
 end
-function _construct_event(T::Type{AutoModerationActionExecution}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
-end
 
 function _construct_event(::Type{ReadyEvent}, data::Dict)
     ReadyEvent(
@@ -766,9 +494,6 @@ function _construct_event(::Type{ReadyEvent}, data::Dict)
         get(data, "shard", missing),
         get(data, "application", nothing),
     )
-end
-function _construct_event(T::Type{ReadyEvent}, data::String)
-    _construct_event(T, JSON3.read(data, Dict{String, Any}))
 end
 
 function _construct_event(::Type{ResumedEvent}, data::Dict)

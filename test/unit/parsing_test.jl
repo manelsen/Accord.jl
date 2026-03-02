@@ -34,6 +34,10 @@
         @test !ismissing(msg_event.message.content)
         @test msg_event.message.author.username != ""
 
+        msg_event_raw = Accord.parse_event("MESSAGE_CREATE", JSON3.write(msg_data.d))
+        @test msg_event_raw isa MessageCreate
+        @test msg_event_raw.message.id == msg_event.message.id
+
         # MESSAGE_UPDATE
         msg_upd_json = read(joinpath(fixtures_dir, "gateway_message_update.json"), String)
         msg_upd_list = JSON3.read(msg_upd_json)
@@ -128,5 +132,9 @@
         @test int_event isa InteractionCreate
         @test int_event.interaction.type == InteractionTypes.APPLICATION_COMMAND
         @test !ismissing(int_event.interaction.data)
+
+        int_event_raw = Accord.parse_event("INTERACTION_CREATE", JSON3.write(int_data.d))
+        @test int_event_raw isa InteractionCreate
+        @test int_event_raw.interaction.id == int_event.interaction.id
     end
 end
