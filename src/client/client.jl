@@ -62,6 +62,9 @@ mutable struct Client{S} <: AbstractClient
     _supervisor_task::Nullable{Task}
     _waiters::Vector{EventWaiter}
     _waiters_lock::ReentrantLock
+    _handler_tasks::Set{Task}
+    _handler_tasks_lock::ReentrantLock
+    _handler_sem::Base.Semaphore
 end
 
 function Client(token::String;
@@ -74,7 +77,10 @@ function Client(token::String;
     user_strategy::CacheStrategy = CacheLRU(10_000),
     member_strategy::CacheStrategy = CacheLRU(10_000),
     presence_strategy::CacheStrategy = CacheNever(),
+    handler_concurrency::Int = 16,
 )
+    handler_concurrency < 1 && throw(ArgumentError("handler_concurrency must be >= 1"))
+
     # Ensure token has Bot prefix
     actual_token = startswith(token, "Bot ") ? token : "Bot $token"
 
@@ -108,6 +114,9 @@ function Client(token::String;
         nothing,
         EventWaiter[],
         ReentrantLock(),
+        Set{Task}(),
+        ReentrantLock(),
+        Base.Semaphore(handler_concurrency),
     )
 
     # Register interaction dispatcher
@@ -243,6 +252,7 @@ end
 """
 function stop(client::Client)
     client.running = false
+    _cancel_waiters!(client)
 
     # Stop shards
     for shard in client.shards
@@ -253,6 +263,15 @@ function stop(client::Client)
     stop_ratelimiter!(client.ratelimiter)
 
     @info "Client stopped"
+end
+
+function _cancel_waiters!(client::Client)
+    lock(client._waiters_lock) do
+        for waiter in client._waiters
+            isopen(waiter.channel) && close(waiter.channel)
+        end
+        empty!(client._waiters)
+    end
 end
 
 """
@@ -361,6 +380,48 @@ function _notify_waiters!(client::Client, event::AbstractEvent)
     end
 end
 
+function _track_handler_task!(client::Client, task::Task)
+    lock(client._handler_tasks_lock) do
+        push!(client._handler_tasks, task)
+    end
+    nothing
+end
+
+function _untrack_handler_task!(client::Client, task::Task)
+    lock(client._handler_tasks_lock) do
+        delete!(client._handler_tasks, task)
+    end
+    nothing
+end
+
+function _dispatch_event_async!(client::Client, event::AbstractEvent)
+    sem = client._handler_sem
+    task = @async begin
+        Base.acquire(sem)
+        try
+            dispatch_event!(client.event_handler, client, event)
+        catch e
+            @error "Unhandled async event dispatch error" event_type=typeof(event) exception=e
+        finally
+            Base.release(sem)
+        end
+    end
+
+    _track_handler_task!(client, task)
+
+    @async begin
+        try
+            wait(task)
+        catch
+            # Ignore secondary task failures; original task already logs.
+        finally
+            _untrack_handler_task!(client, task)
+        end
+    end
+
+    nothing
+end
+
 function _event_loop(client::Client)
     # All shards share the same events channel
     events = client.shards[1].events
@@ -396,8 +457,9 @@ function _event_loop(client::Client)
             end
         end
 
-        # Dispatch to handlers
-        dispatch_event!(client.event_handler, client, event)
+        # Dispatch to handlers concurrently so slow handlers (e.g. wait_for)
+        # do not block the main event ingestion loop.
+        _dispatch_event_async!(client, event)
 
         # Notify any wait_for waiters
         _notify_waiters!(client, event)
