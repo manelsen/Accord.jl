@@ -27,8 +27,10 @@ The main Discord client that orchestrates gateway connections, REST API calls, a
 # Constructor
     Client(token::String; intents=IntentAllNonPrivileged, num_shards=1, state=nothing, state_options...)
 
-# Fields
-- `state_data` — custom user state, accessible from handlers via `ctx.state`.
+    - `state_data` — custom user state, accessible from handlers via `ctx.state`.
+    - `handler_concurrency` — controls the number of concurrently executing handlers so slow workflows
+      (e.g. `wait_for`) can't starve the main loop. Increase the value only if you know your handlers
+      are fast and you need extra throughput; keeping the default `16` is enough for most bots.
 
 # Example
 ```julia
