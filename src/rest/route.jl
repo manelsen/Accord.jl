@@ -62,7 +62,10 @@ function _bucket_template(path::AbstractString)
     p = replace(path, r"(/(?:webhooks|interactions)/\d+)/([^/{}]+)" =>
         s -> begin
             m = match(r"^(/(?:webhooks|interactions)/\d+)/([^/]+)$", s)
-            m === nothing ? s : m.captures[1] * "/{token:" * _token_fingerprint(m.captures[2]) * "}"
+            m === nothing && return s
+            prefix, token = m.captures
+            (prefix === nothing || token === nothing) && return s
+            prefix * "/{token:" * _token_fingerprint(token) * "}"
         end)
     replace(p, r"(?<!/channels|/guilds|/webhooks)/\d{5,}" => "/{id}")
 end

@@ -251,7 +251,7 @@ function diagnose(e, stack)
 
     # 2.4 Invalid Form Body (50035) — The "Validation" Error
     if code == 50035
-        errors = get(json, :errors, Dict())
+        errors = json isa JSON3.Object ? get(json, :errors, Dict()) : Dict()
         explanation = "Discord rejected the data sent in the request body."
         
         # Try to pretty print the nested errors
