@@ -167,7 +167,8 @@ end
     ChannelPins
 
 One page of a channel's pins: `items` (newest first) and `has_more`. Pass the
-last item's `pinned_at` as `before` to [`get_pinned_messages`](@ref) for the next page.
+last item's `pinned_at` (a `DateTime`) as `before` to [`get_pinned_messages`](@ref)
+for the next page.
 """
 @discord_struct ChannelPins begin
     items::Vector{MessagePin}

@@ -334,8 +334,8 @@ in a pin archive command or pin management utility.
 
 # Keyword Arguments
 - `token::String` — Bot authentication token.
-- `before` — ISO8601 timestamp: only pins made before it. Use the last
-  `pinned_at` of the previous page to page backwards.
+- `before` — `DateTime` or ISO8601 string: only pins made before it. Pass the
+  last `pinned_at` of the previous page to page backwards.
 - `limit::Int` — Pins per page, 1–50 (default 50).
 
 # Returns
@@ -350,7 +350,7 @@ Requires `VIEW_CHANNEL` and `READ_MESSAGE_HISTORY`.
 function get_pinned_messages(rl::RateLimiter, channel_id::Snowflake; token::String,
                              before=nothing, limit::Integer=50)
     query = ["limit" => string(limit)]
-    isnothing(before) || push!(query, "before" => string(before))
+    isnothing(before) || push!(query, "before" => before isa DateTime ? string(before, "Z") : string(before))
     resp = discord_get(rl, "/channels/$(channel_id)/messages/pins"; token, query)
     parse_response(ChannelPins, resp)
 end

@@ -99,7 +99,7 @@
                 @test result isa ChannelPins
                 @test result.has_more
                 @test only(result.items).message isa Message
-                @test only(result.items).pinned_at == "2026-10-31T12:00:00+00:00"
+                @test string(only(result.items).pinned_at) == "2026-10-31T12:00:00"
                 @test cap[][1] == "GET"
                 @test contains(cap[][2], "/messages/pins?limit=10")
             end
