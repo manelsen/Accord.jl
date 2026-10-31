@@ -134,7 +134,8 @@ function gateway_connect(
     events_channel::Channel{AbstractEvent},
     commands_channel::Channel{GatewayCommand},
     ready_event::Base.Event;
-    session::GatewaySession = GatewaySession()
+    session::GatewaySession = GatewaySession(),
+    identify_limiter = nothing,
 )
     reconnect = true
     resume = false
@@ -146,6 +147,13 @@ function gateway_connect(
             resume_url * "/?v=$(API_VERSION)&encoding=json"
         else
             GATEWAY_URL
+        end
+
+        # A new session identifies: wait for the shard's identify slot first,
+        # so the IDENTIFY goes out right after HELLO
+        if !isnothing(identify_limiter) && !(resume && !isnothing(session.session_id))
+            wait_identify!(identify_limiter, shard[1])
+            session.stopped && break
         end
 
         @info "Connecting to gateway" url resume

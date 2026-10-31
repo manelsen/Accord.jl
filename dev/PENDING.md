@@ -51,8 +51,6 @@ including the breaking changes.
 
 Beyond discord.py 2.7 parity (#6), from Discord's changelog up to 2026-10-30:
 
-- Large bot sharding: `max_concurrency` identify buckets, and the now
-  mandatory `shard` query param of `get_current_user_guilds`.
 - Identify `capabilities` (channel obfuscation opt-in). Discord calls it a
   temporary, testing-only opt-in that will change before GA, so it was left out.
 - `Application.flags_new`: there is no `Application` type yet

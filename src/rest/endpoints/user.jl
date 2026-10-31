@@ -81,7 +81,7 @@ function modify_current_user(rl::RateLimiter; token::String, body::Dict)
 end
 
 """
-    get_current_user_guilds(rl::RateLimiter; token::String, limit::Int=200, before::Optional{Snowflake}=missing, after::Optional{Snowflake}=missing) -> Vector{Guild}
+    get_current_user_guilds(rl::RateLimiter; token::String, limit::Int=200, before::Optional{Snowflake}=missing, after::Optional{Snowflake}=missing, shard=nothing, with_counts::Bool=false) -> Vector{Guild}
 
 Get the guilds the bot is a member of.
 
@@ -96,16 +96,25 @@ guild management features or admin dashboards.
 - `limit::Int` — Maximum guilds to return (1-200, default 200).
 - `before::Snowflake` — Get guilds before this guild ID.
 - `after::Snowflake` — Get guilds after this guild ID.
+- `shard::Integer` — Only the guilds of this shard, from 0 to `max_concurrency - 1`.
+  Required for bots on large bot sharding (Discord answers 400 without it): call
+  once per shard to list every guild. Not the gateway shard id.
+- `with_counts::Bool` — Include approximate member and presence counts.
 
 # Errors
+- HTTP 400 for a large-sharding bot that leaves out `shard`.
 - HTTP 401 if the token is invalid.
 
 [Discord docs](https://discord.com/developers/docs/resources/user#get-current-user-guilds)
 """
-function get_current_user_guilds(rl::RateLimiter; token::String, limit::Int=200, before::Optional{Snowflake}=missing, after::Optional{Snowflake}=missing)
+function get_current_user_guilds(rl::RateLimiter; token::String, limit::Int=200, before::Optional{Snowflake}=missing,
+                                 after::Optional{Snowflake}=missing, shard::Union{Integer, Nothing}=nothing,
+                                 with_counts::Bool=false)
     query = ["limit" => string(limit)]
     !ismissing(before) && push!(query, "before" => string(before))
     !ismissing(after) && push!(query, "after" => string(after))
+    !isnothing(shard) && push!(query, "shard" => string(shard))
+    with_counts && push!(query, "with_counts" => "true")
     resp = discord_get(rl, "/users/@me/guilds"; token, query=query)
     parse_response_array(Guild, resp)
 end

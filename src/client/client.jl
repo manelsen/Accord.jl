@@ -28,6 +28,9 @@ The main Discord client that orchestrates gateway connections, REST API calls, a
     Client(token::String; intents=IntentAllNonPrivileged, num_shards=1, state=nothing, state_options...)
 
     - `state_data` — custom user state, accessible from handlers via `ctx.state`.
+    - `max_concurrency` — how many shards may identify every 5 seconds, from the
+      `session_start_limit` of `GET /gateway/bot`. Left unset, `start` fetches it when
+      there is more than one shard. Large bots (150k+ guilds) have more than 1.
     - `handler_concurrency` — controls the number of concurrently executing handlers so slow workflows
       (e.g. `wait_for`) can't starve the main loop. Increase the value only if you know your handlers
       are fast and you need extra throughput; keeping the default `16` is enough for most bots.
@@ -80,6 +83,7 @@ end
 function Client(token::String;
     intents::Union{Intents, UInt32, Integer} = IntentAllNonPrivileged,
     num_shards::Int = 1,
+    max_concurrency::Union{Int, Nothing} = nothing,
     state = nothing,
     safety_buffer::Float64 = 0.1,
     guild_strategy::CacheStrategy = CacheForever(),
@@ -106,7 +110,8 @@ function Client(token::String;
 
     events_channel = Channel{AbstractEvent}(1024)
 
-    shards = [ShardInfo(i, num_shards, events_channel) for i in 0:(num_shards-1)]
+    identify_limiter = IdentifyLimiter(max_concurrency)
+    shards = [ShardInfo(i, num_shards, events_channel, identify_limiter) for i in 0:(num_shards-1)]
 
     tree = CommandTree()
 
@@ -211,11 +216,13 @@ function start(client::Client; blocking::Bool=true)
     # Start rate limiter
     start_ratelimiter!(client.ratelimiter)
 
-    # Start shards (with 5s delay between shards as Discord requires)
+    # Start the shards in order. Their identify limiter lets `max_concurrency`
+    # of them (one per bucket) identify every 5 seconds; wait for each group's
+    # turn so later shards don't take an earlier bucket's slot.
+    limiter = first(client.shards).identify_limiter
+    _configure_identify!(limiter, client)
     for (i, shard) in enumerate(client.shards)
-        if i > 1
-            sleep(5.0)
-        end
+        i > 1 && (i - 1) % limiter.max_concurrency == 0 && sleep(IDENTIFY_INTERVAL)
         start_shard(shard, client.token, client.intents)
     end
 
@@ -246,6 +253,18 @@ function start(client::Client; blocking::Bool=true)
             foreach(s -> wait(s.ready), client.shards)
             notify(client.ready)
         end)
+    end
+end
+
+# With several shards and no `max_concurrency` given, ask Discord for it.
+function _configure_identify!(limiter::IdentifyLimiter, client::Client)
+    (limiter.configured || client.num_shards == 1) && return
+    try
+        mc = Int(get_gateway_bot(client.token).session_start_limit["max_concurrency"])
+        set_max_concurrency!(limiter, mc)
+    catch e
+        @warn "Could not read max_concurrency from /gateway/bot; identifying one shard every 5 seconds" exception=e
+        set_max_concurrency!(limiter, 1)
     end
 end
 
