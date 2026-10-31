@@ -219,3 +219,11 @@ function parse_response_array(::Type{T}, resp::HTTP.Response) where T
     end
     JSON3.read(resp.body, Vector{T})
 end
+
+# The `{"permissions": "<bitfield>"}` body of the computed-permission endpoints.
+function _parse_permissions(resp::HTTP.Response)
+    if resp.status >= 400
+        error("Discord API error ($(resp.status)): $(String(resp.body))")
+    end
+    Permissions(parse(UInt64, JSON3.read(resp.body, Dict{String, String})["permissions"]))
+end

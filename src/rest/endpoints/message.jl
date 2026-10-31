@@ -65,6 +65,78 @@ function get_channel_message(rl::RateLimiter, channel_id::Snowflake, message_id:
     parse_response(Message, resp)
 end
 
+# Query parameters of Search Guild Messages (besides `limit`)
+const _SEARCH_FILTERS = (
+    :content, :offset, :max_id, :min_id, :slop, :channel_id, :author_type, :author_id,
+    :mentions, :mentions_role_id, :mention_everyone, :replied_to_user_id,
+    :replied_to_message_id, :pinned, :has, :embed_type, :embed_provider, :link_hostname,
+    :attachment_filename, :attachment_extension, :sort_by, :sort_order, :include_nsfw,
+)
+
+"""
+    search_guild_messages(rl::RateLimiter, guild_id::Snowflake; token::String, limit::Int=25, retries::Int=3, filters...) -> MessageSearchResults
+
+Search a guild's messages, as the search bar in Discord's client does.
+
+Filters are keyword arguments named after Discord's query parameters. Those that
+take several values accept a vector, and `has` and `author_type` values can be
+negated with a leading `-`:
+
+- `content` (text, up to 1024 characters), `slop` (word distance, default 2)
+- `author_id`, `author_type` (`"user"`, `"bot"`, `"webhook"`), `channel_id`
+- `mentions`, `mentions_role_id`, `mention_everyone`, `replied_to_user_id`,
+  `replied_to_message_id`, `pinned`
+- `has` (`"image"`, `"sound"`, `"video"`, `"file"`, `"sticker"`, `"embed"`,
+  `"link"`, `"poll"`, `"snapshot"`), `embed_type`, `embed_provider`,
+  `link_hostname`, `attachment_filename`, `attachment_extension`
+- `min_id`, `max_id` (message ids to search after or before)
+- `sort_by` (`"timestamp"` or `"relevance"`), `sort_order` (`"desc"` or `"asc"`),
+  `include_nsfw`
+- `offset` (up to 9975) and `limit` (1–25) for paging
+
+When Discord has not finished indexing the guild it answers 202 without results;
+the search is retried up to `retries` times, waiting as long as Discord asks.
+If it is still not ready, the results are empty and `retry_after` is set.
+
+# Permissions
+Requires `READ_MESSAGE_HISTORY`, and the Message Content intent to search message text.
+
+# Example
+```julia
+results = Accord.search_guild_messages(client, guild_id; content="release notes",
+                                       author_type="-bot", has=["link"])
+for msg in Accord.found_messages(results)
+    println(msg.channel_id, ": ", msg.content)
+end
+```
+
+[Discord docs](https://docs.discord.com/developers/resources/message#search-guild-messages)
+"""
+function search_guild_messages(rl::RateLimiter, guild_id::Snowflake; token::String,
+                               limit::Int=25, retries::Int=3, filters...)
+    query = Pair{String, String}["limit" => string(limit)]
+    for (k, v) in pairs(filters)
+        k in _SEARCH_FILTERS || throw(ArgumentError(
+            "Unknown search filter `$k`. Expected one of: $(join(_SEARCH_FILTERS, ", "))."))
+        isnothing(v) && continue
+        # A filter with several values repeats the parameter
+        for x in (v isa AbstractVector ? v : (v,))
+            push!(query, string(k) => string(x))
+        end
+    end
+    for attempt in 0:retries
+        resp = discord_get(rl, "/guilds/$(guild_id)/messages/search"; token, query)
+        results = parse_response(MessageSearchResults, resp)
+        resp.status == 202 || return results
+        wait_s = coalesce(results.retry_after, 0.0)
+        if attempt == retries
+            results.retry_after = wait_s
+            return results
+        end
+        sleep(wait_s > 0 ? wait_s : 1.0)
+    end
+end
+
 """
     create_message(rl::RateLimiter, channel_id::Snowflake; token::String, body::Dict=Dict(), files=nothing) -> Message
 

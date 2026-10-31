@@ -202,6 +202,44 @@ function delete_channel_permission(rl::RateLimiter, channel_id::Snowflake, overw
 end
 
 """
+    get_channel_member_permissions(rl::RateLimiter, channel_id::Snowflake, user_id::Snowflake; token::String, implicit::Bool=true) -> Permissions
+
+A member's permissions in a channel, computed by Discord from their roles and
+the channel's overwrites (a thread uses its parent's). With `implicit=true`, the
+default, permissions that depend on a missing `VIEW_CHANNEL` (or `CONNECT` in
+voice and stage channels) are cleared, as Discord's clients do; this is not
+applied to bots. Pass `implicit=false` for the raw computation.
+
+# Permissions
+Requires `VIEW_CHANNEL`, and `CONNECT` in voice and stage channels.
+
+[Discord docs](https://docs.discord.com/developers/resources/channel#get-channel-member-permissions)
+"""
+function get_channel_member_permissions(rl::RateLimiter, channel_id::Snowflake, user_id::Snowflake;
+                                        token::String, implicit::Bool=true)
+    query = implicit ? nothing : ["implicit" => "false"]
+    _parse_permissions(discord_get(rl, "/channels/$(channel_id)/permissions/member/$(user_id)"; token, query))
+end
+
+"""
+    get_channel_role_permissions(rl::RateLimiter, channel_id::Snowflake, role_id::Snowflake; token::String, implicit::Bool=true) -> Permissions
+
+The permissions a role and `@everyone` get in a channel, overwrites included.
+Other roles and member overwrites are not. `implicit` works as in
+[`get_channel_member_permissions`](@ref).
+
+# Permissions
+Requires `VIEW_CHANNEL`, and `CONNECT` in voice and stage channels.
+
+[Discord docs](https://docs.discord.com/developers/resources/channel#get-channel-role-permissions)
+"""
+function get_channel_role_permissions(rl::RateLimiter, channel_id::Snowflake, role_id::Snowflake;
+                                      token::String, implicit::Bool=true)
+    query = implicit ? nothing : ["implicit" => "false"]
+    _parse_permissions(discord_get(rl, "/channels/$(channel_id)/permissions/role/$(role_id)"; token, query))
+end
+
+"""
     get_channel_invites(rl::RateLimiter, channel_id::Snowflake; token::String) -> Vector{Invite}
 
 Get all invites for a channel.

@@ -660,6 +660,30 @@ function get_guild_role_member_counts(rl::RateLimiter, guild_id::Snowflake; toke
 end
 
 """
+    get_guild_member_permissions(rl::RateLimiter, guild_id::Snowflake, user_id::Snowflake; token::String) -> Permissions
+
+A member's guild-level permissions, computed by Discord from their roles and
+`@everyone`. For a specific channel, use [`get_channel_member_permissions`](@ref).
+
+[Discord docs](https://docs.discord.com/developers/resources/guild#get-guild-member-permissions)
+"""
+function get_guild_member_permissions(rl::RateLimiter, guild_id::Snowflake, user_id::Snowflake; token::String)
+    _parse_permissions(discord_get(rl, "/guilds/$(guild_id)/permissions/member/$(user_id)"; token))
+end
+
+"""
+    get_guild_role_permissions(rl::RateLimiter, guild_id::Snowflake, role_id::Snowflake; token::String) -> Permissions
+
+The permissions of a role combined with `@everyone`. Other roles a member may
+have are not included.
+
+[Discord docs](https://docs.discord.com/developers/resources/guild#get-guild-role-permissions)
+"""
+function get_guild_role_permissions(rl::RateLimiter, guild_id::Snowflake, role_id::Snowflake; token::String)
+    _parse_permissions(discord_get(rl, "/guilds/$(guild_id)/permissions/role/$(role_id)"; token))
+end
+
+"""
     create_guild_role(rl::RateLimiter, guild_id::Snowflake; token::String, body::Dict=Dict(), reason=nothing) -> Role
 
 Create a new role in a guild.

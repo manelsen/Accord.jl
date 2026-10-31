@@ -51,8 +51,6 @@ including the breaking changes.
 
 Beyond discord.py 2.7 parity (#6), from Discord's changelog up to 2026-10-30:
 
-- Guild message search (`GET /guilds/{id}/messages/search`).
-- Effective permission endpoints (guild/channel × member/role, 2026-10-30).
 - Invite target users (`target_user_ids`, add/remove/bulk endpoints).
 - Editing attachments (`description`, `is_spoiler`) on existing messages.
 - Large bot sharding: `max_concurrency` identify buckets, and the now

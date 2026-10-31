@@ -199,7 +199,7 @@ export Snowflake
 # Main Discord Types
 export User, Guild, UnavailableGuild, DiscordChannel, Message, Member, Role, Emoji
 export Embed, Attachment, Component, Interaction
-export MessageSnapshot, SnapshotMessage, MessagePin, ChannelPins, PrimaryGuild, RoleColors
+export MessageSnapshot, SnapshotMessage, MessagePin, ChannelPins, MessageSearchResults, PrimaryGuild, RoleColors
 export Invite, Webhook, AuditLog, AutoModRule, ScheduledEvent, Poll
 export Presence, Activity, VoiceState, VoiceRegion
 export InteractionContext, InteractionData, InteractionDataOption, ApplicationCommand
@@ -273,6 +273,7 @@ public timestamp, has_flag, Optional, Nullable, Maybe, Internals, internals
 # Interaction helpers
 public respond, defer, followup
 public get_options, get_option, custom_id, selected_values, modal_values, modal_files, target
+public found_messages
 # Check guards (use as `@check Accord.has_permissions(...)`)
 public has_permissions, is_owner, is_in_guild, cooldown
 # Component and embed builders

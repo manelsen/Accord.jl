@@ -174,3 +174,40 @@ for the next page.
     items::Vector{MessagePin}
     has_more::Bool
 end
+
+"""
+    MessageSearchResults
+
+One page of [`search_guild_messages`](@ref) results.
+
+# Fields
+- `messages::Vector{Vector{Message}}`: the matches. Each inner vector holds one
+  message (Discord keeps the nesting for compatibility); `found_messages(results)`
+  flattens them.
+- `total_results::Int`: how many messages match in all. It can be off while
+  messages are being sent or deleted.
+- `threads`, `members`: the threads the matches are in, and the current user's
+  membership of those it has joined.
+- `doing_deep_historical_index::Bool`, `documents_indexed`: indexing progress.
+- `retry_after`: set when the guild's index wasn't ready (Discord's 202 with
+  code 110000) and every retry ran out; search again after this many seconds.
+
+Fewer than `limit` messages does not mean there are no more pages; compare the
+`offset` with `total_results` instead.
+"""
+@discord_struct MessageSearchResults begin
+    doing_deep_historical_index::Bool
+    documents_indexed::Optional{Int}
+    total_results::Int
+    messages::Vector{Vector{Message}}
+    threads::Optional{Vector{DiscordChannel}}
+    members::Optional{Vector{ThreadMember}}
+    retry_after::Optional{Float64}
+end
+
+"""
+    found_messages(results::MessageSearchResults) -> Vector{Message}
+
+The messages of a search page, without Discord's one-element nesting.
+"""
+found_messages(results::MessageSearchResults) = reduce(vcat, results.messages; init=Message[])

@@ -12,6 +12,8 @@ All notable changes to this project will be documented in this file.
 - **Forwarded messages.** `forward_message(client, channel_id, message)`, `Message.message_snapshots` (`MessageSnapshot`/`SnapshotMessage`), `MessageReference.type` and `MessageReferenceTypes`.
 - **Gateway.** `RateLimited` and `ChannelInfo` events. `request_soundboard_sounds` and `request_channel_info` (opcodes 31 and 43). A dropped `request_guild_members` now logs a warning instead of silently never answering.
 - **REST.** `set_voice_channel_status` and `get_guild_role_member_counts`.
+- **Message search.** `search_guild_messages(client, guild_id; content=..., author_id=..., has=[...], ...)` takes every filter of Discord's search as a keyword and returns `MessageSearchResults`; `found_messages(results)` flattens the matches. While Discord is still indexing the guild (202, code 110000) the search is retried as Discord asks, up to `retries` times.
+- **Computed permissions.** `get_guild_member_permissions`, `get_guild_role_permissions`, `get_channel_member_permissions` and `get_channel_role_permissions` (with `implicit=false` for the raw computation) return the `Permissions` Discord computes.
 - **Fields.** `User.primary_guild` (`PrimaryGuild`, server tags), `User.collectibles` and `Role.colors` (`RoleColors`, gradient roles).
 - **Constants.**
   - Message flags: `MsgFlagHasSnapshot`, `MsgFlagIsComponentsV2`.
