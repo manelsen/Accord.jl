@@ -894,6 +894,26 @@ heartbeat_latency
 ### Private Helpers
 ```@docs
 _notify_waiters!
-_PENDING_CHECKS
+_CHECKS_TLS_KEY
 _resolve_perm
+```
+
+---
+
+## Additional Reference
+
+```@docs
+UnavailableGuild
+WelcomeScreen
+WelcomeScreenChannel
+VoiceChannelStatusUpdate
+VoiceChannelStartTimeUpdate
+create_poll
+modify_thread
+create_forum_tag
+modify_forum_tag
+delete_forum_tag
+parse_timestamp
+push_pending_check!
+@wrap_resource_event
 ```

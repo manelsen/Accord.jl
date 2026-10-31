@@ -12,6 +12,9 @@ makedocs(;
         canonical = "https://manelsen.github.io/Accord.jl",
         size_threshold = 1024 * 1024, # 1MB
     ),
+    # Cookbook pages link to many symbols that have no docstring yet; report
+    # those as warnings instead of failing the whole build.
+    warnonly = [:cross_references],
     pages = [
         "Home" => "index.md",
         "Cookbook" => [

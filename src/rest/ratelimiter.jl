@@ -188,7 +188,7 @@ const _IDEMPOTENT_METHODS = ("GET", "HEAD", "PUT", "DELETE", "OPTIONS")
 _is_idempotent(method::AbstractString) = uppercase(method) in _IDEMPOTENT_METHODS
 
 # Materialise a job body; factories are called once per attempt.
-_materialize_body(body) = body isa Function ? body() : body
+_materialize_body(body) = body isa Function ? Base.invokelatest(body) : body
 
 # Wait until the global budget (`global_limit` requests per second, plus any
 # global 429 cool-down) allows one more request, then consume it.
