@@ -93,32 +93,32 @@ Startup goes from ~10s to ~1s.
 
 ## 3. Async Patterns
 
-### @async vs Threads.@spawn
+### Threads
 
-```julia
-# @async — runs on the same thread, cooperative multitasking
-# Good for I/O-bound work (API calls, file reads)
-Accord.on(client, MessageCreate) do c, event
-    @async begin
-        result = some_api_call()  # yields while waiting
-        create_message(c, event.message.channel_id; content=result)
-    end
-end
-
-# Threads.@spawn — runs on a different thread
-# Good for CPU-bound work (computation, image processing)
-Accord.on(client, MessageCreate) do c, event
-    Threads.@spawn begin
-        result = expensive_computation()  # runs in parallel
-        create_message(c, event.message.channel_id; content=string(result))
-    end
-end
-```
-
-Start Julia with multiple threads:
+Accord already runs each event's handlers in a task on Julia's default threadpool, in parallel up to `handler_concurrency`, and its own I/O loops (gateway, heartbeat, rate limiter, voice) on the interactive threadpool. Start Julia with several default threads and one interactive thread:
 
 ```bash
-julia --threads=4 --project=. bin/run.jl
+julia -t auto,1 --project=. bin/run.jl
+```
+
+You don't need to wrap handler bodies in `@async` or `Threads.@spawn`. What you do need is to protect state shared between handlers, because two handlers can now touch it at the same time:
+
+```julia
+const counts = Dict{Snowflake, Int}()
+const counts_lock = ReentrantLock()
+
+Accord.on(client, MessageCreate) do c, event
+    author = event.message.author.id
+    lock(counts_lock) do
+        counts[author] = get(counts, author, 0) + 1
+    end
+end
+
+# For a plain counter, an atomic is enough
+const messages_seen = Threads.Atomic{Int}(0)
+Accord.on(client, MessageCreate) do c, event
+    Threads.atomic_add!(messages_seen, 1)
+end
 ```
 
 ### Avoiding Event Loop Blocking

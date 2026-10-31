@@ -99,6 +99,22 @@ start(client)
 
 ---
 
+## 🧵 Threads
+
+Start Julia with several threads and one interactive thread:
+
+```bash
+julia -t auto,1 --project bot.jl     # or: JULIA_NUM_THREADS=auto,1
+```
+
+Accord runs its time-critical loops — gateway, heartbeat, rate limiter, voice — on the interactive thread, and your event handlers on the default threads, in parallel (up to `handler_concurrency`, default 16). A handler that crunches numbers for a minute cannot delay a heartbeat or a voice packet.
+
+Because handlers run in parallel, **state you share between handlers must be thread-safe**: guard it with a `ReentrantLock`, or use `Threads.Atomic` for counters. Accord's own state (`client.state`, the rate limiter, the gateway) is already safe to use from any handler. Register commands and event handlers before calling `start`.
+
+With a single thread (Julia's default), everything still works, but a slow handler shares the thread with the heartbeat.
+
+---
+
 ## 🏷️ Names and imports
 
 `using Accord` brings in the types, the event types, the `@slash_command` family of macros and the Discord-specific functions (`create_message`, `wait_for`, `sync_commands!`, …). Short generic verbs and builders — `start`, `on`, `respond`, `defer`, `button`, `embed`, `section` — are part of the public API but not exported, so they never clash with other packages. Import the ones you use, as in the Quick Start, or call them qualified: `Accord.respond(ctx; content="hi")`.

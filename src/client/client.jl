@@ -31,6 +31,10 @@ The main Discord client that orchestrates gateway connections, REST API calls, a
     - `handler_concurrency` — controls the number of concurrently executing handlers so slow workflows
       (e.g. `wait_for`) can't starve the main loop. Increase the value only if you know your handlers
       are fast and you need extra throughput; keeping the default `16` is enough for most bots.
+    Handlers run on Julia's default threadpool, in parallel when Julia has more than
+    one thread: state shared between handlers must be protected (`ReentrantLock`,
+    `Threads.Atomic`). Accord's I/O loops run on the `:interactive` threadpool when
+    one exists (`julia -t auto,1`), so handlers can't delay heartbeats.
     - `handler_backlog` — maximum number of handler tasks alive at once (running plus queued,
       default `64 * handler_concurrency`). When it is reached the event loop waits, which applies
       back-pressure to the gateway instead of growing memory without bound.
@@ -216,10 +220,10 @@ function start(client::Client; blocking::Bool=true)
     end
 
     # Start event processing loop
-    client._event_loop_task = @async _event_loop(client)
+    client._event_loop_task = errormonitor(@_spawn_io _event_loop(client))
 
     # Start supervisor task to monitor and restart shards
-    client._supervisor_task = @async _supervisor_loop(client)
+    client._supervisor_task = errormonitor(@_spawn_io _supervisor_loop(client))
 
     if blocking
         # Ready means every shard has received READY
@@ -238,7 +242,7 @@ function start(client::Client; blocking::Bool=true)
         stop(client)
     else
         # Non-blocking: wait for ready in background
-        errormonitor(@async begin
+        errormonitor(@_spawn_io begin
             foreach(s -> wait(s.ready), client.shards)
             notify(client.ready)
         end)
@@ -390,13 +394,6 @@ function _notify_waiters!(client::Client, event::AbstractEvent)
     end
 end
 
-function _track_handler_task!(client::Client, task::Task)
-    lock(client._handler_tasks_lock) do
-        push!(client._handler_tasks, task)
-    end
-    nothing
-end
-
 function _untrack_handler_task!(client::Client, task::Task)
     lock(client._handler_tasks_lock) do
         delete!(client._handler_tasks, task)
@@ -404,7 +401,8 @@ function _untrack_handler_task!(client::Client, task::Task)
     nothing
 end
 
-# Run the handlers for `event` in a new task. Two limits apply:
+# Run the handlers for `event` in a new task on the default threadpool, so
+# handlers run in parallel when Julia has several threads. Two limits apply:
 # - `_handler_sem` (`handler_concurrency`) caps how many handlers *run* at once.
 #   It is acquired inside the task, so a handler blocked in `wait_for` never
 #   stops the event loop from delivering the event it is waiting for.
@@ -414,23 +412,26 @@ end
 #   unbounded number of tasks.
 function _dispatch_event_async!(client::Client, event::AbstractEvent)
     Base.acquire(client._handler_backlog)
-    task = @async begin
-        try
-            Base.acquire(client._handler_sem)
+    # Spawn while holding the tracking lock: the task untracks itself under the
+    # same lock, so it can never be untracked before it has been tracked.
+    lock(client._handler_tasks_lock) do
+        task = Threads.@spawn :default begin
             try
-                dispatch_event!(client.event_handler, client, event)
-            catch e
-                @error "Unhandled async event dispatch error" event_type=typeof(event) exception=e
+                Base.acquire(client._handler_sem)
+                try
+                    dispatch_event!(client.event_handler, client, event)
+                catch e
+                    @error "Unhandled async event dispatch error" event_type=typeof(event) exception=e
+                finally
+                    Base.release(client._handler_sem)
+                end
             finally
-                Base.release(client._handler_sem)
+                _untrack_handler_task!(client, current_task())
+                Base.release(client._handler_backlog)
             end
-        finally
-            _untrack_handler_task!(client, current_task())
-            Base.release(client._handler_backlog)
         end
+        push!(client._handler_tasks, task)
     end
-    _track_handler_task!(client, task)
-
     nothing
 end
 

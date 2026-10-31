@@ -54,6 +54,7 @@ mutable struct Store{T}
     strategy::CacheStrategy
     data::Union{Dict{Snowflake, T}, LRU{Snowflake, T}}
     timestamps::Dict{Snowflake, Float64}  # for TTL only
+    lock::ReentrantLock  # handlers read the cache while the event loop writes it
 end
 
 function Store{T}(strategy::CacheStrategy=CacheForever()) where T
@@ -62,7 +63,7 @@ function Store{T}(strategy::CacheStrategy=CacheForever()) where T
     else
         Dict{Snowflake, T}()
     end
-    Store{T}(strategy, data, Dict{Snowflake, Float64}())
+    Store{T}(strategy, data, Dict{Snowflake, Float64}(), ReentrantLock())
 end
 
 """
@@ -136,18 +137,16 @@ Base.empty!(store::ShardedStore) = begin for (s, l) in zip(store.shards, store.l
 function Base.get(store::Store{T}, id::Snowflake, default=nothing) where T
     store.strategy isa CacheNever && return default
 
-    if haskey(store.data, id)
+    lock(store.lock) do
+        haskey(store.data, id) || return default
         # Check TTL
-        if store.strategy isa CacheTTL
-            if time() - get(store.timestamps, id, 0.0) > store.strategy.ttl_seconds
-                delete!(store, id)
-                return default
-            end
+        if store.strategy isa CacheTTL &&
+           time() - get(store.timestamps, id, 0.0) > store.strategy.ttl_seconds
+            delete!(store, id)
+            return default
         end
-
         return store.data[id]
     end
-    return default
 end
 
 function Base.getindex(store::Store{T}, id::Snowflake) where T
@@ -159,25 +158,27 @@ end
 function Base.setindex!(store::Store{T}, value::T, id::Snowflake) where T
     store.strategy isa CacheNever && return value
 
-    store.data[id] = value
-
-    if store.strategy isa CacheTTL
-        store.timestamps[id] = time()
+    lock(store.lock) do
+        store.data[id] = value
+        store.strategy isa CacheTTL && (store.timestamps[id] = time())
     end
-
     return value
 end
 
 function Base.delete!(store::Store, id::Snowflake)
-    delete!(store.data, id)
-    delete!(store.timestamps, id)
+    lock(store.lock) do
+        delete!(store.data, id)
+        delete!(store.timestamps, id)
+    end
+    return store
 end
 
-Base.haskey(store::Store, id::Snowflake) = haskey(store.data, id)
-Base.empty!(store::Store) = (empty!(store.data); empty!(store.timestamps); store)
-Base.values(store::Store) = values(store.data)
-Base.length(store::Store) = length(store.data)
-Base.keys(store::Store) = keys(store.data)
+Base.haskey(store::Store, id::Snowflake) = lock(() -> haskey(store.data, id), store.lock)
+Base.empty!(store::Store) = lock(() -> (empty!(store.data); empty!(store.timestamps); store), store.lock)
+Base.length(store::Store) = lock(() -> length(store.data), store.lock)
+# Snapshots: safe to iterate while the event loop keeps updating the cache.
+Base.values(store::Store) = lock(() -> collect(values(store.data)), store.lock)
+Base.keys(store::Store) = lock(() -> collect(keys(store.data)), store.lock)
 
 """
     State
@@ -394,14 +395,14 @@ function update_state!(state::State, event::VoiceStateUpdateEvent)
     vs = event.state
     gid = vs.guild_id
     if !ismissing(gid)
-        guild_vs = lock(state._lock) do
-            get!(state.voice_states, gid, Dict{Snowflake, VoiceState}())
-        end
-        if isnothing(vs.channel_id)
-            # User left voice
-            delete!(guild_vs, vs.user_id)
-        else
-            guild_vs[vs.user_id] = vs
+        lock(state._lock) do
+            guild_vs = get!(state.voice_states, gid, Dict{Snowflake, VoiceState}())
+            if isnothing(vs.channel_id)
+                # User left voice
+                delete!(guild_vs, vs.user_id)
+            else
+                guild_vs[vs.user_id] = vs
+            end
         end
     end
 end

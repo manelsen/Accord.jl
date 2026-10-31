@@ -34,10 +34,14 @@ function run_accord_tests()
 
     # ReTestItems.runtests(filter_func, Module; ...)
     nworkers = parse(Int, get(ENV, "ACCORD_TEST_WORKERS", "6"))
+    # Workers run with several default threads and one interactive thread, the
+    # configuration Accord recommends, so races show up in tests.
+    nworker_threads = get(ENV, "ACCORD_TEST_THREADS", "4,1")
     ReTestItems.runtests(
         ti_filter,
         Accord;
         nworkers = nworkers,
+        nworker_threads = nworker_threads,
         report = true,
         verbose_results = true
     )

@@ -50,7 +50,7 @@ Connect to the voice gateway WebSocket and complete the handshake.
 function voice_gateway_connect(session::VoiceGatewaySession)
     url = "$(session.endpoint)/?v=8"
 
-    @async begin
+    @_spawn_io begin
         try
             HTTP.WebSockets.open(url) do ws
                 session.ws = ws
@@ -89,7 +89,7 @@ function _voice_gateway_loop(ws, session::VoiceGatewaySession)
             # Start heartbeat
             interval = d["heartbeat_interval"]
             session.heartbeat_interval = interval
-            session.heartbeat_task = @async _voice_heartbeat(ws, interval, session)
+            session.heartbeat_task = @_spawn_io _voice_heartbeat(ws, interval, session)
 
             # Send Identify
             identify = Dict(

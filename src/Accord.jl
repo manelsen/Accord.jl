@@ -10,6 +10,22 @@ const ACCORD_VERSION = VersionNumber(
     match(r"^version\s*=\s*\"([^\"]+)\""m, read(_PROJECT_TOML, String)).captures[1])
 const USER_AGENT = "DiscordBot (Accord.jl, $ACCORD_VERSION)"
 
+# === Task placement ===
+#
+# Long-lived I/O loops (gateway, heartbeat, rate limiter, voice) run on the
+# :interactive threadpool when Julia was started with one (`julia -t 4,1`), so
+# CPU-heavy event handlers on the default pool can never delay them. Without
+# interactive threads they fall back to the default pool.
+macro _spawn_io(expr)
+    quote
+        if Threads.nthreads(:interactive) > 0
+            Threads.@spawn :interactive $(esc(expr))
+        else
+            Threads.@spawn $(esc(expr))
+        end
+    end
+end
+
 # === Type aliases ===
 const Optional{T} = Union{T, Missing}
 const Nullable{T} = Union{T, Nothing}

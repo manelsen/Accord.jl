@@ -74,13 +74,15 @@ function _gateway_rate_wait!(session::GatewaySession;
                              window::Float64=GATEWAY_SEND_WINDOW)
     times = session.command_times
     while true
-        now = time()
-        filter!(t -> now - t < window, times)
-        if length(times) < limit
+        wait_time = lock(session.send_lock) do
+            now = time()
+            filter!(t -> now - t < window, times)
+            length(times) < limit || return max(0.01, times[1] + window - now)
             push!(times, now)
-            return
+            return 0.0
         end
-        sleep(max(0.01, times[1] + window - now))
+        iszero(wait_time) && return
+        sleep(wait_time)
     end
 end
 
@@ -215,7 +217,7 @@ function _gateway_loop(
     resume::Bool,
 )
     alive = Ref(true)
-    errormonitor(@async _command_pump(ws, commands_channel, session, alive))
+    errormonitor(@_spawn_io _command_pump(ws, commands_channel, session, alive))
     try
         _gateway_receive_loop(ws, token, intents, shard, events_channel,
                               ready_event, session, resume)
@@ -259,15 +261,12 @@ function _gateway_receive_loop(ws, token, intents, shard, events_channel,
         s = get(msg_obj, "s", nothing)
         t = get(msg_obj, "t", nothing)
 
-        # Update sequence
-        if s isa Integer
-            session.seq = Int(s)
-            session.seq_ref[] = session.seq
-        elseif s isa AbstractString
-            parsed = tryparse(Int, s)
-            if !isnothing(parsed)
-                session.seq = parsed
-                session.seq_ref[] = session.seq
+        # Update sequence (the heartbeat reads seq_ref under the same lock)
+        new_seq = s isa Integer ? Int(s) : s isa AbstractString ? tryparse(Int, s) : nothing
+        if !isnothing(new_seq)
+            lock(session.send_lock) do
+                session.seq = new_seq
+                session.seq_ref[] = new_seq
             end
         end
 

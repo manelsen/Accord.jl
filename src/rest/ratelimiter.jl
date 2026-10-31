@@ -78,6 +78,7 @@ mutable struct RateLimiter
     safety_buffer::Float64
     global_window_start::Float64
     bucket_locks::Dict{String, ReentrantLock}
+    lock::ReentrantLock  # guards buckets, bucket_hashes, bucket_locks and the global counters
 end
 
 function RateLimiter(;global_limit::Int=50, safety_buffer::Float64=0.1)
@@ -97,6 +98,7 @@ function RateLimiter(;global_limit::Int=50, safety_buffer::Float64=0.1)
         safety_buffer,
         0.0,
         Dict{String, ReentrantLock}(),
+        ReentrantLock(),
     )
 end
 
@@ -112,7 +114,7 @@ start_ratelimiter!(rl)  # begins processing in background
 """
 function start_ratelimiter!(rl::RateLimiter)
     rl.running = true
-    rl.task = @async _ratelimiter_loop(rl)
+    rl.task = errormonitor(@_spawn_io _ratelimiter_loop(rl))
     return rl
 end
 
@@ -161,7 +163,7 @@ function _ratelimiter_loop(rl::RateLimiter)
 
         # One task per job: buckets are independent, so a long wait in one
         # bucket must not hold up requests to the others.
-        errormonitor(@async _run_job(rl, job))
+        errormonitor(@_spawn_io _run_job(rl, job))
     end
 end
 
@@ -180,7 +182,7 @@ end
 
 # Lock that serialises requests sharing the route's bucket key.
 _bucket_lock(rl::RateLimiter, route::Route) =
-    get!(() -> ReentrantLock(), rl.bucket_locks, route.bucket_key)
+    lock(() -> get!(ReentrantLock, rl.bucket_locks, route.bucket_key), rl.lock)
 
 const _IDEMPOTENT_METHODS = ("GET", "HEAD", "PUT", "DELETE", "OPTIONS")
 
@@ -194,26 +196,24 @@ _materialize_body(body) = body isa Function ? Base.invokelatest(body) : body
 # global 429 cool-down) allows one more request, then consume it.
 function _acquire_global!(rl::RateLimiter)
     while true
-        now = time()
-        if now < rl.global_reset_at
-            # Add safety buffer for clock drift/network jitter
-            wait_time = (rl.global_reset_at - now) + rl.safety_buffer
-            @debug "Global rate limit, waiting" wait_time
-            sleep(wait_time)
-            continue
+        # Decide under the lock, sleep outside it.
+        wait_time = lock(rl.lock) do
+            now = time()
+            now < rl.global_reset_at &&
+                return (rl.global_reset_at - now) + rl.safety_buffer  # global 429 cool-down
+            if now - rl.global_window_start >= 1.0
+                rl.global_window_start = now
+                rl.global_remaining = rl.global_limit
+            end
+            if rl.global_remaining > 0
+                rl.global_remaining -= 1
+                return 0.0
+            end
+            return max(0.0, rl.global_window_start + 1.0 - now)
         end
-
-        if now - rl.global_window_start >= 1.0
-            rl.global_window_start = now
-            rl.global_remaining = rl.global_limit
-        end
-
-        if rl.global_remaining > 0
-            rl.global_remaining -= 1
-            return
-        end
-
-        sleep(max(0.0, rl.global_window_start + 1.0 - now))
+        iszero(wait_time) && return
+        @debug "Global rate limit, waiting" wait_time
+        sleep(wait_time)
     end
 end
 
@@ -223,12 +223,15 @@ function _process_job(rl::RateLimiter, job::RestJob)
     for attempt in 1:max_retries
         # Check bucket rate limit
         bucket_key = _get_bucket_key(rl, job.route)
-        bucket = get(rl.buckets, bucket_key, nothing)
-        if !isnothing(bucket) && bucket.remaining <= 0
+        remaining, reset_at = lock(rl.lock) do
+            bucket = get(rl.buckets, bucket_key, nothing)
+            isnothing(bucket) ? (1, 0.0) : (bucket.remaining, bucket.reset_at)
+        end
+        if remaining <= 0
             now = time()
-            if now < bucket.reset_at
+            if now < reset_at
                 # Add safety buffer for clock drift/network jitter
-                wait_time = (bucket.reset_at - now) + rl.safety_buffer
+                wait_time = (reset_at - now) + rl.safety_buffer
                 @debug "Bucket rate limit, waiting" bucket_key wait_time
                 sleep(wait_time)
             end
@@ -261,7 +264,7 @@ function _process_job(rl::RateLimiter, job::RestJob)
             retry_after = _get_retry_after(resp)
             if _is_global_ratelimit(resp)
                 @warn "Global rate limit hit" retry_after
-                rl.global_reset_at = time() + retry_after
+                lock(() -> rl.global_reset_at = time() + retry_after, rl.lock)
             else
                 @warn "Bucket rate limit hit" bucket_key retry_after
             end
@@ -287,13 +290,16 @@ end
 
 function _get_bucket_key(rl::RateLimiter, route::Route)
     # Use Discord's bucket hash (plus major params) if known, otherwise the route key
-    bucket_hash = get(rl.bucket_hashes, route.bucket_key, nothing)
+    bucket_hash = lock(() -> get(rl.bucket_hashes, route.bucket_key, nothing), rl.lock)
     isnothing(bucket_hash) && return route.bucket_key
     major = _major_key(route)
     isempty(major) ? bucket_hash : "$bucket_hash:$major"
 end
 
-function _update_ratelimit(rl::RateLimiter, route::Route, resp)
+_update_ratelimit(rl::RateLimiter, route::Route, resp) =
+    lock(() -> _update_ratelimit_locked(rl, route, resp), rl.lock)
+
+function _update_ratelimit_locked(rl::RateLimiter, route::Route, resp)
     bucket_hash = HTTP.header(resp, "X-RateLimit-Bucket")
     isempty(bucket_hash) || (rl.bucket_hashes[route.bucket_key] = bucket_hash)
 

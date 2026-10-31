@@ -10,10 +10,11 @@ mutable struct HeartbeatState
     seq::Nullable{Int}
     ack_received::Bool
     running::Bool
+    lock::ReentrantLock  # the heartbeat task and the receive loop run on different threads
 end
 
 HeartbeatState(interval_ms::Int) = HeartbeatState(
-    interval_ms, 0.0, 0.0, nothing, true, true
+    interval_ms, 0.0, 0.0, nothing, true, true, ReentrantLock()
 )
 
 """
@@ -25,23 +26,30 @@ Launch a heartbeat actor that sends OP 1 Heartbeat at the given interval.
 Returns the `Task`. Set `stop_event` to signal shutdown.
 
 `seq_ref` is a `Ref{Union{Int,Nothing}}` tracking the last sequence number.
-`send_lock` must be the lock shared by every writer of `ws`, so heartbeat
-frames never interleave with other gateway sends.
+`send_lock` must be the lock shared by every writer of `ws` (and by the writer
+of `seq_ref`), so heartbeat frames never interleave with other gateway sends.
 """
 function start_heartbeat(ws, interval_ms::Int, seq_ref::Ref, stop_event::Base.Event;
                          send_lock::ReentrantLock=ReentrantLock())
     state = HeartbeatState(interval_ms)
 
-    task = @async begin
+    task = @_spawn_io begin
         # Jitter: first heartbeat at interval * rand()
-        first_wait = interval_ms * rand() / 1000.0
-        sleep(first_wait)
+        sleep(interval_ms * rand() / 1000.0)
 
         while state.running && !stop_event.set
-            # Check if we got an ACK for the last heartbeat
-            if !state.ack_received && state.last_send > 0
+            # Was the previous heartbeat acknowledged? If so, mark the next one
+            # as pending *before* sending it, so a fast ACK can't be lost.
+            zombie = lock(state.lock) do
+                !state.ack_received && state.last_send > 0 && return true
+                state.ack_received = false
+                state.last_send = time()
+                return false
+            end
+
+            if zombie
                 @warn "Heartbeat ACK not received — zombie connection detected"
-                state.running = false
+                stop_heartbeat!(state)
                 # Actively close the WebSocket to unblock the main receive loop
                 try
                     HTTP.WebSockets.close(ws)
@@ -51,47 +59,38 @@ function start_heartbeat(ws, interval_ms::Int, seq_ref::Ref, stop_event::Base.Ev
                 break
             end
 
-            # Send heartbeat
-            payload = if isnothing(seq_ref[])
-                """{"op":1,"d":null}"""
-            else
-                """{"op":1,"d":$(seq_ref[])}"""
-            end
-
             try
                 lock(send_lock) do
-                    HTTP.WebSockets.send(ws, payload)
+                    seq = seq_ref[]
+                    HTTP.WebSockets.send(ws, isnothing(seq) ? """{"op":1,"d":null}""" : """{"op":1,"d":$seq}""")
                 end
-                state.last_send = time()
-                state.ack_received = false
             catch e
                 @warn "Failed to send heartbeat" exception=e
-                state.running = false
+                stop_heartbeat!(state)
                 break
             end
 
-            # Wait for next interval
             sleep(interval_ms / 1000.0)
         end
     end
 
-    return task, state
+    return errormonitor(task), state
 end
 
 """Use this to acknowledge receipt of a heartbeat ACK from the gateway.
 
 Mark that a heartbeat ACK was received."""
 function heartbeat_ack!(state::HeartbeatState)
-    state.last_ack = time()
-    state.ack_received = true
+    lock(state.lock) do
+        state.last_ack = time()
+        state.ack_received = true
+    end
 end
 
 """Use this to terminate the heartbeat task gracefully.
 
 Stop the heartbeat loop."""
-function stop_heartbeat!(state::HeartbeatState)
-    state.running = false
-end
+stop_heartbeat!(state::HeartbeatState) = lock(() -> state.running = false, state.lock)
 
 """Use this to measure the round-trip time between your bot and Discord's gateway.
 

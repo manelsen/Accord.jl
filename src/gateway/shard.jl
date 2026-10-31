@@ -50,7 +50,7 @@ task = start_shard(shard, "Bot my_token", UInt32(513))
 """
 function start_shard(shard::ShardInfo, token::String, intents::UInt32)
     shard.session.stopped = false
-    shard.task = @async gateway_connect(
+    shard.task = @_spawn_io gateway_connect(
         token, intents, (shard.id, shard.total),
         shard.events, shard.commands, shard.ready;
         session=shard.session
