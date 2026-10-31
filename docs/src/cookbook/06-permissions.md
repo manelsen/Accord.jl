@@ -174,7 +174,7 @@ function require_permissions(ctx, required::Permissions)
     user_id = ctx.interaction.member.user.id
 
     perms = get_member_permissions(ctx.client, guild_id, user_id)
-    if !has_flag(perms, required)
+    if !Accord.has_flag(perms, required)
         Accord.respond(ctx; content="You don't have permission to use this command.", ephemeral=true)
         return false
     end
@@ -286,7 +286,7 @@ Accord.on(client, [`GuildCreate`](@ref)) do c, event
     perms = get_member_permissions(c, guild.id, me_id)
 
     required = PermSendMessages | PermEmbedLinks | PermManageMessages
-    if !has_flag(perms, required)
+    if !Accord.has_flag(perms, required)
         missing_perms = String[]
         Accord.has_flag(perms, PermSendMessages) || push!(missing_perms, "Send Messages")
         Accord.has_flag(perms, PermEmbedLinks) || push!(missing_perms, "Embed Links")

@@ -11,12 +11,12 @@
         combined = IntentGuilds | IntentGuildMessages
         @test Accord.has_flag(combined, IntentGuilds)
         @test Accord.has_flag(combined, IntentGuildMessages)
-        @test !has_flag(combined, IntentGuildMembers)
+        @test !Accord.has_flag(combined, IntentGuildMembers)
 
         # All non-privileged should not include privileged
-        @test !has_flag(IntentAllNonPrivileged, IntentGuildMembers)
-        @test !has_flag(IntentAllNonPrivileged, IntentGuildPresences)
-        @test !has_flag(IntentAllNonPrivileged, IntentMessageContent)
+        @test !Accord.has_flag(IntentAllNonPrivileged, IntentGuildMembers)
+        @test !Accord.has_flag(IntentAllNonPrivileged, IntentGuildPresences)
+        @test !Accord.has_flag(IntentAllNonPrivileged, IntentMessageContent)
 
         # All should include privileged
         @test Accord.has_flag(IntentAll, IntentGuildMembers)
@@ -33,7 +33,7 @@
         @test Accord.has_flag(combined, PermSendMessages)
         @test Accord.has_flag(combined, PermEmbedLinks)
         @test Accord.has_flag(combined, PermAttachFiles)
-        @test !has_flag(combined, PermAdministrator)
+        @test !Accord.has_flag(combined, PermAdministrator)
 
         # Permissions use string JSON
         json_str = JSON3.write(PermAdministrator)
@@ -58,12 +58,12 @@
         # AND
         c = a & b
         @test Accord.has_flag(c, IntentGuilds)
-        @test !has_flag(c, IntentGuildMessages)
-        @test !has_flag(c, IntentGuildMembers)
+        @test !Accord.has_flag(c, IntentGuildMessages)
+        @test !Accord.has_flag(c, IntentGuildMembers)
 
         # XOR
         d = xor(a, b)
-        @test !has_flag(d, IntentGuilds)
+        @test !Accord.has_flag(d, IntentGuilds)
         @test Accord.has_flag(d, IntentGuildMessages)
         @test Accord.has_flag(d, IntentGuildMembers)
 

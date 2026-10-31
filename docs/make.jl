@@ -1,7 +1,14 @@
 using Documenter, Accord
 
 
-DocMeta.setdocmeta!(Accord, :DocTestSetup, :(using Accord); recursive=true)
+# Doctests see what a user sees after `using Accord`, plus the public names
+# they would import explicitly (`using Accord: has_flag, timestamp, …`).
+const _PUBLIC_UNEXPORTED = filter(n -> Base.ispublic(Accord, n) && !Base.isexported(Accord, n),
+                                  names(Accord; all=true))
+DocMeta.setdocmeta!(Accord, :DocTestSetup,
+    Expr(:block, :(using Accord),
+         Expr(:using, Expr(:(:), Expr(:., :Accord), [Expr(:., n) for n in _PUBLIC_UNEXPORTED]...)));
+    recursive=true)
 
 makedocs(;
     modules = [Accord],

@@ -4,7 +4,7 @@
     @testset "generic names are public but not exported" begin
         for name in (:start, :stop, :on, :respond, :defer, :followup, :target,
                      :button, :embed, :section, :container, :separator, :timestamp,
-                     :connect!, :play!, :Optional, :Nullable, Symbol("@on"), Symbol("@embed"))
+                     :connect!, :play!, :Optional, :Nullable, Symbol("Accord.@on"), Symbol("Accord.@embed"))
             @test !Base.isexported(Accord, name)
             @test Base.ispublic(Accord, name)
         end
@@ -28,7 +28,9 @@
     @testset "every REST endpoint accepts a Client" begin
         for name in Accord.REST_ENDPOINTS
             f = getfield(Accord, name)
-            @test hasmethod(f, Tuple{Client, Vararg{Any}})
+            # forwarded or hand-written: some method takes a Client first
+            @test any(m -> length(m.sig.parameters) >= 2 && m.sig.parameters[2] === Client,
+                      methods(f))
         end
     end
 

@@ -1,6 +1,6 @@
 @testitem "Macros" tags=[:unit] begin
     using Accord, JSON3, StructTypes, Dates
-    using Accord: has_flag, @discord_flags, @discord_struct, @_flags_structtypes_int,
+    using Accord: has_flag, Optional, Nullable, Maybe, @discord_flags, @discord_struct, @_flags_structtypes_int,
         drain_pending_checks!, pending_checks, push_pending_check!, CommandTree,
         dispatch_interaction!
 
@@ -287,14 +287,14 @@
             bc = TFA_B | TFA_C
             result = ab & bc
             @test Accord.has_flag(result, TFA_B)
-            @test !has_flag(result, TFA_A)
-            @test !has_flag(result, TFA_C)
+            @test !Accord.has_flag(result, TFA_A)
+            @test !Accord.has_flag(result, TFA_C)
         end
 
         @testset "bitwise XOR" begin
             ab = TFX_A | TFX_B
             result = xor(ab, TFX_A)
-            @test !has_flag(result, TFX_A)
+            @test !Accord.has_flag(result, TFX_A)
             @test Accord.has_flag(result, TFX_B)
         end
 
@@ -334,7 +334,7 @@
         @testset "has_flag with zero" begin
             z = zero(TestFlagsHasZero)
             @test Accord.has_flag(TFHZ_A, z)   # every flag has the zero flag
-            @test !has_flag(z, TFHZ_A)  # zero does not have any flag
+            @test !Accord.has_flag(z, TFHZ_A)  # zero does not have any flag
         end
     end
 

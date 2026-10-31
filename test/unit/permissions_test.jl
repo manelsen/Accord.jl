@@ -32,8 +32,8 @@
         perms = compute_base_permissions(Snowflake[], roles, OWNER_ID, Snowflake(50))
         @test Accord.has_flag(perms, PermViewChannel)
         @test Accord.has_flag(perms, PermSendMessages)
-        @test !has_flag(perms, PermManageMessages)
-        @test !has_flag(perms, PermAdministrator)
+        @test !Accord.has_flag(perms, PermManageMessages)
+        @test !Accord.has_flag(perms, PermAdministrator)
     end
 
     @testset "Base — role permissions OR'd" begin
@@ -51,8 +51,8 @@
         @test Accord.has_flag(perms, PermConnect)
         @test Accord.has_flag(perms, PermSpeak)
         # Not granted
-        @test !has_flag(perms, PermBanMembers)
-        @test !has_flag(perms, PermAdministrator)
+        @test !Accord.has_flag(perms, PermBanMembers)
+        @test !Accord.has_flag(perms, PermAdministrator)
     end
 
     @testset "Base — Administrator grants all" begin
@@ -72,7 +72,7 @@
         perms = compute_base_permissions([Snowflake(9999)], roles, OWNER_ID, Snowflake(50))
         # Should still have @everyone perms, unknown role silently skipped
         @test Accord.has_flag(perms, PermViewChannel)
-        @test !has_flag(perms, PermAdministrator)
+        @test !Accord.has_flag(perms, PermAdministrator)
     end
 
     # ── compute_channel_permissions ──────────────────────────────────────────────
@@ -89,7 +89,7 @@
         perms = compute_channel_permissions(base, Snowflake[], overwrites, GUILD_ID, Snowflake(50))
 
         @test Accord.has_flag(perms, PermViewChannel)
-        @test !has_flag(perms, PermSendMessages)  # Denied by @everyone overwrite
+        @test !Accord.has_flag(perms, PermSendMessages)  # Denied by @everyone overwrite
     end
 
     @testset "Channel — @everyone overwrite allow adds permission" begin
@@ -122,7 +122,7 @@
         perms = compute_channel_permissions(base, member_roles, overwrites, GUILD_ID, Snowflake(50))
 
         @test Accord.has_flag(perms, PermSendMessages)
-        @test !has_flag(perms, PermEmbedLinks)  # Denied by role overwrite
+        @test !Accord.has_flag(perms, PermEmbedLinks)  # Denied by role overwrite
     end
 
     @testset "Channel — multiple role overwrites combined" begin
@@ -160,7 +160,7 @@
         member_roles = [Snowflake(300)]
         perms = compute_channel_permissions(base, member_roles, overwrites, GUILD_ID, Snowflake(50))
 
-        @test !has_flag(perms, PermSendMessages)  # Member deny wins over role allow
+        @test !Accord.has_flag(perms, PermSendMessages)  # Member deny wins over role allow
     end
 
     @testset "Channel — Administrator bypasses all overwrites" begin
@@ -186,7 +186,7 @@
         regular_perms = compute_channel_permissions(base, Snowflake[], overwrites, GUILD_ID, Snowflake(50))
         @test Accord.has_flag(regular_perms, PermViewChannel)
         @test Accord.has_flag(regular_perms, PermReadMessageHistory)
-        @test !has_flag(regular_perms, PermSendMessages)
+        @test !Accord.has_flag(regular_perms, PermSendMessages)
 
         # Mod
         mod_perms = compute_channel_permissions(base, [Snowflake(300)], overwrites, GUILD_ID, Snowflake(60))
@@ -201,12 +201,12 @@
         @test Accord.has_flag(p, PermSendMessages)
         @test Accord.has_flag(p, PermEmbedLinks)
         @test Accord.has_flag(p, PermAttachFiles)
-        @test !has_flag(p, PermManageMessages)
+        @test !Accord.has_flag(p, PermManageMessages)
 
         # Remove a permission
         p2 = Permissions(p.value & ~PermEmbedLinks.value)
         @test Accord.has_flag(p2, PermSendMessages)
-        @test !has_flag(p2, PermEmbedLinks)
+        @test !Accord.has_flag(p2, PermEmbedLinks)
         @test Accord.has_flag(p2, PermAttachFiles)
     end
 end
