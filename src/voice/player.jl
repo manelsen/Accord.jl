@@ -62,7 +62,7 @@ function play!(player::AudioPlayer, source::AbstractAudioSource, send_fn::Functi
         player.encoder = OpusEncoder()
     end
 
-    player.task = @async _playback_loop(player, send_fn)
+    player.task = @_spawn_io _playback_loop(player, send_fn)
     return player
 end
 

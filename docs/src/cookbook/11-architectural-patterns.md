@@ -160,8 +160,8 @@ end
 
 ### Global Error Handler
 
-!!! warning "Blocking the Event Loop with Synchronous Operations"
-    Never perform blocking operations (like `sleep()`, file I/O without async, or long computations) directly in event handlers. This blocks the entire event loop and prevents the bot from receiving new events. Always wrap slow operations in `@async` or `Threads.@spawn`.
+!!! note "Slow handlers and threads"
+    Each event's handlers already run in their own task on Julia's default threads, so a slow handler does not block the event loop. Start Julia with `-t auto,1` so the gateway and heartbeat get the interactive thread and long computations in handlers can't delay them. Handlers run in parallel: protect state they share with a `ReentrantLock` or `Threads.Atomic`.
 
 ```julia
 Accord.on_error(client) do c, event, error
