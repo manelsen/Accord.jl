@@ -3,7 +3,11 @@ module Accord
 # === Constants ===
 const API_VERSION = 10
 const API_BASE = "https://discord.com/api/v$(API_VERSION)"
-const ACCORD_VERSION = v"0.3.0"
+# Single source of truth for the version is Project.toml
+const _PROJECT_TOML = joinpath(dirname(@__DIR__), "Project.toml")
+include_dependency(_PROJECT_TOML)
+const ACCORD_VERSION = VersionNumber(
+    match(r"^version\s*=\s*\"([^\"]+)\""m, read(_PROJECT_TOML, String)).captures[1])
 const USER_AGENT = "DiscordBot (Accord.jl, $ACCORD_VERSION)"
 
 # === Type aliases ===
@@ -19,7 +23,6 @@ using Sockets
 import HTTP
 import JSON3
 import StructTypes
-import CodecZlib
 using PrecompileTools
 import LRUCache
 import Opus_jll
@@ -127,7 +130,6 @@ include("voice/connection.jl")
 include("voice/client.jl")
 
 # === Utils ===
-# === Utils ===
 include("utils/permissions.jl")
 include("diagnostics/Diagnoser.jl")
 
@@ -138,11 +140,11 @@ using ..Accord
 
 # Voice internals
 const VoiceGatewaySession = Accord.VoiceGatewaySession
-const CRYPTO_SECRETBOX_KEYBYTES = Accord.CRYPTO_SECRETBOX_KEYBYTES
-const CRYPTO_SECRETBOX_NONCEBYTES = Accord.CRYPTO_SECRETBOX_NONCEBYTES
 const ENCRYPTION_MODES = Accord.ENCRYPTION_MODES
 const select_encryption_mode = Accord.select_encryption_mode
-const xsalsa20_poly1305_encrypt = Accord.xsalsa20_poly1305_encrypt
+const encrypt_rtpsize = Accord.encrypt_rtpsize
+const decrypt_rtpsize = Accord.decrypt_rtpsize
+const aes256gcm_available = Accord.aes256gcm_available
 const rtp_header = Accord.rtp_header
 const VoiceOpcodes = Accord.VoiceOpcodes
 
@@ -248,10 +250,6 @@ export OpusEncoder, OpusDecoder, opus_encode, opus_decode, set_bitrate!, set_sig
 export OPUS_SAMPLE_RATE, OPUS_CHANNELS, OPUS_FRAME_SIZE, OPUS_FRAME_DURATION_MS, OPUS_MAX_PACKET_SIZE
 export OPUS_APPLICATION_AUDIO, OPUS_APPLICATION_VOIP
 export read_frame, close_source
-
-# CLI
-include("cli/AccordCLI.jl")
-export AccordCLI
 
 # Initialize libsodium on module load
 function __init__()

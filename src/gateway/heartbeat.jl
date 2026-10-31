@@ -17,7 +17,7 @@ HeartbeatState(interval_ms::Int) = HeartbeatState(
 )
 
 """
-    start_heartbeat(ws, interval_ms, seq_ref, stop_event) -> Task
+    start_heartbeat(ws, interval_ms, seq_ref, stop_event; send_lock=ReentrantLock()) -> (Task, HeartbeatState)
 
 Use this internal function to maintain the gateway connection by sending periodic heartbeats.
 
@@ -25,8 +25,11 @@ Launch a heartbeat actor that sends OP 1 Heartbeat at the given interval.
 Returns the `Task`. Set `stop_event` to signal shutdown.
 
 `seq_ref` is a `Ref{Union{Int,Nothing}}` tracking the last sequence number.
+`send_lock` must be the lock shared by every writer of `ws`, so heartbeat
+frames never interleave with other gateway sends.
 """
-function start_heartbeat(ws, interval_ms::Int, seq_ref::Ref, stop_event::Base.Event)
+function start_heartbeat(ws, interval_ms::Int, seq_ref::Ref, stop_event::Base.Event;
+                         send_lock::ReentrantLock=ReentrantLock())
     state = HeartbeatState(interval_ms)
 
     task = @async begin
@@ -56,7 +59,9 @@ function start_heartbeat(ws, interval_ms::Int, seq_ref::Ref, stop_event::Base.Ev
             end
 
             try
-                HTTP.WebSockets.send(ws, payload)
+                lock(send_lock) do
+                    HTTP.WebSockets.send(ws, payload)
+                end
                 state.last_send = time()
                 state.ack_received = false
             catch e

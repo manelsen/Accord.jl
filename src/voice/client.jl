@@ -25,6 +25,7 @@ mutable struct VoiceClient
     sequence::UInt16
     timestamp::UInt32
     encryption_mode::String
+    nonce_counter::UInt32
     connected::Bool
     _voice_state_event::Base.Event
     _voice_server_event::Base.Event
@@ -38,6 +39,7 @@ function VoiceClient(client::Client, guild_id::Snowflake, channel_id::Snowflake)
         client, guild_id, channel_id,
         nothing, nothing, AudioPlayer(),
         UInt16(0), UInt32(0), "",
+        UInt32(0),
         false,
         Base.Event(), Base.Event(),
         nothing, nothing, nothing,
@@ -249,38 +251,12 @@ end
 function _encrypt_audio(vc::VoiceClient, header::Vector{UInt8}, opus_data::Vector{UInt8})
     session = vc.session
     isnothing(session) && error("No voice session")
-    key = session.secret_key
-
-    if vc.encryption_mode == "xsalsa20_poly1305"
-        # Nonce is the RTP header padded to 24 bytes
-        nonce = zeros(UInt8, 24)
-        copyto!(nonce, 1, header, 1, min(length(header), 24))
-        return xsalsa20_poly1305_encrypt(key, nonce, opus_data)
-
-    elseif vc.encryption_mode == "xsalsa20_poly1305_suffix"
-        # Generate random 24-byte nonce, append to packet
-        nonce = random_nonce(24)
-        encrypted = xsalsa20_poly1305_encrypt(key, nonce, opus_data)
-        return vcat(encrypted, nonce)
-
-    elseif vc.encryption_mode == "xsalsa20_poly1305_lite"
-        # 4-byte incrementing nonce, padded to 24
-        nonce_val = vc.sequence
-        nonce = zeros(UInt8, 24)
-        nonce[1] = UInt8((nonce_val >> 24) & 0xFF)
-        nonce[2] = UInt8((nonce_val >> 16) & 0xFF)
-        nonce[3] = UInt8((nonce_val >> 8) & 0xFF)
-        nonce[4] = UInt8(nonce_val & 0xFF)
-        encrypted = xsalsa20_poly1305_encrypt(key, nonce, opus_data)
-        return vcat(encrypted, nonce[1:4])
-
-    elseif vc.encryption_mode == "aead_xchacha20_poly1305_rtpsize"
-        # AEAD with RTP header as AAD
-        nonce = random_nonce(24)
-        encrypted = aead_xchacha20_poly1305_encrypt(key, nonce, opus_data, header)
-        return vcat(encrypted, nonce)
-
-    else
+    vc.encryption_mode in ENCRYPTION_MODES ||
         error("Unsupported encryption mode: $(vc.encryption_mode)")
-    end
+
+    # rtpsize modes: 32-bit incrementing nonce, RTP header as AAD, nonce
+    # counter appended to the packet. Wraps around at 2^32.
+    vc.nonce_counter += UInt32(1)
+    return encrypt_rtpsize(vc.encryption_mode, session.secret_key, vc.nonce_counter,
+                           header, opus_data)
 end

@@ -368,4 +368,35 @@
 
         @test true
     end
+
+    # ── Command pump & send limits ───────────────────────────────────────────────
+
+    @testset "Commands are sent without waiting for incoming frames" begin
+        ws = MockWebSocket()
+        session = GatewaySession()
+        commands = Channel{GatewayCommand}(10)
+        alive = Ref(true)
+        pump = @async Accord._command_pump(ws, commands, session, alive)
+
+        put!(commands, GatewayCommand(GatewayOpcodes.PRESENCE_UPDATE, Dict("status" => "idle")))
+        deadline = time() + 2.0
+        while isempty(ws.sent) && time() < deadline
+            sleep(0.01)
+        end
+        alive[] = false
+        wait(pump)
+
+        @test length(ws.sent) == 1
+        @test JSON3.read(ws.sent[1]).op == GatewayOpcodes.PRESENCE_UPDATE
+    end
+
+    @testset "Gateway send window blocks past the limit" begin
+        session = GatewaySession()
+        for _ in 1:3
+            Accord._gateway_rate_wait!(session; limit=3, window=0.5)
+        end
+        t0 = time()
+        Accord._gateway_rate_wait!(session; limit=3, window=0.5)
+        @test time() - t0 >= 0.4
+    end
 end

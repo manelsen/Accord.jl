@@ -1,7 +1,8 @@
-@testitem "Modular Scaffolding Integration" tags=[:integration] begin
-    using Accord
-    using Pkg
-    using UUIDs
+using Test
+using TOML
+using AccordCLI
+
+@testset "Modular Scaffolding Integration" begin
 
     # Helper: Generate a bot and check basic integrity
     function test_onboard(bot_name, modules_str)
@@ -9,7 +10,7 @@
         mktempdir() do tmp_dir
             cd(tmp_dir) do
                 # Run the onboard command logic
-                Accord.AccordCLI.onboard_impl(bot_name; modules=modules_str)
+                AccordCLI.onboard_impl(bot_name; modules=modules_str)
                 
                 bot_path = joinpath(tmp_dir, bot_name)
                 @test isdir(bot_path)
@@ -25,7 +26,7 @@
                 end
                 
                 # Verify Project.toml is valid and contains expected deps
-                proj = Pkg.TOML.parsefile(joinpath(bot_path, "Project.toml"))
+                proj = TOML.parsefile(joinpath(bot_path, "Project.toml"))
                 @test proj["name"] == bot_name
                 @test haskey(proj["deps"], "Accord")
                 @test haskey(proj["deps"], "DotEnv")

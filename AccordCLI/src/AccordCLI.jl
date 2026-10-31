@@ -1,7 +1,7 @@
 module AccordCLI
 
 using Comonicon
-using ..Accord
+using Accord
 
 include("onboard.jl")
 include("doctor.jl")

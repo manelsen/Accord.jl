@@ -1,8 +1,12 @@
 name: CI
 
 on:
+  push:
+    branches: [master]
+    tags: ['v*']
   pull_request:
     branches: [master]
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -40,7 +44,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-retestitems-
       
-      # Unit + Integration — paga o imposto de compilação apenas UMA VEZ por OS.
+      # Unit + Integration in a single run so compilation is paid only once per OS.
       - name: Run Tests (Unit, Integration)
         env:
           JULIA_PKG_SERVER: ""
@@ -56,9 +60,22 @@ jobs:
           name: coverage-lcov-${{ matrix.os }}-${{ matrix.julia-version }}
           path: lcov.info
 
+  cli:
+    name: AccordCLI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: '1'
+      - uses: julia-actions/cache@v2
+      - name: Test AccordCLI
+        env:
+          JULIA_PKG_SERVER: ""
+        run: julia --project=AccordCLI -e 'using Pkg; Pkg.test()'
+
   jet:
     name: Code Quality (Aqua + JET)
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

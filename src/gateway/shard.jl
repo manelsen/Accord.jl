@@ -49,6 +49,7 @@ task = start_shard(shard, "Bot my_token", UInt32(513))
 ```
 """
 function start_shard(shard::ShardInfo, token::String, intents::UInt32)
+    shard.session.stopped = false
     shard.task = @async gateway_connect(
         token, intents, (shard.id, shard.total),
         shard.events, shard.commands, shard.ready;
@@ -70,6 +71,7 @@ stop_shard(shard)  # triggers graceful shutdown
 ```
 """
 function stop_shard(shard::ShardInfo)
+    shard.session.stopped = true
     notify(shard.session.stop_event)
     shard.session.connected = false
 end

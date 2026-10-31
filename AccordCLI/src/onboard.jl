@@ -1,7 +1,5 @@
 # Onboarding and scaffolding logic for new bots
 
-using Pkg
-using Dates
 using UUIDs
 
 function onboard_impl(name::String; modules::String="")
@@ -12,8 +10,9 @@ function onboard_impl(name::String; modules::String="")
         error("Directory $name already exists. Choose a different name.")
     end
 
-    repo_root = joinpath(@__DIR__, "..", "..")
-    core_src = joinpath(repo_root, "examples", "templates", "core")
+    # Templates ship with the Accord package itself
+    templates_dir = joinpath(pkgdir(Accord), "examples", "templates")
+    core_src = joinpath(templates_dir, "core")
     
     if !isdir(core_src)
         error("Core template not found at $core_src.")
@@ -46,7 +45,7 @@ function onboard_impl(name::String; modules::String="")
     end
 
     for mod in mod_list
-        mod_src_dir = joinpath(repo_root, "examples", "templates", "modules", mod)
+        mod_src_dir = joinpath(templates_dir, "modules", mod)
         if !isdir(mod_src_dir)
             @warn "Module '$mod' not found. Skipping."
             continue

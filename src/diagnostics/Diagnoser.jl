@@ -112,10 +112,6 @@ end
 # Matchers — The "Double Pareto" (Top 30 Errors)
 # =========================================================================================
 
-# =========================================================================================
-# Matchers — The "Double Pareto" (Top 30 Errors)
-# =========================================================================================
-
 function diagnose(e, stack)
     # 1. SETUP & CONFIGURATION
     
@@ -145,6 +141,8 @@ function diagnose(e, stack)
     # This usually comes as a WebSocket Close or HTTP 400x
     status = 0
     if e isa HTTP.StatusError
+        status = e.status
+    elseif e isa HTTP.Response
         status = e.status
     elseif e isa HTTP.WebSockets.WebSocketError && e.message isa HTTP.WebSockets.CloseFrameBody
         status = e.message.status
@@ -188,14 +186,16 @@ function diagnose(e, stack)
     
     # Extract JSON body if available
     json = nothing
-    if e isa HTTP.StatusError && !isempty(e.response.body)
+    resp_body = e isa HTTP.StatusError ? e.response.body :
+                e isa HTTP.Response ? e.body : UInt8[]
+    if !isempty(resp_body)
         try
-            json = JSON3.read(e.response.body)
+            json = JSON3.read(resp_body)
         catch
         end
     end
     
-    code = !isnothing(json) && haskey(json, :code) ? json.code : 0
+    code = json isa JSON3.Object && haskey(json, :code) ? json.code : 0
 
     # 2.1 Missing Permissions (50013)
     if code == 50013
@@ -238,8 +238,8 @@ function diagnose(e, stack)
     end
 
     # 2.3 Rate Limit (429)
-    if e isa HTTP.StatusError && e.status == 429
-        retry_after = !isnothing(json) ? get(json, :retry_after, 0) : "?"
+    if status == 429
+        retry_after = json isa JSON3.Object ? get(json, :retry_after, 0) : "?"
         return Diagnostic(
             "RATE LIMIT EXCEEDED (429)",
             "You are sending too many requests too quickly. The library usually handles this, but you may have hit a global limit.",

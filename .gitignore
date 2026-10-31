@@ -32,3 +32,4 @@ chaos_output.txt
 # Local & Infrastructure
 .local/
 .retestitems/
+test/integration/endurance_report_*.txt

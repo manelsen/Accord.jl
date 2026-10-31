@@ -1199,40 +1199,46 @@ RTP_PAYLOAD_TYPE   = 0x78
 
 ## 30. Voice — Encryption
 
+> **Status:** Discord requires the DAVE end-to-end encryption protocol for voice
+> since 2026-03-01. Accord does not implement DAVE yet, so voice connections are
+> currently rejected by Discord. The transport encryption below is still required
+> underneath DAVE.
+
 ### Supported Modes (preference order)
 
-1. `aead_xchacha20_poly1305_rtpsize`
-2. `xsalsa20_poly1305_lite`
-3. `xsalsa20_poly1305_suffix`
-4. `xsalsa20_poly1305`
+1. `aead_aes256_gcm_rtpsize` (used when the CPU has hardware AES)
+2. `aead_xchacha20_poly1305_rtpsize`
+
+The `xsalsa20_poly1305*` and non-rtpsize modes were discontinued by Discord on
+2024-11-18 and are not supported.
 
 ### Functions
 
 ```julia
-select_encryption_mode(server_modes::Vector{String}) -> String
+select_encryption_mode(server_modes; aes_available=aes256gcm_available()) -> String
 
-# xsalsa20_poly1305 (NaCl secretbox)
-xsalsa20_poly1305_encrypt(key, nonce, plaintext) -> ciphertext
-xsalsa20_poly1305_decrypt(key, nonce, ciphertext) -> plaintext
-# key: 32 bytes, nonce: 24 bytes, MAC overhead: 16 bytes
+# Packet-level helpers (what VoiceClient uses)
+encrypt_rtpsize(mode, key, counter::UInt32, header, payload) -> Vector{UInt8}
+decrypt_rtpsize(mode, key, header, packet) -> Vector{UInt8}
 
-# AEAD XChaCha20-Poly1305 (with associated data)
-aead_xchacha20_poly1305_encrypt(key, nonce, plaintext, aad) -> ciphertext
-aead_xchacha20_poly1305_decrypt(key, nonce, ciphertext, aad) -> plaintext
-# key: 32 bytes, nonce: 24 bytes, MAC overhead: 16 bytes
+# Primitives (key: 32 bytes, tag overhead: 16 bytes)
+aead_aes256gcm_encrypt(key, nonce, plaintext, aad)          # nonce: 12 bytes
+aead_aes256gcm_decrypt(key, nonce, ciphertext, aad)
+aead_xchacha20_poly1305_encrypt(key, nonce, plaintext, aad) # nonce: 24 bytes
+aead_xchacha20_poly1305_decrypt(key, nonce, ciphertext, aad)
 
 random_nonce(len=24) -> Vector{UInt8}
 init_sodium()   # Called automatically on module load
 ```
 
-### Encryption Layout per Mode
+### Packet Layout
 
-| Mode                                | Nonce source         | Packet layout                    |
-|-------------------------------------|---------------------|----------------------------------|
-| `xsalsa20_poly1305`                | RTP header (padded) | `header \| encrypted`             |
-| `xsalsa20_poly1305_suffix`         | Random 24 bytes     | `header \| encrypted \| nonce`    |
-| `xsalsa20_poly1305_lite`           | 4-byte sequence     | `header \| encrypted \| nonce[4]` |
-| `aead_xchacha20_poly1305_rtpsize`  | Random 24 bytes     | `header \| encrypted \| nonce`    |
+| Mode                               | Nonce                                   | Packet layout                              |
+|------------------------------------|-----------------------------------------|--------------------------------------------|
+| `aead_aes256_gcm_rtpsize`          | 32-bit counter, zero-padded to 12 bytes | `header \| ciphertext+tag \| counter[4]` |
+| `aead_xchacha20_poly1305_rtpsize`  | 32-bit counter, zero-padded to 24 bytes | `header \| ciphertext+tag \| counter[4]` |
+
+The RTP header is the AEAD additional data (authenticated, not encrypted).
 
 ---
 
