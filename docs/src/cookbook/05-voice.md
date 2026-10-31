@@ -5,11 +5,24 @@
 
 **Prerequisites:** [Recipe 03](03-slash-commands.md), `ffmpeg` installed, `IntentGuildVoiceStates` enabled
 
-!!! warning "Voice is currently unavailable"
+!!! warning "Voice needs libdave"
     Since March 1, 2026, Discord only admits clients that implement the DAVE
-    end-to-end encryption protocol into voice calls. Accord does not implement
-    DAVE yet, so `connect!` will be rejected by Discord. This recipe documents
-    the API as it will work once DAVE support lands.
+    end-to-end encryption protocol into voice calls. Accord implements DAVE on
+    top of Discord's [libdave](https://github.com/discord/libdave), which is not
+    bundled yet: build it as a shared library and point Accord at it before
+    connecting.
+
+    ```bash
+    git clone https://github.com/discord/libdave && cd libdave/cpp
+    git submodule update --init vcpkg
+    ./vcpkg/bootstrap-vcpkg.sh -disableMetrics && make shared
+    export ACCORD_LIBDAVE=$PWD/build/libdave.so   # .dylib on macOS
+    ```
+
+    Without it, `connect!` fails with close code 4017 and a log line telling
+    you to set `ACCORD_LIBDAVE`. Accord sends audio only; the transcription
+    section below needs a receive path (with DAVE decryption) that Accord does
+    not have yet.
 
 ---
 

@@ -470,6 +470,39 @@ init_sodium
 random_nonce
 ```
 
+### DAVE (end-to-end encryption)
+
+Voice channels on Discord require DAVE. Accord drives it through
+[libdave](https://github.com/discord/libdave), loaded at runtime from the path
+in `ACCORD_LIBDAVE` (or [`LibDave.load!`](@ref Accord.LibDave.load!)).
+[`connect!`](@ref) handles the whole protocol; the items below are the
+building blocks.
+
+```@docs
+LibDave
+LibDave.load!
+LibDave.available
+LibDave.max_protocol_version
+LibDave.Session
+LibDave.key_package
+LibDave.process_proposals
+LibDave.process_commit
+LibDave.process_welcome
+LibDave.KeyRatchet
+LibDave.key_ratchet
+LibDave.Encryptor
+LibDave.encrypt
+LibDave.Decryptor
+LibDave.decrypt
+DaveSession
+dave_session_description!
+dave_handle_json!
+dave_handle_binary!
+dave_encrypt
+parse_dave_binary
+dave_binary_frame
+```
+
 ## 7. Types
 
 ### Core

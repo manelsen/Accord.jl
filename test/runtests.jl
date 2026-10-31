@@ -22,6 +22,8 @@ function run_accord_tests()
             return :aqua in ti.tags
         elseif category == "jet"
             return :jet in ti.tags
+        elseif category == "dave"
+            return :dave in ti.tags
         elseif category == "quality"
             return :aqua in ti.tags || :jet in ti.tags
         elseif category == "all"
