@@ -13,6 +13,8 @@ All notable changes to this project will be documented in this file.
 - Removed the unused `CodecZlib` dependency and the `GatewaySession.zlib_buffer` field (Accord never requested gateway compression).
 
 ### Fixed
+- **Rate-limit majors come from the path.** `Route` reads the channel, guild and webhook id (and a token fingerprint) from the path itself; the 141 hand-written `major_params` arguments are gone. Nine endpoints had forgotten them (interaction follow-ups, `/users/@me/guilds/...`).
+- **Gateway events no longer mutate their input.** Four event decoders `pop!`-ed `guild_id` out of the payload Dict they were given.
 - **Rate limit buckets**: bucket state is now keyed by Discord's bucket hash *plus* the major parameter, so channels sharing a hash no longer throttle each other. Minor IDs in substituted paths (message IDs, user IDs…) collapse to one bucket key, so per-resource routes are limited proactively instead of only after a 429.
 - **Token leak in logs**: webhook and interaction tokens are replaced by a fingerprint in bucket keys, which appear in rate-limit log lines.
 - **Duplicate POSTs**: network errors are retried only for idempotent methods (GET, HEAD, PUT, DELETE, OPTIONS).
@@ -30,6 +32,10 @@ All notable changes to this project will be documented in this file.
 - **Project templates**: the bot template and example projects declared `Accord = { path = ... }` under `[deps]`, which is not a valid Project.toml, so scaffolded bots could not be instantiated. They now use Accord's UUID (with `[sources]` for the in-repo examples).
 
 ### Changed
+- **Direct event decoding.** `@discord_struct` accepts a supertype, and 39 flat gateway events are declared with it and decode straight from the JSON string. That removes their hand-written constructors and every `JSON3.read(JSON3.write(x))` round trip on the event hot path. Timestamp fields on these events (`InviteCreate.created_at`, `GuildMemberUpdate.joined_at`, …) now return `DateTime`, like the same fields on resource types.
+- **One message payload builder** (`_message_body`) behind `create_message`, `reply`, `edit_message`, `respond`, `followup`, `edit_response` and `defer`. `respond` and `followup` gained `flags`, `allowed_mentions`, `poll` and `tts`; `reply` forwards every `create_message` keyword. `edit_message(client, ...)` now omits keywords passed as `nothing` instead of sending `null`.
+- Component and embed builders share one optional-field helper; the four entity select menus share one implementation. `user_select`, `role_select`, `mentionable_select` and `channel_select` are now public.
+- `@user_command`/`@message_command` and the six `@slash_command` forms share one code path.
 - **Concurrent REST**: requests in different rate-limit buckets run concurrently; requests in the same bucket stay ordered. The global limit (50 requests/s by default) is enforced proactively.
 - **Bounded handler tasks**: new `Client(...; handler_backlog=64*handler_concurrency)` caps how many handler tasks exist at once; past that, the event loop applies back-pressure. Each event now costs one task instead of two.
 - CI runs on pushes to `master` as well as pull requests, and the CLI has its own job.
