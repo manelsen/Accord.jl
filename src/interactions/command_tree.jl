@@ -40,6 +40,7 @@ The `client.command_tree` field holds the instance used by the bot.
 - `component_prefix_handlers::Dict{String, Function}`: Map of custom_id prefixes to handlers.
 - `modal_handlers::Dict{String, Function}`: Map of custom_ids to modal handlers.
 - `autocomplete_handlers::Dict{String, Function}`: Map of command names to autocomplete handlers.
+- `lock::ReentrantLock`: Guards the dictionaries; take it to read or change them directly.
 
 See [`register_command!`](@ref), [`sync_commands!`](@ref).
 """
@@ -49,6 +50,7 @@ mutable struct CommandTree
     component_prefix_handlers::Dict{String, Function} # custom_id prefix → handler
     modal_handlers::Dict{String, Function}             # custom_id → handler
     autocomplete_handlers::Dict{String, Function}       # command_name → handler
+    lock::ReentrantLock  # registration may happen while interactions are dispatched on other threads
 end
 
 CommandTree() = CommandTree(
@@ -57,6 +59,7 @@ CommandTree() = CommandTree(
     Dict{String, Function}(),
     Dict{String, Function}(),
     Dict{String, Function}(),
+    ReentrantLock(),
 )
 
 function _normalize_options(options::AbstractVector)::Vector{Dict{String, Any}}
@@ -106,7 +109,7 @@ function register_command!(tree::CommandTree, name::String, description::String,
     guild_id::Optional{Snowflake} = missing,
     checks::AbstractVector{<:Function} = Function[],
 )
-    tree.commands[name] = CommandDefinition(
+    cmd = CommandDefinition(
         name,
         description,
         type,
@@ -115,6 +118,7 @@ function register_command!(tree::CommandTree, name::String, description::String,
         guild_id,
         Function[checks...],
     )
+    lock(() -> tree.commands[name] = cmd, tree.lock)
 end
 
 """
@@ -165,11 +169,13 @@ end)
 ```
 """
 function register_component!(tree::CommandTree, custom_id::String, handler::Function)
-    if endswith(custom_id, "*")
-        prefix = custom_id[1:end-1]
-        tree.component_prefix_handlers[prefix] = handler
-    else
-        tree.component_handlers[custom_id] = handler
+    lock(tree.lock) do
+        if endswith(custom_id, "*")
+            prefix = custom_id[1:end-1]
+            tree.component_prefix_handlers[prefix] = handler
+        else
+            tree.component_handlers[custom_id] = handler
+        end
     end
 end
 
@@ -194,7 +200,7 @@ end)
 ```
 """
 function register_modal!(tree::CommandTree, custom_id::String, handler::Function)
-    tree.modal_handlers[custom_id] = handler
+    lock(() -> tree.modal_handlers[custom_id] = handler, tree.lock)
 end
 
 """
@@ -217,7 +223,7 @@ end)
 ```
 """
 function register_autocomplete!(tree::CommandTree, command_name::String, handler::Function)
-    tree.autocomplete_handlers[command_name] = handler
+    lock(() -> tree.autocomplete_handlers[command_name] = handler, tree.lock)
 end
 
 """
@@ -255,7 +261,7 @@ function sync_commands!(client, tree::CommandTree; guild_id=nothing)
     global_cmds = Dict{String, Any}[]
     guild_cmds = Dict{Snowflake, Vector{Dict{String, Any}}}()
 
-    for (name, cmd) in tree.commands
+    for cmd in lock(() -> collect(values(tree.commands)), tree.lock)
         payload = Dict{String, Any}(
             "name" => cmd.name,
             "type" => cmd.type,
@@ -374,7 +380,7 @@ function dispatch_interaction!(tree::CommandTree, client, interaction::Interacti
         cmd_name = data.name
         ismissing(cmd_name) && return
 
-        cmd = get(tree.commands, cmd_name, nothing)
+        cmd = lock(() -> get(tree.commands, cmd_name, nothing), tree.lock)
         if !isnothing(cmd)
             # Recursive routing for subcommands
             _dispatch_command(cmd.handler, cmd.checks, cmd.options, ctx)
@@ -388,17 +394,14 @@ function dispatch_interaction!(tree::CommandTree, client, interaction::Interacti
 
         cid = data.custom_id
         ismissing(cid) && return
-        # Try exact match first
-        handler = get(tree.component_handlers, cid, nothing)
-        
-        # Then try prefix matches (only if no exact match)
-        if isnothing(handler)
-            for (prefix, h) in tree.component_prefix_handlers
-                if startswith(cid, prefix)
-                    handler = h
-                    break
-                end
+        handler = lock(tree.lock) do
+            # Exact match first, then prefix matches
+            h = get(tree.component_handlers, cid, nothing)
+            isnothing(h) || return h
+            for (prefix, ph) in tree.component_prefix_handlers
+                startswith(cid, prefix) && return ph
             end
+            return nothing
         end
 
         if !isnothing(handler)
@@ -415,7 +418,7 @@ function dispatch_interaction!(tree::CommandTree, client, interaction::Interacti
         ac_name = data.name
         ismissing(ac_name) && return
 
-        handler = get(tree.autocomplete_handlers, ac_name, nothing)
+        handler = lock(() -> get(tree.autocomplete_handlers, ac_name, nothing), tree.lock)
         if !isnothing(handler)
             try
                 Base.invokelatest(handler, ctx)
@@ -431,7 +434,7 @@ function dispatch_interaction!(tree::CommandTree, client, interaction::Interacti
         modal_cid = data.custom_id
         ismissing(modal_cid) && return
 
-        handler = get(tree.modal_handlers, modal_cid, nothing)
+        handler = lock(() -> get(tree.modal_handlers, modal_cid, nothing), tree.lock)
         if !isnothing(handler)
             try
                 Base.invokelatest(handler, ctx)

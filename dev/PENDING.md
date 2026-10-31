@@ -59,8 +59,6 @@ including the breaking changes.
 
 ## 5. Known bugs and gaps in the code
 
-- **`CommandTree` has no lock.** Its handler dicts are mutated by
-  `register_*!` and read by dispatch, which now runs on multiple threads (#4).
 - **Example templates call functions that don't exist**: `fetch_guild` and
   `fetch_guild_channels` in `examples/templates/modules/{utils,music,starboard}/code.jl`
   and in a docstring example in `src/types/guild.jl:79`. Use `get_guild` /

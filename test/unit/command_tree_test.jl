@@ -1184,4 +1184,38 @@
         dispatch_interaction!(tree, client, interaction)
         @test called_sub[]
     end
+
+    @testset "registration while dispatching on other threads" begin
+        tree = CommandTree()
+        client = mock_client()
+        hits = Threads.Atomic{Int}(0)
+        register_command!(tree, "hot", "Hot", ctx -> Threads.atomic_add!(hits, 1))
+        # A handler may register more handlers: it runs outside the tree's lock
+        register_component!(tree, "nested", ctx -> register_component!(tree, "made_by_handler", identity))
+        n = 2_000
+        writers = map(1:2) do w
+            Threads.@spawn for i in 1:n
+                register_command!(tree, "cmd_$(w)_$i", "d", identity)
+                register_component!(tree, "btn_$(w)_$i", identity)
+                register_component!(tree, "pre_$(w)_$i:*", identity)
+                register_modal!(tree, "modal_$(w)_$i", identity)
+                register_autocomplete!(tree, "cmd_$(w)_$i", identity)
+            end
+        end
+        readers = map(1:2) do _
+            Threads.@spawn for _ in 1:n
+                dispatch_interaction!(tree, client, slash_interaction(name="hot"))
+                dispatch_interaction!(tree, client, component_interaction(custom_id_val="pre_1_1:x"))
+            end
+        end
+        dispatch_interaction!(tree, client, component_interaction(custom_id_val="nested"))
+        foreach(wait, writers)
+        foreach(wait, readers)
+        @test hits[] == 2n
+        @test length(tree.commands) == 2n + 1
+        @test length(tree.component_handlers) == 2n + 2
+        @test length(tree.component_prefix_handlers) == 2n
+        @test length(tree.modal_handlers) == 2n
+        @test length(tree.autocomplete_handlers) == 2n
+    end
 end
