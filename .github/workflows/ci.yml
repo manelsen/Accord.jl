@@ -51,8 +51,7 @@ jobs:
           ACCORD_TEST_WORKERS: ${{ matrix.os == 'windows-latest' && '0' || '6' }}
           # Tests run multithreaded (workers get "4,1"; in-process runs use this)
           JULIA_NUM_THREADS: "4,1"
-        shell: bash
-        run: .github/scripts/annotate_failure.sh julia --project -e 'using Pkg; Pkg.test(test_args=["default"])'
+        run: julia --project -e 'using Pkg; Pkg.test(test_args=["default"])'
       
       - uses: julia-actions/julia-processcoverage@v1
         if: matrix.os == 'ubuntu-latest'
@@ -96,8 +95,7 @@ jobs:
       - name: Run Aqua + JET analysis
         env:
           JULIA_PKG_SERVER: ""
-        shell: bash
-        run: .github/scripts/annotate_failure.sh julia --project -e 'using Pkg; Pkg.test(test_args=["quality"])'
+        run: julia --project -e 'using Pkg; Pkg.test(test_args=["quality"])'
 
   docs:
     name: Documentation

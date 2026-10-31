@@ -18,6 +18,15 @@
 
     @info "Concurrency stress threads" default=Threads.nthreads(:default) interactive=Threads.nthreads(:interactive)
 
+    # In CI the suite is configured for "4,1" threads; make sure that really
+    # happened, so the parallel tests below can't be silently skipped.
+    if get(ENV, "CI", "") == "true"
+        @testset "CI runs multithreaded" begin
+            @test Threads.nthreads(:default) > 1
+            @test Threads.nthreads(:interactive) >= 1
+        end
+    end
+
     @testset "rate limiter: many threads, many buckets, nothing lost" begin
         calls = Threads.Atomic{Int}(0)
         rl = RateLimiter(; global_limit=10_000)
