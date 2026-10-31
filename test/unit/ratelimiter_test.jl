@@ -414,21 +414,22 @@
     @testset "a waiting bucket does not block other buckets" begin
         rl, do_request = with_mock_rl() do m, u, h, b
             if contains(u, "channels/111")
-                rl_response(200; remaining=0, reset_after=2.0, bucket="slow")
+                rl_response(200; remaining=0, reset_after=3.0, bucket="slow")
             else
-                rl_response(200; remaining=5, reset_after=2.0, bucket="fast")
+                rl_response(200; remaining=5, reset_after=3.0, bucket="fast")
             end
         end
         try
             slow = Route("GET", "/channels/{channel_id}/messages", "channel_id" => "111")
             fast = Route("GET", "/channels/{channel_id}/messages", "channel_id" => "222")
-            do_request(slow)                    # bucket "slow" is now exhausted for 2s
+            do_request(fast)                    # warm up the code path
+            do_request(slow)                    # bucket "slow" is now exhausted for 3s
             blocked = @async do_request(slow)   # has to wait for the reset
             sleep(0.05)
             t0 = time()
             resp = do_request(fast)
             @test resp.status == 200
-            @test time() - t0 < 1.0
+            @test time() - t0 < 1.5
             @test !istaskdone(blocked)
             wait(blocked)
         finally

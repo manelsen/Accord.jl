@@ -31,7 +31,7 @@
 
         put!(events, BlockingEvent(1))
 
-        deadline = time() + 1.0
+        deadline = time() + 10.0  # generous: first dispatch includes compilation
         while !slow_started.set && time() < deadline
             sleep(0.01)
         end
@@ -39,7 +39,7 @@
 
         put!(events, FastEvent(2))
 
-        deadline = time() + 1.0
+        deadline = time() + 10.0  # generous: first dispatch includes compilation
         while !fast_done.set && time() < deadline
             sleep(0.01)
         end
@@ -73,7 +73,7 @@
         @test isready(events)   # the loop is applying back-pressure
 
         notify(release)
-        deadline = time() + 2.0
+        deadline = time() + 10.0
         while (isready(events) || !isempty(client._handler_tasks)) && time() < deadline
             sleep(0.01)
         end

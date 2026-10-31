@@ -6,8 +6,10 @@ log=$(mktemp)
 "$@" 2>&1 | tee "$log"
 status=${PIPESTATUS[0]}
 if [ "$status" -ne 0 ]; then
+  # JET prints its reports after a "JET found" line; put them first
+  grep -A120 "JET found" "$log" | head -c 12000 > "$log.sel" || true
   grep -n -E -A12 "Test Failed|Error During Test|ERROR:|LoadError|MethodError|UndefVarError|Unsatisfiable|error:|Error:" "$log" \
-    | head -c 40000 > "$log.sel" || true
+    | head -c 22000 >> "$log.sel" || true
   [ -s "$log.sel" ] || tail -c 20000 "$log" > "$log.sel"
   split -b 3500 "$log.sel" "$log.part."
   n=0

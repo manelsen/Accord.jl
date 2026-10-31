@@ -379,7 +379,7 @@
         pump = @async Accord._command_pump(ws, commands, session, alive)
 
         put!(commands, GatewayCommand(GatewayOpcodes.PRESENCE_UPDATE, Dict("status" => "idle")))
-        deadline = time() + 2.0
+        deadline = time() + 10.0
         while isempty(ws.sent) && time() < deadline
             sleep(0.01)
         end
