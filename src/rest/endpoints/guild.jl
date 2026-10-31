@@ -23,8 +23,7 @@ features, or member counts.
 [Discord docs](https://discord.com/developers/docs/resources/guild#get-guild)
 """
 function get_guild(rl::RateLimiter, guild_id::Snowflake; token::String, with_counts::Bool=false)
-    resp = discord_get(rl, "/guilds/$(guild_id)"; token, query=with_counts ? ["with_counts" => "true"] : nothing,
-        major_params=["guild_id" => string(guild_id)])
+    resp = discord_get(rl, "/guilds/$(guild_id)"; token, query=with_counts ? ["with_counts" => "true"] : nothing)
     parse_response(Guild, resp)
 end
 
@@ -49,7 +48,7 @@ before the user joins, such as for guild discovery features.
 [Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-preview)
 """
 function get_guild_preview(rl::RateLimiter, guild_id::Snowflake; token::String)
-    resp = discord_get(rl, "/guilds/$(guild_id)/preview"; token, major_params=["guild_id" => string(guild_id)])
+    resp = discord_get(rl, "/guilds/$(guild_id)/preview"; token)
     parse_response(Guild, resp)
 end
 
@@ -80,7 +79,7 @@ Requires `MANAGE_GUILD`.
 [Discord docs](https://discord.com/developers/docs/resources/guild#modify-guild)
 """
 function modify_guild(rl::RateLimiter, guild_id::Snowflake; token::String, body::Dict, reason=nothing)
-    resp = discord_patch(rl, "/guilds/$(guild_id)"; token, body, reason, major_params=["guild_id" => string(guild_id)])
+    resp = discord_patch(rl, "/guilds/$(guild_id)"; token, body, reason)
     parse_response(Guild, resp)
 end
 
@@ -108,7 +107,7 @@ The bot must be the owner of the guild.
 [Discord docs](https://discord.com/developers/docs/resources/guild#delete-guild)
 """
 function delete_guild(rl::RateLimiter, guild_id::Snowflake; token::String)
-    discord_delete(rl, "/guilds/$(guild_id)"; token, major_params=["guild_id" => string(guild_id)])
+    discord_delete(rl, "/guilds/$(guild_id)"; token)
 end
 
 """
@@ -136,7 +135,7 @@ Requires `VIEW_CHANNEL` for channels the bot can see.
 [Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-channels)
 """
 function get_guild_channels(rl::RateLimiter, guild_id::Snowflake; token::String)
-    resp = discord_get(rl, "/guilds/$(guild_id)/channels"; token, major_params=["guild_id" => string(guild_id)])
+    resp = discord_get(rl, "/guilds/$(guild_id)/channels"; token)
     parse_response_array(DiscordChannel, resp)
 end
 
@@ -167,7 +166,7 @@ Requires `MANAGE_CHANNELS`.
 [Discord docs](https://discord.com/developers/docs/resources/guild#create-guild-channel)
 """
 function create_guild_channel(rl::RateLimiter, guild_id::Snowflake; token::String, body::Dict, reason=nothing)
-    resp = discord_post(rl, "/guilds/$(guild_id)/channels"; token, body, reason=reason, major_params=["guild_id" => string(guild_id)])
+    resp = discord_post(rl, "/guilds/$(guild_id)/channels"; token, body, reason=reason)
     parse_response(DiscordChannel, resp)
 end
 
@@ -197,7 +196,7 @@ Requires `MANAGE_CHANNELS`.
 [Discord docs](https://discord.com/developers/docs/resources/guild#modify-guild-channel-positions)
 """
 function modify_guild_channel_positions(rl::RateLimiter, guild_id::Snowflake; token::String, body::Vector)
-    discord_patch(rl, "/guilds/$(guild_id)/channels"; token, body=body, major_params=["guild_id" => string(guild_id)])
+    discord_patch(rl, "/guilds/$(guild_id)/channels"; token, body=body)
 end
 
 """
@@ -222,7 +221,7 @@ moderation, or archival purposes.
 [Discord docs](https://discord.com/developers/docs/resources/guild#list-active-guild-threads)
 """
 function list_active_guild_threads(rl::RateLimiter, guild_id::Snowflake; token::String)
-    resp = discord_get(rl, "/guilds/$(guild_id)/threads/active"; token, major_params=["guild_id" => string(guild_id)])
+    resp = discord_get(rl, "/guilds/$(guild_id)/threads/active"; token)
     JSON3.read(resp.body, Dict{String, Any})
 end
 
@@ -249,7 +248,7 @@ roles, nickname, join date, or permissions.
 [Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-member)
 """
 function get_guild_member(rl::RateLimiter, guild_id::Snowflake, user_id::Snowflake; token::String)
-    resp = discord_get(rl, "/guilds/$(guild_id)/members/$(user_id)"; token, major_params=["guild_id" => string(guild_id)])
+    resp = discord_get(rl, "/guilds/$(guild_id)/members/$(user_id)"; token)
     parse_response(Member, resp)
 end
 
@@ -279,7 +278,7 @@ searching, or batch processing operations.
 function list_guild_members(rl::RateLimiter, guild_id::Snowflake; token::String, limit::Int=1, after::Optional{Snowflake}=missing)
     query = ["limit" => string(limit)]
     !ismissing(after) && push!(query, "after" => string(after))
-    resp = discord_get(rl, "/guilds/$(guild_id)/members"; token, query, major_params=["guild_id" => string(guild_id)])
+    resp = discord_get(rl, "/guilds/$(guild_id)/members"; token, query)
     parse_response_array(Member, resp)
 end
 
@@ -308,8 +307,7 @@ user lookup commands or autocomplete functionality.
 """
 function search_guild_members(rl::RateLimiter, guild_id::Snowflake; token::String, query_str::String, limit::Int=1)
     resp = discord_get(rl, "/guilds/$(guild_id)/members/search"; token,
-        query=["query" => query_str, "limit" => string(limit)],
-        major_params=["guild_id" => string(guild_id)])
+        query=["query" => query_str, "limit" => string(limit)])
     parse_response_array(Member, resp)
 end
 
@@ -344,7 +342,7 @@ or voice channel status.
 [Discord docs](https://discord.com/developers/docs/resources/guild#modify-guild-member)
 """
 function modify_guild_member(rl::RateLimiter, guild_id::Snowflake, user_id::Snowflake; token::String, body::Dict, reason=nothing)
-    resp = discord_patch(rl, "/guilds/$(guild_id)/members/$(user_id)"; token, body, reason, major_params=["guild_id" => string(guild_id)])
+    resp = discord_patch(rl, "/guilds/$(guild_id)/members/$(user_id)"; token, body, reason)
     parse_response(Member, resp)
 end
 
@@ -374,7 +372,7 @@ Requires `CHANGE_NICKNAME` or `MANAGE_NICKNAMES`.
 [Discord docs](https://discord.com/developers/docs/resources/guild#modify-current-member)
 """
 function modify_current_member(rl::RateLimiter, guild_id::Snowflake; token::String, body::Dict, reason=nothing)
-    resp = discord_patch(rl, "/guilds/$(guild_id)/members/@me"; token, body, reason, major_params=["guild_id" => string(guild_id)])
+    resp = discord_patch(rl, "/guilds/$(guild_id)/members/@me"; token, body, reason)
     parse_response(Member, resp)
 end
 
@@ -406,7 +404,7 @@ Requires `MANAGE_ROLES` with the bot's top role higher than the target role.
 [Discord docs](https://discord.com/developers/docs/resources/guild#add-guild-member-role)
 """
 function add_guild_member_role(rl::RateLimiter, guild_id::Snowflake, user_id::Snowflake, role_id::Snowflake; token::String, reason=nothing)
-    discord_put(rl, "/guilds/$(guild_id)/members/$(user_id)/roles/$(role_id)"; token, reason, major_params=["guild_id" => string(guild_id)])
+    discord_put(rl, "/guilds/$(guild_id)/members/$(user_id)/roles/$(role_id)"; token, reason)
 end
 
 """
@@ -437,7 +435,7 @@ Requires `MANAGE_ROLES` with the bot's top role higher than the target role.
 [Discord docs](https://discord.com/developers/docs/resources/guild#remove-guild-member-role)
 """
 function remove_guild_member_role(rl::RateLimiter, guild_id::Snowflake, user_id::Snowflake, role_id::Snowflake; token::String, reason=nothing)
-    discord_delete(rl, "/guilds/$(guild_id)/members/$(user_id)/roles/$(role_id)"; token, reason, major_params=["guild_id" => string(guild_id)])
+    discord_delete(rl, "/guilds/$(guild_id)/members/$(user_id)/roles/$(role_id)"; token, reason)
 end
 
 """
@@ -467,7 +465,7 @@ Requires `KICK_MEMBERS`.
 [Discord docs](https://discord.com/developers/docs/resources/guild#remove-guild-member)
 """
 function remove_guild_member(rl::RateLimiter, guild_id::Snowflake, user_id::Snowflake; token::String, reason=nothing)
-    discord_delete(rl, "/guilds/$(guild_id)/members/$(user_id)"; token, reason, major_params=["guild_id" => string(guild_id)])
+    discord_delete(rl, "/guilds/$(guild_id)/members/$(user_id)"; token, reason)
 end
 
 """
@@ -496,8 +494,7 @@ Requires `BAN_MEMBERS`.
 [Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-bans)
 """
 function get_guild_bans(rl::RateLimiter, guild_id::Snowflake; token::String, limit::Int=1000)
-    resp = discord_get(rl, "/guilds/$(guild_id)/bans"; token, query=["limit" => string(limit)],
-        major_params=["guild_id" => string(guild_id)])
+    resp = discord_get(rl, "/guilds/$(guild_id)/bans"; token, query=["limit" => string(limit)])
     parse_response_array(Ban, resp)
 end
 
@@ -527,7 +524,7 @@ Requires `BAN_MEMBERS`.
 [Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-ban)
 """
 function get_guild_ban(rl::RateLimiter, guild_id::Snowflake, user_id::Snowflake; token::String)
-    resp = discord_get(rl, "/guilds/$(guild_id)/bans/$(user_id)"; token, major_params=["guild_id" => string(guild_id)])
+    resp = discord_get(rl, "/guilds/$(guild_id)/bans/$(user_id)"; token)
     parse_response(Ban, resp)
 end
 
@@ -559,7 +556,7 @@ Requires `BAN_MEMBERS`.
 [Discord docs](https://discord.com/developers/docs/resources/guild#create-guild-ban)
 """
 function create_guild_ban(rl::RateLimiter, guild_id::Snowflake, user_id::Snowflake; token::String, body::Dict=Dict(), reason=nothing)
-    discord_put(rl, "/guilds/$(guild_id)/bans/$(user_id)"; token, body, reason, major_params=["guild_id" => string(guild_id)])
+    discord_put(rl, "/guilds/$(guild_id)/bans/$(user_id)"; token, body, reason)
 end
 
 """
@@ -589,7 +586,7 @@ Requires `BAN_MEMBERS`.
 [Discord docs](https://discord.com/developers/docs/resources/guild#remove-guild-ban)
 """
 function remove_guild_ban(rl::RateLimiter, guild_id::Snowflake, user_id::Snowflake; token::String, reason=nothing)
-    discord_delete(rl, "/guilds/$(guild_id)/bans/$(user_id)"; token, reason, major_params=["guild_id" => string(guild_id)])
+    discord_delete(rl, "/guilds/$(guild_id)/bans/$(user_id)"; token, reason)
 end
 
 """
@@ -619,7 +616,7 @@ Requires `BAN_MEMBERS`.
 [Discord docs](https://discord.com/developers/docs/resources/guild#bulk-guild-ban)
 """
 function bulk_guild_ban(rl::RateLimiter, guild_id::Snowflake; token::String, body::Dict, reason=nothing)
-    resp = discord_post(rl, "/guilds/$(guild_id)/bulk-ban"; token, body, reason=reason, major_params=["guild_id" => string(guild_id)])
+    resp = discord_post(rl, "/guilds/$(guild_id)/bulk-ban"; token, body, reason=reason)
     JSON3.read(resp.body, Dict{String, Any})
 end
 
@@ -645,7 +642,7 @@ commands or permission checking.
 [Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-roles)
 """
 function get_guild_roles(rl::RateLimiter, guild_id::Snowflake; token::String)
-    resp = discord_get(rl, "/guilds/$(guild_id)/roles"; token, major_params=["guild_id" => string(guild_id)])
+    resp = discord_get(rl, "/guilds/$(guild_id)/roles"; token)
     parse_response_array(Role, resp)
 end
 
@@ -676,7 +673,7 @@ Requires `MANAGE_ROLES`.
 [Discord docs](https://discord.com/developers/docs/resources/guild#create-guild-role)
 """
 function create_guild_role(rl::RateLimiter, guild_id::Snowflake; token::String, body::Dict=Dict(), reason=nothing)
-    resp = discord_post(rl, "/guilds/$(guild_id)/roles"; token, body, reason=reason, major_params=["guild_id" => string(guild_id)])
+    resp = discord_post(rl, "/guilds/$(guild_id)/roles"; token, body, reason=reason)
     parse_response(Role, resp)
 end
 
@@ -707,7 +704,7 @@ Requires `MANAGE_ROLES`.
 [Discord docs](https://discord.com/developers/docs/resources/guild#modify-guild-role-positions)
 """
 function modify_guild_role_positions(rl::RateLimiter, guild_id::Snowflake; token::String, body::Vector, reason=nothing)
-    resp = discord_patch(rl, "/guilds/$(guild_id)/roles"; token, body=body, reason, major_params=["guild_id" => string(guild_id)])
+    resp = discord_patch(rl, "/guilds/$(guild_id)/roles"; token, body=body, reason)
     parse_response_array(Role, resp)
 end
 
@@ -739,7 +736,7 @@ Requires `MANAGE_ROLES` and the bot's top role must be higher than the target ro
 [Discord docs](https://discord.com/developers/docs/resources/guild#modify-guild-role)
 """
 function modify_guild_role(rl::RateLimiter, guild_id::Snowflake, role_id::Snowflake; token::String, body::Dict, reason=nothing)
-    resp = discord_patch(rl, "/guilds/$(guild_id)/roles/$(role_id)"; token, body, reason, major_params=["guild_id" => string(guild_id)])
+    resp = discord_patch(rl, "/guilds/$(guild_id)/roles/$(role_id)"; token, body, reason)
     parse_response(Role, resp)
 end
 
@@ -770,7 +767,7 @@ Requires `MANAGE_ROLES` and the bot's top role must be higher than the target ro
 [Discord docs](https://discord.com/developers/docs/resources/guild#delete-guild-role)
 """
 function delete_guild_role(rl::RateLimiter, guild_id::Snowflake, role_id::Snowflake; token::String, reason=nothing)
-    discord_delete(rl, "/guilds/$(guild_id)/roles/$(role_id)"; token, reason, major_params=["guild_id" => string(guild_id)])
+    discord_delete(rl, "/guilds/$(guild_id)/roles/$(role_id)"; token, reason)
 end
 
 """
@@ -802,7 +799,7 @@ Requires `KICK_MEMBERS`.
 function get_guild_prune_count(rl::RateLimiter, guild_id::Snowflake; token::String, days::Int=7, include_roles::String="")
     query = ["days" => string(days)]
     !isempty(include_roles) && push!(query, "include_roles" => include_roles)
-    resp = discord_get(rl, "/guilds/$(guild_id)/prune"; token, query, major_params=["guild_id" => string(guild_id)])
+    resp = discord_get(rl, "/guilds/$(guild_id)/prune"; token, query)
     JSON3.read(resp.body, Dict{String, Any})
 end
 
@@ -833,7 +830,7 @@ Requires `KICK_MEMBERS`.
 [Discord docs](https://discord.com/developers/docs/resources/guild#begin-guild-prune)
 """
 function begin_guild_prune(rl::RateLimiter, guild_id::Snowflake; token::String, body::Dict, reason=nothing)
-    resp = discord_post(rl, "/guilds/$(guild_id)/prune"; token, body, reason=reason, major_params=["guild_id" => string(guild_id)])
+    resp = discord_post(rl, "/guilds/$(guild_id)/prune"; token, body, reason=reason)
     JSON3.read(resp.body, Dict{String, Any})
 end
 
@@ -859,7 +856,7 @@ which may differ from the global list due to VIP server status.
 [Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-voice-regions)
 """
 function get_guild_voice_regions(rl::RateLimiter, guild_id::Snowflake; token::String)
-    resp = discord_get(rl, "/guilds/$(guild_id)/regions"; token, major_params=["guild_id" => string(guild_id)])
+    resp = discord_get(rl, "/guilds/$(guild_id)/regions"; token)
     parse_response_array(VoiceRegion, resp)
 end
 
@@ -888,7 +885,7 @@ Requires `MANAGE_GUILD`.
 [Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-invites)
 """
 function get_guild_invites(rl::RateLimiter, guild_id::Snowflake; token::String)
-    resp = discord_get(rl, "/guilds/$(guild_id)/invites"; token, major_params=["guild_id" => string(guild_id)])
+    resp = discord_get(rl, "/guilds/$(guild_id)/invites"; token)
     parse_response_array(Invite, resp)
 end
 
@@ -917,7 +914,7 @@ Requires `MANAGE_GUILD`.
 [Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-integrations)
 """
 function get_guild_integrations(rl::RateLimiter, guild_id::Snowflake; token::String)
-    resp = discord_get(rl, "/guilds/$(guild_id)/integrations"; token, major_params=["guild_id" => string(guild_id)])
+    resp = discord_get(rl, "/guilds/$(guild_id)/integrations"; token)
     parse_response_array(Integration, resp)
 end
 
@@ -947,7 +944,7 @@ Requires `MANAGE_GUILD`.
 [Discord docs](https://discord.com/developers/docs/resources/guild#delete-guild-integration)
 """
 function delete_guild_integration(rl::RateLimiter, guild_id::Snowflake, integration_id::Snowflake; token::String, reason=nothing)
-    discord_delete(rl, "/guilds/$(guild_id)/integrations/$(integration_id)"; token, reason, major_params=["guild_id" => string(guild_id)])
+    discord_delete(rl, "/guilds/$(guild_id)/integrations/$(integration_id)"; token, reason)
 end
 
 """
@@ -975,7 +972,7 @@ Requires `MANAGE_GUILD`.
 [Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-widget-settings)
 """
 function get_guild_widget_settings(rl::RateLimiter, guild_id::Snowflake; token::String)
-    resp = discord_get(rl, "/guilds/$(guild_id)/widget"; token, major_params=["guild_id" => string(guild_id)])
+    resp = discord_get(rl, "/guilds/$(guild_id)/widget"; token)
     JSON3.read(resp.body, Dict{String, Any})
 end
 
@@ -1006,7 +1003,7 @@ Requires `MANAGE_GUILD`.
 [Discord docs](https://discord.com/developers/docs/resources/guild#modify-guild-widget)
 """
 function modify_guild_widget(rl::RateLimiter, guild_id::Snowflake; token::String, body::Dict, reason=nothing)
-    resp = discord_patch(rl, "/guilds/$(guild_id)/widget"; token, body, reason, major_params=["guild_id" => string(guild_id)])
+    resp = discord_patch(rl, "/guilds/$(guild_id)/widget"; token, body, reason)
     JSON3.read(resp.body, Dict{String, Any})
 end
 
@@ -1031,7 +1028,7 @@ which can be used to display online members and invite links.
 [Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-widget)
 """
 function get_guild_widget(rl::RateLimiter, guild_id::Snowflake; token::String)
-    resp = discord_get(rl, "/guilds/$(guild_id)/widget.json"; token, major_params=["guild_id" => string(guild_id)])
+    resp = discord_get(rl, "/guilds/$(guild_id)/widget.json"; token)
     JSON3.read(resp.body, Dict{String, Any})
 end
 
@@ -1059,7 +1056,7 @@ Requires `MANAGE_GUILD`.
 [Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-vanity-url)
 """
 function get_guild_vanity_url(rl::RateLimiter, guild_id::Snowflake; token::String)
-    resp = discord_get(rl, "/guilds/$(guild_id)/vanity-url"; token, major_params=["guild_id" => string(guild_id)])
+    resp = discord_get(rl, "/guilds/$(guild_id)/vanity-url"; token)
     parse_response(Invite, resp)
 end
 
@@ -1084,7 +1081,7 @@ which shows description and recommended channels for new members.
 [Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-welcome-screen)
 """
 function get_guild_welcome_screen(rl::RateLimiter, guild_id::Snowflake; token::String)
-    resp = discord_get(rl, "/guilds/$(guild_id)/welcome-screen"; token, major_params=["guild_id" => string(guild_id)])
+    resp = discord_get(rl, "/guilds/$(guild_id)/welcome-screen"; token)
     parse_response(WelcomeScreen, resp)
 end
 
@@ -1115,7 +1112,7 @@ Requires `MANAGE_GUILD`.
 [Discord docs](https://discord.com/developers/docs/resources/guild#modify-guild-welcome-screen)
 """
 function modify_guild_welcome_screen(rl::RateLimiter, guild_id::Snowflake; token::String, body::Dict, reason=nothing)
-    resp = discord_patch(rl, "/guilds/$(guild_id)/welcome-screen"; token, body, reason, major_params=["guild_id" => string(guild_id)])
+    resp = discord_patch(rl, "/guilds/$(guild_id)/welcome-screen"; token, body, reason)
     parse_response(WelcomeScreen, resp)
 end
 
@@ -1144,7 +1141,7 @@ Requires `MANAGE_GUILD`.
 [Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-onboarding)
 """
 function get_guild_onboarding(rl::RateLimiter, guild_id::Snowflake; token::String)
-    resp = discord_get(rl, "/guilds/$(guild_id)/onboarding"; token, major_params=["guild_id" => string(guild_id)])
+    resp = discord_get(rl, "/guilds/$(guild_id)/onboarding"; token)
     parse_response(Onboarding, resp)
 end
 
@@ -1175,7 +1172,7 @@ Requires `MANAGE_GUILD`.
 [Discord docs](https://discord.com/developers/docs/resources/guild#modify-guild-onboarding)
 """
 function modify_guild_onboarding(rl::RateLimiter, guild_id::Snowflake; token::String, body::Dict, reason=nothing)
-    resp = discord_put(rl, "/guilds/$(guild_id)/onboarding"; token, body, reason, major_params=["guild_id" => string(guild_id)])
+    resp = discord_put(rl, "/guilds/$(guild_id)/onboarding"; token, body, reason)
     parse_response(Onboarding, resp)
 end
 
@@ -1201,7 +1198,7 @@ role, such as for role management or permission checking.
 [Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-role)
 """
 function get_guild_role(rl::RateLimiter, guild_id::Snowflake, role_id::Snowflake; token::String)
-    resp = discord_get(rl, "/guilds/$(guild_id)/roles/$(role_id)"; token, major_params=["guild_id" => string(guild_id)])
+    resp = discord_get(rl, "/guilds/$(guild_id)/roles/$(role_id)"; token)
     parse_response(Role, resp)
 end
 
@@ -1232,6 +1229,6 @@ Requires `CREATE_INSTANT_INVITE`.
 [Discord docs](https://discord.com/developers/docs/resources/guild#add-guild-member)
 """
 function add_guild_member(rl::RateLimiter, guild_id::Snowflake, user_id::Snowflake; token::String, body::Dict)
-    resp = discord_put(rl, "/guilds/$(guild_id)/members/$(user_id)"; token, body, major_params=["guild_id" => string(guild_id)])
+    resp = discord_put(rl, "/guilds/$(guild_id)/members/$(user_id)"; token, body)
     parse_response(Member, resp)
 end

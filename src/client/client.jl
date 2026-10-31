@@ -531,15 +531,7 @@ create_message(client, channel_id;
 ```
 """
 function create_message(client::Client, channel_id::Snowflake; content::String="", embeds::Vector=[], components::Vector=[], files=nothing, tts::Bool=false, message_reference=nothing, poll=nothing, flags=nothing, allowed_mentions=nothing)
-    body = Dict{String, Any}()
-    !isempty(content) && (body["content"] = content)
-    !isempty(embeds) && (body["embeds"] = embeds)
-    !isempty(components) && (body["components"] = components)
-    tts && (body["tts"] = true)
-    !isnothing(message_reference) && (body["message_reference"] = message_reference)
-    !isnothing(poll) && (body["poll"] = poll)
-    !isnothing(flags) && (body["flags"] = Int(flags isa MessageFlags ? flags.value : flags))
-    !isnothing(allowed_mentions) && (body["allowed_mentions"] = allowed_mentions)
+    body = _message_body(; content, embeds, components, tts, message_reference, poll, flags, allowed_mentions)
     create_message(client.ratelimiter, channel_id; token=client.token, body, files)
 end
 
@@ -557,11 +549,9 @@ on(client, MessageCreate) do c, event
 end
 ```
 """
-function reply(client::Client, message::Message; content::String="", embeds::Vector=[], components::Vector=[], files=nothing, tts::Bool=false)
+function reply(client::Client, message::Message; kwargs...)
     ref = Dict{String, Any}("message_id" => string(message.id))
-    create_message(client, message.channel_id;
-        content, embeds, components, files, tts,
-        message_reference=ref)
+    create_message(client, message.channel_id; message_reference=ref, kwargs...)
 end
 
 """
@@ -576,12 +566,9 @@ Edit an existing message. `kwargs` correspond to the Discord API fields (content
 edit_message(client, channel_id, message_id; content="Updated content!")
 ```
 """
-function edit_message(client::Client, channel_id::Snowflake, message_id::Snowflake; kwargs...)
-    body = Dict{String, Any}()
-    for (k, v) in kwargs
-        body[string(k)] = v
-    end
-    edit_message(client.ratelimiter, channel_id, message_id; token=client.token, body)
+function edit_message(client::Client, channel_id::Snowflake, message_id::Snowflake; files=nothing, kwargs...)
+    body = _message_body(; omit_empty=false, kwargs...)
+    edit_message(client.ratelimiter, channel_id, message_id; token=client.token, body, files)
 end
 
 """

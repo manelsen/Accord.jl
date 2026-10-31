@@ -1,5 +1,22 @@
 # Component builder helpers
 
+# Add to `d` the keyword arguments that carry a value, and return `d`.
+# "No value" is `nothing`, `false`, "" or an empty collection: for component
+# and embed fields that is Discord's default, so the key is simply left out.
+function _with_set(d::Dict{String, Any}; kwargs...)
+    for (k, v) in pairs(kwargs)
+        (v === nothing || v === false) && continue
+        v isa Union{AbstractString, AbstractVector, AbstractDict} && isempty(v) && continue
+        d[string(k)] = v
+    end
+    return d
+end
+
+# Shared body of the select menu builders.
+_select(type::Int; custom_id::String, min_values::Int, max_values::Int, kwargs...) =
+    _with_set(Dict{String, Any}("type" => type, "custom_id" => custom_id,
+                                "min_values" => min_values, "max_values" => max_values); kwargs...)
+
 """Use this to group buttons and select menus into a horizontal row.
 
 Create an Action Row containing components.
@@ -37,14 +54,9 @@ function button(;
     disabled::Bool = false,
     sku_id = nothing,
 )
-    btn = Dict{String, Any}("type" => ComponentTypes.BUTTON, "style" => style)
-    !isempty(label) && (btn["label"] = label)
-    !isempty(custom_id) && (btn["custom_id"] = custom_id)
-    !isempty(url) && (btn["url"] = url)
-    !isnothing(emoji) && (btn["emoji"] = emoji)
-    disabled && (btn["disabled"] = true)
-    !isnothing(sku_id) && (btn["sku_id"] = string(sku_id))
-    btn
+    _with_set(Dict{String, Any}("type" => ComponentTypes.BUTTON, "style" => style);
+        label, custom_id, url, emoji, disabled,
+        sku_id = isnothing(sku_id) ? nothing : string(sku_id))
 end
 
 """Use this to create dropdown menus for users to select from text options.
@@ -68,16 +80,7 @@ function string_select(;
     max_values::Int = 1,
     disabled::Bool = false,
 )
-    sel = Dict{String, Any}(
-        "type" => ComponentTypes.STRING_SELECT,
-        "custom_id" => custom_id,
-        "options" => options,
-        "min_values" => min_values,
-        "max_values" => max_values,
-    )
-    !isempty(placeholder) && (sel["placeholder"] = placeholder)
-    disabled && (sel["disabled"] = true)
-    sel
+    _select(ComponentTypes.STRING_SELECT; custom_id, options, placeholder, min_values, max_values, disabled)
 end
 
 """Use this to define individual options within a string select menu.
@@ -96,11 +99,7 @@ function select_option(;
     emoji = nothing,
     default::Bool = false,
 )
-    opt = Dict{String, Any}("label" => label, "value" => value)
-    !isempty(description) && (opt["description"] = description)
-    !isnothing(emoji) && (opt["emoji"] = emoji)
-    default && (opt["default"] = true)
-    opt
+    _with_set(Dict{String, Any}("label" => label, "value" => value); description, emoji, default)
 end
 
 """Use this to create a dropdown for selecting Discord users.
@@ -113,10 +112,7 @@ sel = user_select(custom_id="pick_user", placeholder="Select a member")
 ```
 """
 function user_select(; custom_id::String, placeholder::String="", min_values::Int=1, max_values::Int=1, disabled::Bool=false)
-    sel = Dict{String, Any}("type" => ComponentTypes.USER_SELECT, "custom_id" => custom_id, "min_values" => min_values, "max_values" => max_values)
-    !isempty(placeholder) && (sel["placeholder"] = placeholder)
-    disabled && (sel["disabled"] = true)
-    sel
+    _select(ComponentTypes.USER_SELECT; custom_id, placeholder, min_values, max_values, disabled)
 end
 
 """Use this to create a dropdown for selecting server roles.
@@ -129,10 +125,7 @@ sel = role_select(custom_id="assign_role", placeholder="Pick a role", max_values
 ```
 """
 function role_select(; custom_id::String, placeholder::String="", min_values::Int=1, max_values::Int=1, disabled::Bool=false)
-    sel = Dict{String, Any}("type" => ComponentTypes.ROLE_SELECT, "custom_id" => custom_id, "min_values" => min_values, "max_values" => max_values)
-    !isempty(placeholder) && (sel["placeholder"] = placeholder)
-    disabled && (sel["disabled"] = true)
-    sel
+    _select(ComponentTypes.ROLE_SELECT; custom_id, placeholder, min_values, max_values, disabled)
 end
 
 """Use this to create a dropdown for selecting users or roles.
@@ -145,10 +138,7 @@ sel = mentionable_select(custom_id="mention_target", placeholder="Pick a user or
 ```
 """
 function mentionable_select(; custom_id::String, placeholder::String="", min_values::Int=1, max_values::Int=1, disabled::Bool=false)
-    sel = Dict{String, Any}("type" => ComponentTypes.MENTIONABLE_SELECT, "custom_id" => custom_id, "min_values" => min_values, "max_values" => max_values)
-    !isempty(placeholder) && (sel["placeholder"] = placeholder)
-    disabled && (sel["disabled"] = true)
-    sel
+    _select(ComponentTypes.MENTIONABLE_SELECT; custom_id, placeholder, min_values, max_values, disabled)
 end
 
 """Use this to create a dropdown for selecting channels.
@@ -161,11 +151,7 @@ sel = channel_select(custom_id="log_channel", placeholder="Pick a text channel",
 ```
 """
 function channel_select(; custom_id::String, channel_types::Vector{Int}=Int[], placeholder::String="", min_values::Int=1, max_values::Int=1, disabled::Bool=false)
-    sel = Dict{String, Any}("type" => ComponentTypes.CHANNEL_SELECT, "custom_id" => custom_id, "min_values" => min_values, "max_values" => max_values)
-    !isempty(channel_types) && (sel["channel_types"] = channel_types)
-    !isempty(placeholder) && (sel["placeholder"] = placeholder)
-    disabled && (sel["disabled"] = true)
-    sel
+    _select(ComponentTypes.CHANNEL_SELECT; custom_id, channel_types, placeholder, min_values, max_values, disabled)
 end
 
 """Use this to create text input fields inside modal dialogs.
@@ -232,18 +218,8 @@ function embed(;
     author = nothing,
     fields::Vector = [],
 )
-    e = Dict{String, Any}()
-    !isempty(title) && (e["title"] = title)
-    !isempty(description) && (e["description"] = description)
-    !isempty(url) && (e["url"] = url)
-    color > 0 && (e["color"] = color)
-    !isempty(timestamp) && (e["timestamp"] = timestamp)
-    !isnothing(footer) && (e["footer"] = footer)
-    !isnothing(image) && (e["image"] = image)
-    !isnothing(thumbnail) && (e["thumbnail"] = thumbnail)
-    !isnothing(author) && (e["author"] = author)
-    !isempty(fields) && (e["fields"] = fields)
-    e
+    _with_set(Dict{String, Any}(); title, description, url,
+        color = color > 0 ? color : nothing, timestamp, footer, image, thumbnail, author, fields)
 end
 
 """
@@ -262,9 +238,7 @@ embed(title="Info", fields=[
 ```
 """
 function embed_field(name::String, value::String; inline::Bool=false)
-    d = Dict{String, Any}("name" => name, "value" => value)
-    inline && (d["inline"] = true)
-    d
+    _with_set(Dict{String, Any}("name" => name, "value" => value); inline)
 end
 
 """
@@ -280,9 +254,7 @@ embed(title="Report", footer=embed_footer("Generated by Accord.jl"; icon_url="ht
 ```
 """
 function embed_footer(text::String; icon_url::String="")
-    d = Dict{String, Any}("text" => text)
-    !isempty(icon_url) && (d["icon_url"] = icon_url)
-    d
+    _with_set(Dict{String, Any}("text" => text); icon_url)
 end
 
 """
@@ -298,10 +270,7 @@ embed(title="Post", author=embed_author("Alice"; url="https://alice.com", icon_u
 ```
 """
 function embed_author(name::String; url::String="", icon_url::String="")
-    d = Dict{String, Any}("name" => name)
-    !isempty(url) && (d["url"] = url)
-    !isempty(icon_url) && (d["icon_url"] = icon_url)
-    d
+    _with_set(Dict{String, Any}("name" => name); url, icon_url)
 end
 
 """
@@ -318,9 +287,7 @@ update_presence(client; activities=[activity("Accord.jl", ActivityTypes.GAME)])
 ```
 """
 function activity(name::String, type::Int=ActivityTypes.GAME; url::String="")
-    d = Dict{String, Any}("name" => name, "type" => type)
-    !isempty(url) && (d["url"] = url)
-    d
+    _with_set(Dict{String, Any}("name" => name, "type" => type); url)
 end
 
 """Use this internal function to build command option dictionaries.
@@ -347,21 +314,8 @@ function command_option(;
     max_length = nothing,
     autocomplete::Bool = false,
 )
-    opt = Dict{String, Any}(
-        "type" => type,
-        "name" => name,
-        "description" => description,
-    )
-    required && (opt["required"] = true)
-    !isempty(choices) && (opt["choices"] = choices)
-    !isempty(options) && (opt["options"] = options)
-    !isempty(channel_types) && (opt["channel_types"] = channel_types)
-    !isnothing(min_value) && (opt["min_value"] = min_value)
-    !isnothing(max_value) && (opt["max_value"] = max_value)
-    !isnothing(min_length) && (opt["min_length"] = min_length)
-    !isnothing(max_length) && (opt["max_length"] = max_length)
-    autocomplete && (opt["autocomplete"] = true)
-    opt
+    _with_set(Dict{String, Any}("type" => type, "name" => name, "description" => description);
+        required, choices, options, channel_types, min_value, max_value, min_length, max_length, autocomplete)
 end
 
 # === Components V2 Builders ===
@@ -384,10 +338,8 @@ msg = container([
 ```
 """
 function container(components::Vector; color::Integer=0, spoiler::Bool=false)
-    c = Dict{String, Any}("type" => ComponentTypes.CONTAINER, "components" => components)
-    color > 0 && (c["accent_color"] = color)
-    spoiler && (c["spoiler"] = true)
-    c
+    _with_set(Dict{String, Any}("type" => ComponentTypes.CONTAINER, "components" => components);
+        accent_color = color > 0 ? color : nothing, spoiler)
 end
 
 """Use this to group text and accessory components in v2 messages.
@@ -400,9 +352,7 @@ sec = section([text_display("Server stats")]; accessory=thumbnail(media=unfurled
 ```
 """
 function section(components::Vector; accessory=nothing)
-    s = Dict{String, Any}("type" => ComponentTypes.SECTION, "components" => components)
-    !isnothing(accessory) && (s["accessory"] = accessory)
-    s
+    _with_set(Dict{String, Any}("type" => ComponentTypes.SECTION, "components" => components); accessory)
 end
 
 """Use this to display plain text in v2 messages.
@@ -428,10 +378,7 @@ thumb = thumbnail(media=unfurled_media("https://example.com/preview.png"); descr
 ```
 """
 function thumbnail(; media::Dict, description::String="", spoiler::Bool=false)
-    t = Dict{String, Any}("type" => ComponentTypes.THUMBNAIL, "media" => media)
-    !isempty(description) && (t["description"] = description)
-    spoiler && (t["spoiler"] = true)
-    t
+    _with_set(Dict{String, Any}("type" => ComponentTypes.THUMBNAIL, "media" => media); description, spoiler)
 end
 
 """Use this to display collections of images or videos in v2 messages.
@@ -460,10 +407,7 @@ item = media_gallery_item(media=unfurled_media("https://example.com/photo.png");
 ```
 """
 function media_gallery_item(; media::Dict, description::String="", spoiler::Bool=false)
-    item = Dict{String, Any}("media" => media)
-    !isempty(description) && (item["description"] = description)
-    spoiler && (item["spoiler"] = true)
-    item
+    _with_set(Dict{String, Any}("media" => media); description, spoiler)
 end
 
 """Use this to attach downloadable files to v2 messages.
@@ -476,9 +420,7 @@ f = file_component(media=unfurled_media("attachment://report.pdf"))
 ```
 """
 function file_component(; media::Dict, spoiler::Bool=false)
-    f = Dict{String, Any}("type" => ComponentTypes.FILE, "file" => media)
-    spoiler && (f["spoiler"] = true)
-    f
+    _with_set(Dict{String, Any}("type" => ComponentTypes.FILE, "file" => media); spoiler)
 end
 
 """Use this to add visual separation between components in v2 messages.
@@ -491,9 +433,8 @@ sep = separator(divider=true, spacing=2)
 ```
 """
 function separator(; divider::Bool=true, spacing::Int=1)
-    s = Dict{String, Any}("type" => ComponentTypes.SEPARATOR, "divider" => divider)
-    spacing != 1 && (s["spacing"] = spacing)
-    s
+    _with_set(Dict{String, Any}("type" => ComponentTypes.SEPARATOR, "divider" => divider);
+        spacing = spacing != 1 ? spacing : nothing)
 end
 
 """Use this to create media references for thumbnails, galleries, and file attachments.

@@ -22,7 +22,7 @@ processing a command that references a channel or caching channel data.
 [Discord docs](https://discord.com/developers/docs/resources/channel#get-channel)
 """
 function get_channel(rl::RateLimiter, channel_id::Snowflake; token::String)
-    resp = discord_get(rl, "/channels/$(channel_id)"; token, major_params=["channel_id" => string(channel_id)])
+    resp = discord_get(rl, "/channels/$(channel_id)"; token)
     parse_response(DiscordChannel, resp)
 end
 
@@ -55,7 +55,7 @@ may require different permissions.
 [Discord docs](https://discord.com/developers/docs/resources/channel#modify-channel)
 """
 function modify_channel(rl::RateLimiter, channel_id::Snowflake; token::String, body::Dict, reason=nothing)
-    resp = discord_patch(rl, "/channels/$(channel_id)"; token, body, reason, major_params=["channel_id" => string(channel_id)])
+    resp = discord_patch(rl, "/channels/$(channel_id)"; token, body, reason)
     parse_response(DiscordChannel, resp)
 end
 
@@ -103,7 +103,7 @@ function modify_thread(rl::RateLimiter, channel_id::Snowflake;
         "modify_thread requires at least one keyword argument (name, archived, locked, or auto_archive_duration)"
     ))
     resp = discord_patch(rl, "/channels/$(channel_id)";
-        token, body, reason, major_params=["channel_id" => string(channel_id)])
+        token, body, reason)
     parse_response(DiscordChannel, resp)
 end
 
@@ -134,7 +134,7 @@ Requires `MANAGE_CHANNELS` for guild channels.
 [Discord docs](https://discord.com/developers/docs/resources/channel#deleteclose-channel)
 """
 function delete_channel(rl::RateLimiter, channel_id::Snowflake; token::String, reason=nothing)
-    resp = discord_delete(rl, "/channels/$(channel_id)"; token, reason, major_params=["channel_id" => string(channel_id)])
+    resp = discord_delete(rl, "/channels/$(channel_id)"; token, reason)
     parse_response(DiscordChannel, resp)
 end
 
@@ -167,7 +167,7 @@ Requires `MANAGE_ROLES` with the bot's top role higher than the target role
 [Discord docs](https://discord.com/developers/docs/resources/channel#edit-channel-permissions)
 """
 function edit_channel_permissions(rl::RateLimiter, channel_id::Snowflake, overwrite_id::Snowflake; token::String, body::Dict, reason=nothing)
-    discord_put(rl, "/channels/$(channel_id)/permissions/$(overwrite_id)"; token, body, reason, major_params=["channel_id" => string(channel_id)])
+    discord_put(rl, "/channels/$(channel_id)/permissions/$(overwrite_id)"; token, body, reason)
 end
 
 """
@@ -198,7 +198,7 @@ Requires `MANAGE_ROLES` with the bot's top role higher than the target role
 [Discord docs](https://discord.com/developers/docs/resources/channel#delete-channel-permission)
 """
 function delete_channel_permission(rl::RateLimiter, channel_id::Snowflake, overwrite_id::Snowflake; token::String, reason=nothing)
-    discord_delete(rl, "/channels/$(channel_id)/permissions/$(overwrite_id)"; token, reason, major_params=["channel_id" => string(channel_id)])
+    discord_delete(rl, "/channels/$(channel_id)/permissions/$(overwrite_id)"; token, reason)
 end
 
 """
@@ -226,7 +226,7 @@ Requires `MANAGE_CHANNELS`.
 [Discord docs](https://discord.com/developers/docs/resources/channel#get-channel-invites)
 """
 function get_channel_invites(rl::RateLimiter, channel_id::Snowflake; token::String)
-    resp = discord_get(rl, "/channels/$(channel_id)/invites"; token, major_params=["channel_id" => string(channel_id)])
+    resp = discord_get(rl, "/channels/$(channel_id)/invites"; token)
     parse_response_array(Invite, resp)
 end
 
@@ -257,7 +257,7 @@ Requires `CREATE_INSTANT_INVITE`.
 [Discord docs](https://discord.com/developers/docs/resources/channel#create-channel-invite)
 """
 function create_channel_invite(rl::RateLimiter, channel_id::Snowflake; token::String, body::Dict=Dict(), reason=nothing)
-    resp = discord_post(rl, "/channels/$(channel_id)/invites"; token, body, reason=reason, major_params=["channel_id" => string(channel_id)])
+    resp = discord_post(rl, "/channels/$(channel_id)/invites"; token, body, reason=reason)
     parse_response(Invite, resp)
 end
 
@@ -287,7 +287,7 @@ Requires `MANAGE_WEBHOOKS` in the target channel's guild.
 [Discord docs](https://discord.com/developers/docs/resources/channel#follow-announcement-channel)
 """
 function follow_announcement_channel(rl::RateLimiter, channel_id::Snowflake; token::String, body::Dict)
-    resp = discord_post(rl, "/channels/$(channel_id)/followers"; token, body, major_params=["channel_id" => string(channel_id)])
+    resp = discord_post(rl, "/channels/$(channel_id)/followers"; token, body)
     JSON3.read(resp.body, Dict{String, Any})
 end
 
@@ -317,7 +317,7 @@ Requires `SEND_MESSAGES` in the channel.
 [Discord docs](https://discord.com/developers/docs/resources/channel#trigger-typing-indicator)
 """
 function trigger_typing_indicator(rl::RateLimiter, channel_id::Snowflake; token::String)
-    discord_post(rl, "/channels/$(channel_id)/typing"; token, major_params=["channel_id" => string(channel_id)])
+    discord_post(rl, "/channels/$(channel_id)/typing"; token)
 end
 
 """
@@ -345,7 +345,7 @@ Requires `VIEW_CHANNEL` and `READ_MESSAGE_HISTORY`.
 [Discord docs](https://discord.com/developers/docs/resources/channel#get-pinned-messages)
 """
 function get_pinned_messages(rl::RateLimiter, channel_id::Snowflake; token::String)
-    resp = discord_get(rl, "/channels/$(channel_id)/pins"; token, major_params=["channel_id" => string(channel_id)])
+    resp = discord_get(rl, "/channels/$(channel_id)/pins"; token)
     parse_response_array(Message, resp)
 end
 
@@ -376,7 +376,7 @@ Requires `MANAGE_MESSAGES`.
 [Discord docs](https://discord.com/developers/docs/resources/channel#pin-message)
 """
 function pin_message(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake; token::String, reason=nothing)
-    discord_put(rl, "/channels/$(channel_id)/pins/$(message_id)"; token, reason, major_params=["channel_id" => string(channel_id)])
+    discord_put(rl, "/channels/$(channel_id)/pins/$(message_id)"; token, reason)
 end
 
 """
@@ -406,7 +406,7 @@ Requires `MANAGE_MESSAGES`.
 [Discord docs](https://discord.com/developers/docs/resources/channel#unpin-message)
 """
 function unpin_message(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake; token::String, reason=nothing)
-    discord_delete(rl, "/channels/$(channel_id)/pins/$(message_id)"; token, reason, major_params=["channel_id" => string(channel_id)])
+    discord_delete(rl, "/channels/$(channel_id)/pins/$(message_id)"; token, reason)
 end
 
 # Thread endpoints
@@ -439,8 +439,7 @@ Requires `CREATE_PUBLIC_THREADS` for public threads.
 [Discord docs](https://discord.com/developers/docs/resources/channel#start-thread-from-message)
 """
 function start_thread_from_message(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake; token::String, body::Dict, reason=nothing)
-    resp = discord_post(rl, "/channels/$(channel_id)/messages/$(message_id)/threads"; token, body, reason=reason,
-        major_params=["channel_id" => string(channel_id)])
+    resp = discord_post(rl, "/channels/$(channel_id)/messages/$(message_id)/threads"; token, body, reason=reason)
     parse_response(DiscordChannel, resp)
 end
 
@@ -472,8 +471,7 @@ for private threads.
 [Discord docs](https://discord.com/developers/docs/resources/channel#start-thread-without-message)
 """
 function start_thread_without_message(rl::RateLimiter, channel_id::Snowflake; token::String, body::Dict, reason=nothing)
-    resp = discord_post(rl, "/channels/$(channel_id)/threads"; token, body, reason=reason,
-        major_params=["channel_id" => string(channel_id)])
+    resp = discord_post(rl, "/channels/$(channel_id)/threads"; token, body, reason=reason)
     parse_response(DiscordChannel, resp)
 end
 
@@ -505,8 +503,7 @@ Requires `SEND_MESSAGES` in the forum channel.
 [Discord docs](https://discord.com/developers/docs/resources/channel#start-thread-in-forum-channel)
 """
 function start_thread_in_forum(rl::RateLimiter, channel_id::Snowflake; token::String, body::Dict, files=nothing, reason=nothing)
-    resp = discord_post(rl, "/channels/$(channel_id)/threads"; token, body, files, reason=reason,
-        major_params=["channel_id" => string(channel_id)])
+    resp = discord_post(rl, "/channels/$(channel_id)/threads"; token, body, files, reason=reason)
     parse_response(DiscordChannel, resp)
 end
 
@@ -532,7 +529,7 @@ events from it, such as when participating in a conversation.
 [Discord docs](https://discord.com/developers/docs/resources/channel#join-thread)
 """
 function join_thread(rl::RateLimiter, channel_id::Snowflake; token::String)
-    discord_put(rl, "/channels/$(channel_id)/thread-members/@me"; token, major_params=["channel_id" => string(channel_id)])
+    discord_put(rl, "/channels/$(channel_id)/thread-members/@me"; token)
 end
 
 """
@@ -561,7 +558,7 @@ Requires `MANAGE_THREADS` to add members to private threads.
 [Discord docs](https://discord.com/developers/docs/resources/channel#add-thread-member)
 """
 function add_thread_member(rl::RateLimiter, channel_id::Snowflake, user_id::Snowflake; token::String)
-    discord_put(rl, "/channels/$(channel_id)/thread-members/$(user_id)"; token, major_params=["channel_id" => string(channel_id)])
+    discord_put(rl, "/channels/$(channel_id)/thread-members/$(user_id)"; token)
 end
 
 """
@@ -585,7 +582,7 @@ cleaning up thread memberships.
 [Discord docs](https://discord.com/developers/docs/resources/channel#leave-thread)
 """
 function leave_thread(rl::RateLimiter, channel_id::Snowflake; token::String)
-    discord_delete(rl, "/channels/$(channel_id)/thread-members/@me"; token, major_params=["channel_id" => string(channel_id)])
+    discord_delete(rl, "/channels/$(channel_id)/thread-members/@me"; token)
 end
 
 """
@@ -614,7 +611,7 @@ Requires `MANAGE_THREADS` to remove members from private threads.
 [Discord docs](https://discord.com/developers/docs/resources/channel#remove-thread-member)
 """
 function remove_thread_member(rl::RateLimiter, channel_id::Snowflake, user_id::Snowflake; token::String)
-    discord_delete(rl, "/channels/$(channel_id)/thread-members/$(user_id)"; token, major_params=["channel_id" => string(channel_id)])
+    discord_delete(rl, "/channels/$(channel_id)/thread-members/$(user_id)"; token)
 end
 
 """
@@ -645,8 +642,7 @@ Requires `MANAGE_THREADS` for private threads.
 """
 function get_thread_member(rl::RateLimiter, channel_id::Snowflake, user_id::Snowflake; token::String, with_member::Bool=false)
     query = with_member ? ["with_member" => "true"] : nothing
-    resp = discord_get(rl, "/channels/$(channel_id)/thread-members/$(user_id)"; token, query,
-        major_params=["channel_id" => string(channel_id)])
+    resp = discord_get(rl, "/channels/$(channel_id)/thread-members/$(user_id)"; token, query)
     parse_response(ThreadMember, resp)
 end
 
@@ -679,8 +675,7 @@ Requires `MANAGE_THREADS` for private threads.
 function list_thread_members(rl::RateLimiter, channel_id::Snowflake; token::String, with_member::Bool=false, limit::Int=100)
     query = ["limit" => string(limit)]
     with_member && push!(query, "with_member" => "true")
-    resp = discord_get(rl, "/channels/$(channel_id)/thread-members"; token, query,
-        major_params=["channel_id" => string(channel_id)])
+    resp = discord_get(rl, "/channels/$(channel_id)/thread-members"; token, query)
     parse_response_array(ThreadMember, resp)
 end
 
@@ -707,7 +702,7 @@ such as for thread discovery or archival features.
 """
 function list_public_archived_threads(rl::RateLimiter, channel_id::Snowflake; token::String, limit::Int=50)
     resp = discord_get(rl, "/channels/$(channel_id)/threads/archived/public"; token,
-        query=["limit" => string(limit)], major_params=["channel_id" => string(channel_id)])
+        query=["limit" => string(limit)])
     JSON3.read(resp.body, Dict{String, Any})
 end
 
@@ -738,7 +733,7 @@ Requires `MANAGE_THREADS`.
 """
 function list_private_archived_threads(rl::RateLimiter, channel_id::Snowflake; token::String, limit::Int=50)
     resp = discord_get(rl, "/channels/$(channel_id)/threads/archived/private"; token,
-        query=["limit" => string(limit)], major_params=["channel_id" => string(channel_id)])
+        query=["limit" => string(limit)])
     JSON3.read(resp.body, Dict{String, Any})
 end
 
@@ -765,7 +760,7 @@ membership, such as for thread management or notification purposes.
 """
 function list_joined_private_archived_threads(rl::RateLimiter, channel_id::Snowflake; token::String, limit::Int=50)
     resp = discord_get(rl, "/channels/$(channel_id)/users/@me/threads/archived/private"; token,
-        query=["limit" => string(limit)], major_params=["channel_id" => string(channel_id)])
+        query=["limit" => string(limit)])
     JSON3.read(resp.body, Dict{String, Any})
 end
 
@@ -829,7 +824,7 @@ function create_forum_tag(rl::RateLimiter, channel_id::Snowflake;
 
     body = Dict{String, Any}("available_tags" => tags)
     resp = discord_patch(rl, "/channels/$(channel_id)";
-        token, body, major_params=["channel_id" => string(channel_id)])
+        token, body)
     channel = parse_response(DiscordChannel, resp)
 
     tags_out = channel.available_tags
@@ -887,7 +882,7 @@ function modify_forum_tag(rl::RateLimiter, channel_id::Snowflake, tag_id::Snowfl
 
     body = Dict{String, Any}("available_tags" => updated)
     resp = discord_patch(rl, "/channels/$(channel_id)";
-        token, body, major_params=["channel_id" => string(channel_id)])
+        token, body)
     channel = parse_response(DiscordChannel, resp)
 
     tags_out = channel.available_tags
@@ -932,6 +927,6 @@ function delete_forum_tag(rl::RateLimiter, channel_id::Snowflake, tag_id::Snowfl
 
     body = Dict{String, Any}("available_tags" => filtered)
     discord_patch(rl, "/channels/$(channel_id)";
-        token, body, reason, major_params=["channel_id" => string(channel_id)])
+        token, body, reason)
     return nothing
 end

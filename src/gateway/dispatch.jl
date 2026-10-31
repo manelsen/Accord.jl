@@ -28,35 +28,27 @@ function parse_event(event_name::String, data::Union{Dict{String, Any}, String})
     end
 end
 
-const GatewayDict = Dict{String, Any}
+# Default paths. Gateway payloads arrive as JSON strings, so String is the
+# canonical input: events declared with `@discord_struct` decode straight from
+# it. A Dict (tests, hand-built payloads) is serialised once and takes the same
+# path. Events that need custom logic define their own String method.
+_construct_event(::Type{T}, data::String) where {T<:AbstractEvent} = JSON3.read(data, T)
+_construct_event(::Type{T}, data::Dict) where {T<:AbstractEvent} = _construct_event(T, JSON3.write(data))
 
-@inline _gateway_dict(data::String)::GatewayDict = JSON3.read(data, GatewayDict)
-@inline _decode_payload(data::String, ::Type{T}) where T = JSON3.read(data, T)
-@inline _decode_payload(data::Dict, ::Type{T}) where T = JSON3.read(JSON3.write(data), T)
-
-# Default path for events with dict-based constructors:
-# decode payload once and delegate to the Dict method.
-function _construct_event(T::Type{<:AbstractEvent}, data::String)
-    _construct_event(T, _gateway_dict(data))
-end
+# Snowflake stored under `key` at the top level of a JSON payload.
+_snowflake_at(data::String, key::Symbol) = Snowflake(JSON3.read(data)[key])
 
 """
     @wrap_resource_event EventType PayloadType
 
-Auto-generates the `String`/`Dict` overloads for events that just wrap a single resource struct.
+Generates the decoder for events that just wrap a single resource struct.
 `EventType` is the dispatched event to build (e.g. `MessageCreate`) and `PayloadType` is the inner resource
 (e.g. `Message`). Use this macro for the simple cases so `parse_event` stays DRY, but keep custom logic
 in place for events that need extra parsing.
 """
 macro wrap_resource_event(event_type, payload_type)
-    esc(quote
-        function _construct_event(::Type{$event_type}, data::String)
-            $event_type(_decode_payload(data, $payload_type))
-        end
-        function _construct_event(::Type{$event_type}, data::Dict)
-            $event_type(_decode_payload(data, $payload_type))
-        end
-    end)
+    # Dict input reaches this method through the generic Dict -> String path.
+    esc(:(_construct_event(::Type{$event_type}, data::String) = $event_type(JSON3.read(data, $payload_type))))
 end
 
 # Construction helpers for events that wrap a single resource
@@ -64,315 +56,34 @@ end
 @wrap_resource_event ChannelUpdate DiscordChannel
 @wrap_resource_event ChannelDelete DiscordChannel
 
-function _construct_event(::Type{ChannelPinsUpdate}, data::Dict)
-    ChannelPinsUpdate(
-        _get_snowflake(data, "guild_id"),
-        Snowflake(data["channel_id"]),
-        get(data, "last_pin_timestamp", missing),
-    )
-end
-
 @wrap_resource_event ThreadCreate DiscordChannel
 @wrap_resource_event ThreadUpdate DiscordChannel
 
-function _construct_event(::Type{ThreadDelete}, data::Dict)
-    ThreadDelete(
-        Snowflake(data["id"]),
-        Snowflake(data["guild_id"]),
-        Snowflake(data["parent_id"]),
-        data["type"],
-    )
-end
-
-function _construct_event(::Type{ThreadListSync}, data::Dict)
-    ThreadListSync(
-        Snowflake(data["guild_id"]),
-        _get_snowflake_array(data, "channel_ids"),
-        JSON3.read(JSON3.write(get(data, "threads", [])), Vector{DiscordChannel}),
-        JSON3.read(JSON3.write(get(data, "members", [])), Vector{ThreadMember}),
-    )
-end
-
-function _construct_event(::Type{ThreadMemberUpdate}, data::Dict)
-    guild_id = Snowflake(data["guild_id"])
-    member = JSON3.read(JSON3.write(data), ThreadMember)
-    ThreadMemberUpdate(member, guild_id)
-end
-
-function _construct_event(::Type{ThreadMembersUpdate}, data::Dict)
-    ThreadMembersUpdate(
-        Snowflake(data["id"]),
-        Snowflake(data["guild_id"]),
-        data["member_count"],
-        haskey(data, "added_members") ? JSON3.read(JSON3.write(data["added_members"]), Vector{ThreadMember}) : missing,
-        _get_snowflake_array(data, "removed_member_ids"),
-    )
-end
+_construct_event(::Type{ThreadMemberUpdate}, data::String) = ThreadMemberUpdate(JSON3.read(data, ThreadMember), _snowflake_at(data, :guild_id))
 
 @wrap_resource_event GuildCreate Guild
 @wrap_resource_event GuildUpdate Guild
 @wrap_resource_event GuildDelete UnavailableGuild
 
-function _construct_event(::Type{GuildAuditLogEntryCreate}, data::Dict)
-    guild_id = Snowflake(pop!(data, "guild_id"))
-    entry = JSON3.read(JSON3.write(data), AuditLogEntry)
-    GuildAuditLogEntryCreate(entry, guild_id)
-end
+_construct_event(::Type{GuildAuditLogEntryCreate}, data::String) = GuildAuditLogEntryCreate(JSON3.read(data, AuditLogEntry), _snowflake_at(data, :guild_id))
 
-function _construct_event(::Type{GuildBanAdd}, data::Dict)
-    GuildBanAdd(Snowflake(data["guild_id"]), JSON3.read(JSON3.write(data["user"]), User))
-end
-
-function _construct_event(::Type{GuildBanRemove}, data::Dict)
-    GuildBanRemove(Snowflake(data["guild_id"]), JSON3.read(JSON3.write(data["user"]), User))
-end
-
-function _construct_event(::Type{GuildEmojisUpdate}, data::Dict)
-    GuildEmojisUpdate(
-        Snowflake(data["guild_id"]),
-        JSON3.read(JSON3.write(data["emojis"]), Vector{Emoji}),
-    )
-end
-
-function _construct_event(::Type{GuildStickersUpdate}, data::Dict)
-    GuildStickersUpdate(
-        Snowflake(data["guild_id"]),
-        JSON3.read(JSON3.write(data["stickers"]), Vector{Sticker}),
-    )
-end
-
-function _construct_event(::Type{GuildIntegrationsUpdate}, data::Dict)
-    GuildIntegrationsUpdate(Snowflake(data["guild_id"]))
-end
-
-function _construct_event(::Type{GuildMemberAdd}, data::Dict)
-    guild_id = Snowflake(pop!(data, "guild_id"))
-    member = JSON3.read(JSON3.write(data), Member)
-    GuildMemberAdd(member, guild_id)
-end
-
-function _construct_event(::Type{GuildMemberRemove}, data::Dict)
-    GuildMemberRemove(
-        Snowflake(data["guild_id"]),
-        JSON3.read(JSON3.write(data["user"]), User),
-    )
-end
-
-function _construct_event(::Type{GuildMemberUpdate}, data::Dict)
-    GuildMemberUpdate(
-        Snowflake(data["guild_id"]),
-        [Snowflake(r) for r in data["roles"]],
-        JSON3.read(JSON3.write(data["user"]), User),
-        get(data, "nick", missing),
-        get(data, "avatar", missing),
-        get(data, "joined_at", missing),
-        get(data, "premium_since", missing),
-        get(data, "deaf", missing),
-        get(data, "mute", missing),
-        get(data, "pending", missing),
-        get(data, "communication_disabled_until", missing),
-        get(data, "flags", missing),
-    )
-end
-
-function _construct_event(::Type{GuildMembersChunk}, data::Dict)
-    GuildMembersChunk(
-        Snowflake(data["guild_id"]),
-        JSON3.read(JSON3.write(data["members"]), Vector{Member}),
-        data["chunk_index"],
-        data["chunk_count"],
-        _get_snowflake_array(data, "not_found"),
-        haskey(data, "presences") ? JSON3.read(JSON3.write(data["presences"]), Vector{Presence}) : missing,
-        get(data, "nonce", missing),
-    )
-end
-
-function _construct_event(::Type{GuildRoleCreate}, data::Dict)
-    GuildRoleCreate(
-        Snowflake(data["guild_id"]),
-        JSON3.read(JSON3.write(data["role"]), Role),
-    )
-end
-
-function _construct_event(::Type{GuildRoleUpdate}, data::Dict)
-    GuildRoleUpdate(
-        Snowflake(data["guild_id"]),
-        JSON3.read(JSON3.write(data["role"]), Role),
-    )
-end
-
-function _construct_event(::Type{GuildRoleDelete}, data::Dict)
-    GuildRoleDelete(Snowflake(data["guild_id"]), Snowflake(data["role_id"]))
-end
+_construct_event(::Type{GuildMemberAdd}, data::String) = GuildMemberAdd(JSON3.read(data, Member), _snowflake_at(data, :guild_id))
 
 @wrap_resource_event GuildScheduledEventCreate ScheduledEvent
 @wrap_resource_event GuildScheduledEventUpdate ScheduledEvent
 @wrap_resource_event GuildScheduledEventDelete ScheduledEvent
 
-function _construct_event(::Type{GuildScheduledEventUserAdd}, data::Dict)
-    GuildScheduledEventUserAdd(
-        Snowflake(data["guild_scheduled_event_id"]),
-        Snowflake(data["user_id"]),
-        Snowflake(data["guild_id"]),
-    )
-end
-
-function _construct_event(::Type{GuildScheduledEventUserRemove}, data::Dict)
-    GuildScheduledEventUserRemove(
-        Snowflake(data["guild_scheduled_event_id"]),
-        Snowflake(data["user_id"]),
-        Snowflake(data["guild_id"]),
-    )
-end
-
 @wrap_resource_event GuildSoundboardSoundCreate SoundboardSound
 @wrap_resource_event GuildSoundboardSoundUpdate SoundboardSound
 
-function _construct_event(::Type{GuildSoundboardSoundDelete}, data::Dict)
-    GuildSoundboardSoundDelete(Snowflake(data["sound_id"]), Snowflake(data["guild_id"]))
-end
+_construct_event(::Type{IntegrationCreate}, data::String) = IntegrationCreate(JSON3.read(data, Integration), _snowflake_at(data, :guild_id))
 
-function _construct_event(::Type{GuildSoundboardSoundsUpdate}, data::Dict)
-    GuildSoundboardSoundsUpdate(
-        Snowflake(data["guild_id"]),
-        JSON3.read(JSON3.write(data["soundboard_sounds"]), Vector{SoundboardSound}),
-    )
-end
-
-function _construct_event(::Type{SoundboardSounds}, data::Dict)
-    SoundboardSounds(
-        Snowflake(data["guild_id"]),
-        JSON3.read(JSON3.write(data["soundboard_sounds"]), Vector{SoundboardSound}),
-    )
-end
-
-function _construct_event(::Type{IntegrationCreate}, data::Dict)
-    guild_id = Snowflake(pop!(data, "guild_id"))
-    IntegrationCreate(JSON3.read(JSON3.write(data), Integration), guild_id)
-end
-
-function _construct_event(::Type{IntegrationUpdate}, data::Dict)
-    guild_id = Snowflake(pop!(data, "guild_id"))
-    IntegrationUpdate(JSON3.read(JSON3.write(data), Integration), guild_id)
-end
-
-function _construct_event(::Type{IntegrationDelete}, data::Dict)
-    IntegrationDelete(
-        Snowflake(data["id"]),
-        Snowflake(data["guild_id"]),
-        _get_snowflake(data, "application_id"),
-    )
-end
+_construct_event(::Type{IntegrationUpdate}, data::String) = IntegrationUpdate(JSON3.read(data, Integration), _snowflake_at(data, :guild_id))
 
 @wrap_resource_event InteractionCreate Interaction
 
-function _construct_event(::Type{InviteCreate}, data::Dict)
-    InviteCreate(
-        Snowflake(data["channel_id"]),
-        data["code"],
-        data["created_at"],
-        _get_snowflake(data, "guild_id"),
-        haskey(data, "inviter") ? JSON3.read(JSON3.write(data["inviter"]), User) : missing,
-        data["max_age"],
-        data["max_uses"],
-        get(data, "target_type", missing),
-        haskey(data, "target_user") ? JSON3.read(JSON3.write(data["target_user"]), User) : missing,
-        get(data, "target_application", missing),
-        data["temporary"],
-        data["uses"],
-    )
-end
-
-function _construct_event(::Type{InviteDelete}, data::Dict)
-    InviteDelete(
-        Snowflake(data["channel_id"]),
-        _get_snowflake(data, "guild_id"),
-        data["code"],
-    )
-end
-
 @wrap_resource_event MessageCreate Message
 @wrap_resource_event MessageUpdate Message
-
-function _construct_event(::Type{MessageDelete}, data::Dict)
-    MessageDelete(
-        Snowflake(data["id"]),
-        Snowflake(data["channel_id"]),
-        _get_snowflake(data, "guild_id"),
-    )
-end
-
-function _construct_event(::Type{MessageDeleteBulk}, data::Dict)
-    MessageDeleteBulk(
-        [Snowflake(id) for id in data["ids"]],
-        Snowflake(data["channel_id"]),
-        _get_snowflake(data, "guild_id"),
-    )
-end
-
-function _construct_event(::Type{MessageReactionAdd}, data::Dict)
-    MessageReactionAdd(
-        Snowflake(data["user_id"]),
-        Snowflake(data["channel_id"]),
-        Snowflake(data["message_id"]),
-        _get_snowflake(data, "guild_id"),
-        haskey(data, "member") ? JSON3.read(JSON3.write(data["member"]), Member) : missing,
-        JSON3.read(JSON3.write(data["emoji"]), Emoji),
-        _get_snowflake(data, "message_author_id"),
-        get(data, "burst", false),
-        get(data, "burst_colors", missing),
-        get(data, "type", 0),
-    )
-end
-
-function _construct_event(::Type{MessageReactionRemove}, data::Dict)
-    MessageReactionRemove(
-        Snowflake(data["user_id"]),
-        Snowflake(data["channel_id"]),
-        Snowflake(data["message_id"]),
-        _get_snowflake(data, "guild_id"),
-        JSON3.read(JSON3.write(data["emoji"]), Emoji),
-        get(data, "burst", false),
-        get(data, "type", 0),
-    )
-end
-
-function _construct_event(::Type{MessageReactionRemoveAll}, data::Dict)
-    MessageReactionRemoveAll(
-        Snowflake(data["channel_id"]),
-        Snowflake(data["message_id"]),
-        _get_snowflake(data, "guild_id"),
-    )
-end
-
-function _construct_event(::Type{MessageReactionRemoveEmoji}, data::Dict)
-    MessageReactionRemoveEmoji(
-        Snowflake(data["channel_id"]),
-        _get_snowflake(data, "guild_id"),
-        Snowflake(data["message_id"]),
-        JSON3.read(JSON3.write(data["emoji"]), Emoji),
-    )
-end
-
-function _construct_event(::Type{MessagePollVoteAdd}, data::Dict)
-    MessagePollVoteAdd(
-        Snowflake(data["user_id"]),
-        Snowflake(data["channel_id"]),
-        Snowflake(data["message_id"]),
-        _get_snowflake(data, "guild_id"),
-        data["answer_id"],
-    )
-end
-
-function _construct_event(::Type{MessagePollVoteRemove}, data::Dict)
-    MessagePollVoteRemove(
-        Snowflake(data["user_id"]),
-        Snowflake(data["channel_id"]),
-        Snowflake(data["message_id"]),
-        _get_snowflake(data, "guild_id"),
-        data["answer_id"],
-    )
-end
 
 function _construct_event(::Type{PresenceUpdate}, data::String)
     _construct_event(PresenceUpdate, JSON3.read(data, Dict{String, Any}))
@@ -408,55 +119,8 @@ end
 @wrap_resource_event StageInstanceUpdate StageInstance
 @wrap_resource_event StageInstanceDelete StageInstance
 
-function _construct_event(::Type{TypingStart}, data::Dict)
-    TypingStart(
-        Snowflake(data["channel_id"]),
-        _get_snowflake(data, "guild_id"),
-        Snowflake(data["user_id"]),
-        data["timestamp"],
-        haskey(data, "member") ? JSON3.read(JSON3.write(data["member"]), Member) : missing,
-    )
-end
-
 @wrap_resource_event UserUpdate User
 @wrap_resource_event VoiceStateUpdateEvent VoiceState
-
-function _construct_event(::Type{VoiceServerUpdate}, data::Dict)
-    VoiceServerUpdate(data["token"], Snowflake(data["guild_id"]), get(data, "endpoint", nothing))
-end
-
-function _construct_event(::Type{VoiceChannelEffectSend}, data::Dict)
-    VoiceChannelEffectSend(
-        Snowflake(data["channel_id"]),
-        Snowflake(data["guild_id"]),
-        Snowflake(data["user_id"]),
-        haskey(data, "emoji") ? JSON3.read(JSON3.write(data["emoji"]), Emoji) : missing,
-        get(data, "animation_type", missing),
-        get(data, "animation_id", missing),
-        get(data, "sound_id", missing),
-        get(data, "sound_volume", missing),
-    )
-end
-
-function _construct_event(::Type{VoiceChannelStatusUpdate}, data::Dict)
-    VoiceChannelStatusUpdate(
-        Snowflake(data["guild_id"]),
-        Snowflake(data["id"]),
-        get(data, "status", missing),
-    )
-end
-
-function _construct_event(::Type{VoiceChannelStartTimeUpdate}, data::Dict)
-    VoiceChannelStartTimeUpdate(
-        Snowflake(data["guild_id"]),
-        Snowflake(data["id"]),
-        get(data, "voice_start_time", missing),
-    )
-end
-
-function _construct_event(::Type{WebhooksUpdate}, data::Dict)
-    WebhooksUpdate(Snowflake(data["guild_id"]), Snowflake(data["channel_id"]))
-end
 
 @wrap_resource_event EntitlementCreate Entitlement
 @wrap_resource_event EntitlementUpdate Entitlement
@@ -468,47 +132,10 @@ end
 @wrap_resource_event AutoModerationRuleUpdate AutoModRule
 @wrap_resource_event AutoModerationRuleDelete AutoModRule
 
-function _construct_event(::Type{AutoModerationActionExecution}, data::Dict)
-    AutoModerationActionExecution(
-        Snowflake(data["guild_id"]),
-        JSON3.read(JSON3.write(data["action"]), AutoModAction),
-        Snowflake(data["rule_id"]),
-        data["rule_trigger_type"],
-        Snowflake(data["user_id"]),
-        _get_snowflake(data, "channel_id"),
-        _get_snowflake(data, "message_id"),
-        _get_snowflake(data, "alert_system_message_id"),
-        get(data, "content", missing),
-        get(data, "matched_keyword", missing),
-        get(data, "matched_content", missing),
-    )
-end
-
-function _construct_event(::Type{ReadyEvent}, data::Dict)
-    ReadyEvent(
-        data["v"],
-        JSON3.read(JSON3.write(data["user"]), User),
-        JSON3.read(JSON3.write(data["guilds"]), Vector{UnavailableGuild}),
-        data["session_id"],
-        data["resume_gateway_url"],
-        get(data, "shard", missing),
-        get(data, "application", nothing),
-    )
-end
-
-function _construct_event(::Type{ResumedEvent}, data::Dict)
-    ResumedEvent()
-end
-function _construct_event(::Type{ResumedEvent}, data::String)
-    ResumedEvent()
-end
+_construct_event(::Type{ResumedEvent}, ::String) = ResumedEvent()
 
 # --- Utility helpers ---
 
 function _get_snowflake(data::Dict, key::String)
     haskey(data, key) && !isnothing(data[key]) ? Snowflake(data[key]) : missing
-end
-
-function _get_snowflake_array(data::Dict, key::String)
-    haskey(data, key) ? [Snowflake(s) for s in data[key]] : missing
 end

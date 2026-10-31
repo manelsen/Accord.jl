@@ -317,21 +317,11 @@ function update_state!(state::State, event::GuildDelete)
     end
 end
 
-function update_state!(state::State, event::ChannelCreate)
-    state.channels[event.channel.id] = event.channel
-end
-function update_state!(state::State, event::ChannelUpdate)
+function update_state!(state::State, event::Union{ChannelCreate, ChannelUpdate, ThreadCreate, ThreadUpdate})
     state.channels[event.channel.id] = event.channel
 end
 function update_state!(state::State, event::ChannelDelete)
     delete!(state.channels, event.channel.id)
-end
-
-function update_state!(state::State, event::ThreadCreate)
-    state.channels[event.channel.id] = event.channel
-end
-function update_state!(state::State, event::ThreadUpdate)
-    state.channels[event.channel.id] = event.channel
 end
 function update_state!(state::State, event::ThreadDelete)
     delete!(state.channels, event.id)
@@ -370,13 +360,7 @@ function update_state!(state::State, event::GuildMemberUpdate)
     state.users[event.user.id] = event.user
 end
 
-function update_state!(state::State, event::GuildRoleCreate)
-    store = lock(state._lock) do
-        get!(state.roles, event.guild_id, Store{Role}())
-    end
-    store[event.role.id] = event.role
-end
-function update_state!(state::State, event::GuildRoleUpdate)
+function update_state!(state::State, event::Union{GuildRoleCreate, GuildRoleUpdate})
     store = lock(state._lock) do
         get!(state.roles, event.guild_id, Store{Role}())
     end

@@ -28,7 +28,7 @@ Requires `MANAGE_WEBHOOKS`.
 [Discord docs](https://discord.com/developers/docs/resources/webhook#create-webhook)
 """
 function create_webhook(rl::RateLimiter, channel_id::Snowflake; token::String, body::Dict, reason=nothing)
-    resp = discord_post(rl, "/channels/$(channel_id)/webhooks"; token, body, reason=reason, major_params=["channel_id" => string(channel_id)])
+    resp = discord_post(rl, "/channels/$(channel_id)/webhooks"; token, body, reason=reason)
     parse_response(Webhook, resp)
 end
 
@@ -57,7 +57,7 @@ Requires `MANAGE_WEBHOOKS`.
 [Discord docs](https://discord.com/developers/docs/resources/webhook#get-channel-webhooks)
 """
 function get_channel_webhooks(rl::RateLimiter, channel_id::Snowflake; token::String)
-    resp = discord_get(rl, "/channels/$(channel_id)/webhooks"; token, major_params=["channel_id" => string(channel_id)])
+    resp = discord_get(rl, "/channels/$(channel_id)/webhooks"; token)
     parse_response_array(Webhook, resp)
 end
 
@@ -86,7 +86,7 @@ Requires `MANAGE_WEBHOOKS`.
 [Discord docs](https://discord.com/developers/docs/resources/webhook#get-guild-webhooks)
 """
 function get_guild_webhooks(rl::RateLimiter, guild_id::Snowflake; token::String)
-    resp = discord_get(rl, "/guilds/$(guild_id)/webhooks"; token, major_params=["guild_id" => string(guild_id)])
+    resp = discord_get(rl, "/guilds/$(guild_id)/webhooks"; token)
     parse_response_array(Webhook, resp)
 end
 
@@ -115,7 +115,7 @@ Requires `MANAGE_WEBHOOKS` in the webhook's channel.
 [Discord docs](https://discord.com/developers/docs/resources/webhook#get-webhook)
 """
 function get_webhook(rl::RateLimiter, webhook_id::Snowflake; token::String)
-    resp = discord_get(rl, "/webhooks/$(webhook_id)"; token, major_params=["webhook_id" => string(webhook_id)])
+    resp = discord_get(rl, "/webhooks/$(webhook_id)"; token)
     parse_response(Webhook, resp)
 end
 
@@ -142,8 +142,7 @@ the webhook URL components (ID and token), without needing bot authentication.
 [Discord docs](https://discord.com/developers/docs/resources/webhook#get-webhook-with-token)
 """
 function get_webhook_with_token(rl::RateLimiter, webhook_id::Snowflake, webhook_token::String; token::String)
-    resp = discord_get(rl, "/webhooks/$(webhook_id)/$(webhook_token)"; token,
-        major_params=["webhook_id" => string(webhook_id), "webhook_token" => webhook_token])
+    resp = discord_get(rl, "/webhooks/$(webhook_id)/$(webhook_token)"; token)
     parse_response(Webhook, resp)
 end
 
@@ -175,7 +174,7 @@ Requires `MANAGE_WEBHOOKS` in the webhook's channel.
 [Discord docs](https://discord.com/developers/docs/resources/webhook#modify-webhook)
 """
 function modify_webhook(rl::RateLimiter, webhook_id::Snowflake; token::String, body::Dict, reason=nothing)
-    resp = discord_patch(rl, "/webhooks/$(webhook_id)"; token, body, reason, major_params=["webhook_id" => string(webhook_id)])
+    resp = discord_patch(rl, "/webhooks/$(webhook_id)"; token, body, reason)
     parse_response(Webhook, resp)
 end
 
@@ -205,7 +204,7 @@ Requires `MANAGE_WEBHOOKS` in the webhook's channel.
 [Discord docs](https://discord.com/developers/docs/resources/webhook#delete-webhook)
 """
 function delete_webhook(rl::RateLimiter, webhook_id::Snowflake; token::String, reason=nothing)
-    discord_delete(rl, "/webhooks/$(webhook_id)"; token, reason, major_params=["webhook_id" => string(webhook_id)])
+    discord_delete(rl, "/webhooks/$(webhook_id)"; token, reason)
 end
 
 """
@@ -240,8 +239,7 @@ function execute_webhook(rl::RateLimiter, webhook_id::Snowflake, webhook_token::
     query = []
     wait && push!(query, "wait" => "true")
     !isnothing(thread_id) && push!(query, "thread_id" => string(thread_id))
-    resp = discord_post(rl, "/webhooks/$(webhook_id)/$(webhook_token)"; token, body, files,
-        major_params=["webhook_id" => string(webhook_id), "webhook_token" => webhook_token])
+    resp = discord_post(rl, "/webhooks/$(webhook_id)/$(webhook_token)"; token, body, files)
     wait ? parse_response(Message, resp) : resp
 end
 
@@ -269,8 +267,7 @@ via webhook, such as for editing or reference.
 [Discord docs](https://discord.com/developers/docs/resources/webhook#get-webhook-message)
 """
 function get_webhook_message(rl::RateLimiter, webhook_id::Snowflake, webhook_token::String, message_id::Snowflake; token::String)
-    resp = discord_get(rl, "/webhooks/$(webhook_id)/$(webhook_token)/messages/$(message_id)"; token,
-        major_params=["webhook_id" => string(webhook_id), "webhook_token" => webhook_token])
+    resp = discord_get(rl, "/webhooks/$(webhook_id)/$(webhook_token)/messages/$(message_id)"; token)
     parse_response(Message, resp)
 end
 
@@ -301,8 +298,7 @@ webhook message, such as to correct information or show progress.
 [Discord docs](https://discord.com/developers/docs/resources/webhook#edit-webhook-message)
 """
 function edit_webhook_message(rl::RateLimiter, webhook_id::Snowflake, webhook_token::String, message_id::Snowflake; token::String, body::Dict, files=nothing)
-    resp = discord_patch(rl, "/webhooks/$(webhook_id)/$(webhook_token)/messages/$(message_id)"; token, body, files,
-        major_params=["webhook_id" => string(webhook_id), "webhook_token" => webhook_token])
+    resp = discord_patch(rl, "/webhooks/$(webhook_id)/$(webhook_token)/messages/$(message_id)"; token, body, files)
     parse_response(Message, resp)
 end
 
@@ -329,8 +325,7 @@ Use this when a bot needs to remove a previously sent webhook message.
 [Discord docs](https://discord.com/developers/docs/resources/webhook#delete-webhook-message)
 """
 function delete_webhook_message(rl::RateLimiter, webhook_id::Snowflake, webhook_token::String, message_id::Snowflake; token::String)
-    discord_delete(rl, "/webhooks/$(webhook_id)/$(webhook_token)/messages/$(message_id)"; token,
-        major_params=["webhook_id" => string(webhook_id), "webhook_token" => webhook_token])
+    discord_delete(rl, "/webhooks/$(webhook_id)/$(webhook_token)/messages/$(message_id)"; token)
 end
 
 """
@@ -358,8 +353,7 @@ requiring bot authentication, using only the webhook credentials.
 [Discord docs](https://discord.com/developers/docs/resources/webhook#modify-webhook-with-token)
 """
 function modify_webhook_with_token(rl::RateLimiter, webhook_id::Snowflake, webhook_token::String; body::Dict, reason=nothing)
-    resp = discord_patch(rl, "/webhooks/$(webhook_id)/$(webhook_token)"; body, reason,
-        major_params=["webhook_id" => string(webhook_id), "webhook_token" => webhook_token])
+    resp = discord_patch(rl, "/webhooks/$(webhook_id)/$(webhook_token)"; body, reason)
     parse_response(Webhook, resp)
 end
 
@@ -386,6 +380,5 @@ bot authentication, using only the webhook credentials.
 [Discord docs](https://discord.com/developers/docs/resources/webhook#delete-webhook-with-token)
 """
 function delete_webhook_with_token(rl::RateLimiter, webhook_id::Snowflake, webhook_token::String; reason=nothing)
-    discord_delete(rl, "/webhooks/$(webhook_id)/$(webhook_token)"; reason,
-        major_params=["webhook_id" => string(webhook_id), "webhook_token" => webhook_token])
+    discord_delete(rl, "/webhooks/$(webhook_id)/$(webhook_token)"; reason)
 end

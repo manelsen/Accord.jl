@@ -32,7 +32,7 @@ function get_channel_messages(rl::RateLimiter, channel_id::Snowflake; token::Str
     !isnothing(around) && push!(query, "around" => string(around))
     !isnothing(before) && push!(query, "before" => string(before))
     !isnothing(after) && push!(query, "after" => string(after))
-    resp = discord_get(rl, "/channels/$(channel_id)/messages"; token, query, major_params=["channel_id" => string(channel_id)])
+    resp = discord_get(rl, "/channels/$(channel_id)/messages"; token, query)
     parse_response_array(Message, resp)
 end
 
@@ -61,7 +61,7 @@ Requires `READ_MESSAGE_HISTORY`.
 [Discord docs](https://discord.com/developers/docs/resources/message#get-channel-message)
 """
 function get_channel_message(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake; token::String)
-    resp = discord_get(rl, "/channels/$(channel_id)/messages/$(message_id)"; token, major_params=["channel_id" => string(channel_id)])
+    resp = discord_get(rl, "/channels/$(channel_id)/messages/$(message_id)"; token)
     parse_response(Message, resp)
 end
 
@@ -93,7 +93,7 @@ Requires `SEND_TTS_MESSAGES` if `tts` is true.
 [Discord docs](https://discord.com/developers/docs/resources/message#create-message)
 """
 function create_message(rl::RateLimiter, channel_id::Snowflake; token::String, body::Dict=Dict(), files=nothing)
-    resp = discord_post(rl, "/channels/$(channel_id)/messages"; token, body, files, major_params=["channel_id" => string(channel_id)])
+    resp = discord_post(rl, "/channels/$(channel_id)/messages"; token, body, files)
     parse_response(Message, resp)
 end
 
@@ -123,7 +123,7 @@ Actually, for crossposting, it requires `SEND_MESSAGES` in the channel.
 [Discord docs](https://discord.com/developers/docs/resources/message#crosspost-message)
 """
 function crosspost_message(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake; token::String)
-    resp = discord_post(rl, "/channels/$(channel_id)/messages/$(message_id)/crosspost"; token, major_params=["channel_id" => string(channel_id)])
+    resp = discord_post(rl, "/channels/$(channel_id)/messages/$(message_id)/crosspost"; token)
     parse_response(Message, resp)
 end
 
@@ -155,7 +155,7 @@ You can always edit your own messages.
 [Discord docs](https://discord.com/developers/docs/resources/message#edit-message)
 """
 function edit_message(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake; token::String, body::Dict, files=nothing)
-    resp = discord_patch(rl, "/channels/$(channel_id)/messages/$(message_id)"; token, body, files, major_params=["channel_id" => string(channel_id)])
+    resp = discord_patch(rl, "/channels/$(channel_id)/messages/$(message_id)"; token, body, files)
     parse_response(Message, resp)
 end
 
@@ -186,7 +186,7 @@ You can always delete your own messages.
 [Discord docs](https://discord.com/developers/docs/resources/message#delete-message)
 """
 function delete_message(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake; token::String, reason=nothing)
-    discord_delete(rl, "/channels/$(channel_id)/messages/$(message_id)"; token, reason, major_params=["channel_id" => string(channel_id)])
+    discord_delete(rl, "/channels/$(channel_id)/messages/$(message_id)"; token, reason)
 end
 
 """
@@ -217,7 +217,7 @@ Requires `MANAGE_MESSAGES`.
 """
 function bulk_delete_messages(rl::RateLimiter, channel_id::Snowflake; token::String, message_ids::Vector{Snowflake}, reason=nothing)
     body = Dict("messages" => [string(id) for id in message_ids])
-    discord_post(rl, "/channels/$(channel_id)/messages/bulk-delete"; token, body, reason=reason, major_params=["channel_id" => string(channel_id)])
+    discord_post(rl, "/channels/$(channel_id)/messages/bulk-delete"; token, body, reason=reason)
 end
 
 # Reactions
@@ -248,8 +248,7 @@ Requires `READ_MESSAGE_HISTORY` and `ADD_REACTIONS`.
 [Discord docs](https://discord.com/developers/docs/resources/message#create-reaction)
 """
 function create_reaction(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake, emoji::String; token::String)
-    discord_put(rl, "/channels/$(channel_id)/messages/$(message_id)/reactions/$(HTTP.URIs.escapeuri(emoji))/@me"; token,
-        major_params=["channel_id" => string(channel_id)])
+    discord_put(rl, "/channels/$(channel_id)/messages/$(message_id)/reactions/$(HTTP.URIs.escapeuri(emoji))/@me"; token)
 end
 
 """
@@ -274,8 +273,7 @@ Use this to undo a reaction added by the bot.
 [Discord docs](https://discord.com/developers/docs/resources/message#delete-own-reaction)
 """
 function delete_own_reaction(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake, emoji::String; token::String)
-    discord_delete(rl, "/channels/$(channel_id)/messages/$(message_id)/reactions/$(HTTP.URIs.escapeuri(emoji))/@me"; token,
-        major_params=["channel_id" => string(channel_id)])
+    discord_delete(rl, "/channels/$(channel_id)/messages/$(message_id)/reactions/$(HTTP.URIs.escapeuri(emoji))/@me"; token)
 end
 
 """
@@ -305,8 +303,7 @@ Requires `MANAGE_MESSAGES`.
 [Discord docs](https://discord.com/developers/docs/resources/message#delete-user-reaction)
 """
 function delete_user_reaction(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake, emoji::String, user_id::Snowflake; token::String)
-    discord_delete(rl, "/channels/$(channel_id)/messages/$(message_id)/reactions/$(HTTP.URIs.escapeuri(emoji))/$(user_id)"; token,
-        major_params=["channel_id" => string(channel_id)])
+    discord_delete(rl, "/channels/$(channel_id)/messages/$(message_id)/reactions/$(HTTP.URIs.escapeuri(emoji))/$(user_id)"; token)
 end
 
 """
@@ -335,8 +332,7 @@ Use this to see who voted or reacted.
 function get_reactions(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake, emoji::String; token::String, limit::Int=25, type::Int=0)
     query = ["limit" => string(limit)]
     type > 0 && push!(query, "type" => string(type))
-    resp = discord_get(rl, "/channels/$(channel_id)/messages/$(message_id)/reactions/$(HTTP.URIs.escapeuri(emoji))"; token, query,
-        major_params=["channel_id" => string(channel_id)])
+    resp = discord_get(rl, "/channels/$(channel_id)/messages/$(message_id)/reactions/$(HTTP.URIs.escapeuri(emoji))"; token, query)
     parse_response_array(User, resp)
 end
 
@@ -365,8 +361,7 @@ Requires `MANAGE_MESSAGES`.
 [Discord docs](https://discord.com/developers/docs/resources/message#delete-all-reactions)
 """
 function delete_all_reactions(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake; token::String)
-    discord_delete(rl, "/channels/$(channel_id)/messages/$(message_id)/reactions"; token,
-        major_params=["channel_id" => string(channel_id)])
+    discord_delete(rl, "/channels/$(channel_id)/messages/$(message_id)/reactions"; token)
 end
 
 """
@@ -395,8 +390,7 @@ Requires `MANAGE_MESSAGES`.
 [Discord docs](https://discord.com/developers/docs/resources/message#delete-all-reactions-for-emoji)
 """
 function delete_all_reactions_for_emoji(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake, emoji::String; token::String)
-    discord_delete(rl, "/channels/$(channel_id)/messages/$(message_id)/reactions/$(HTTP.URIs.escapeuri(emoji))"; token,
-        major_params=["channel_id" => string(channel_id)])
+    discord_delete(rl, "/channels/$(channel_id)/messages/$(message_id)/reactions/$(HTTP.URIs.escapeuri(emoji))"; token)
 end
 
 # Polls
@@ -447,7 +441,7 @@ function create_poll(rl::RateLimiter, channel_id::Snowflake;
     )
     body = Dict{String, Any}("poll" => poll_body)
     resp = discord_post(rl, "/channels/$(channel_id)/messages";
-        token, body, major_params=["channel_id" => string(channel_id)])
+        token, body)
     parse_response(Message, resp)
 end
 
@@ -475,7 +469,7 @@ Use this to retrieve poll results.
 """
 function get_answer_voters(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake, answer_id::Int; token::String, limit::Int=25)
     resp = discord_get(rl, "/channels/$(channel_id)/polls/$(message_id)/answers/$(answer_id)"; token,
-        query=["limit" => string(limit)], major_params=["channel_id" => string(channel_id)])
+        query=["limit" => string(limit)])
     JSON3.read(resp.body, Dict{String, Any})
 end
 
@@ -505,7 +499,6 @@ Always allowed if you are the author.
 [Discord docs](https://discord.com/developers/docs/resources/poll#end-poll)
 """
 function end_poll(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake; token::String)
-    resp = discord_post(rl, "/channels/$(channel_id)/polls/$(message_id)/expire"; token,
-        major_params=["channel_id" => string(channel_id)])
+    resp = discord_post(rl, "/channels/$(channel_id)/polls/$(message_id)/expire"; token)
     parse_response(Message, resp)
 end
