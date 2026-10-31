@@ -269,7 +269,7 @@ function get_channel_invites(rl::RateLimiter, channel_id::Snowflake; token::Stri
 end
 
 """
-    create_channel_invite(rl::RateLimiter, channel_id::Snowflake; token::String, body::Dict=Dict(), reason=nothing) -> Invite
+    create_channel_invite(rl::RateLimiter, channel_id::Snowflake; token::String, body::Dict=Dict(), target_users_file=nothing, reason=nothing) -> Invite
 
 Create a new invite for a channel.
 
@@ -282,11 +282,15 @@ with specific settings like expiration time or maximum uses.
 
 # Keyword Arguments
 - `token::String` — Bot authentication token.
-- `body::Dict` — Invite settings (max_age, max_uses, temporary, unique).
+- `body::Dict` — Invite settings: `max_age`, `max_uses`, `temporary`, `unique`,
+  `target_type`, `role_ids` (roles granted on joining) and `target_user_ids`
+  (up to 1000 users who alone can accept it).
+- `target_users_file` — Instead of `target_user_ids`, any number of user ids,
+  uploaded as the CSV file Discord expects.
 - `reason::String` — Audit log reason for creating the invite (optional).
 
 # Permissions
-Requires `CREATE_INSTANT_INVITE`.
+Requires `CREATE_INSTANT_INVITE`, and `MANAGE_ROLES` for `role_ids`.
 
 # Errors
 - HTTP 403 if missing required permissions.
@@ -294,8 +298,10 @@ Requires `CREATE_INSTANT_INVITE`.
 
 [Discord docs](https://discord.com/developers/docs/resources/channel#create-channel-invite)
 """
-function create_channel_invite(rl::RateLimiter, channel_id::Snowflake; token::String, body::Dict=Dict(), reason=nothing)
-    resp = discord_post(rl, "/channels/$(channel_id)/invites"; token, body, reason=reason)
+function create_channel_invite(rl::RateLimiter, channel_id::Snowflake; token::String, body::Dict=Dict(),
+                               target_users_file=nothing, reason=nothing)
+    files = isnothing(target_users_file) ? nothing : [_target_users_csv(target_users_file)]
+    resp = discord_post(rl, "/channels/$(channel_id)/invites"; token, body, files, reason)
     parse_response(Invite, resp)
 end
 

@@ -51,13 +51,12 @@ including the breaking changes.
 
 Beyond discord.py 2.7 parity (#6), from Discord's changelog up to 2026-10-30:
 
-- Invite target users (`target_user_ids`, add/remove/bulk endpoints).
-- Editing attachments (`description`, `is_spoiler`) on existing messages.
 - Large bot sharding: `max_concurrency` identify buckets, and the now
   mandatory `shard` query param of `get_current_user_guilds`.
-- Identify `capabilities` (channel obfuscation opt-in, testing only).
-- Smaller fields: `Application.flags_new`, `content_scan_metadata` on
-  unfurled media, the `components` embed type.
+- Identify `capabilities` (channel obfuscation opt-in). Discord calls it a
+  temporary, testing-only opt-in that will change before GA, so it was left out.
+- `Application.flags_new`: there is no `Application` type yet
+  (`get_current_application` returns a Dict), so the field is already readable.
 - Docstrings still link to `discord.com/developers/docs/...`, which now
   redirects to `docs.discord.com/developers/...`.
 

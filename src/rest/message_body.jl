@@ -41,3 +41,29 @@ _component_type(_) = nothing
 _uses_components_v2(::Nothing) = false
 _uses_components_v2(cs::AbstractVector) = any(c -> _component_type(c) in _V2_LAYOUT_TYPES, cs)
 _uses_components_v2(_) = false
+
+"""
+    attachment_edit(attachment; description=nothing, spoiler=nothing) -> Dict
+
+An entry for the `attachments` list of [`edit_message`](@ref), to keep an
+existing attachment and optionally change its alt text (`description`, up to
+1024 characters) or spoiler state. `attachment` is an `Attachment` or its id.
+
+When editing, `attachments` must list every attachment the message should keep:
+those left out are deleted.
+
+# Example
+```julia
+# Mark every image of a message as a spoiler
+edit_message(client, msg.channel_id, msg.id;
+             attachments=[Accord.attachment_edit(a; spoiler=true) for a in msg.attachments])
+```
+"""
+function attachment_edit(attachment; description::Union{AbstractString, Nothing}=nothing,
+                         spoiler::Union{Bool, Nothing}=nothing)
+    id = attachment isa Attachment ? attachment.id : Snowflake(attachment)
+    d = Dict{String, Any}("id" => string(id))
+    isnothing(description) || (d["description"] = description)
+    isnothing(spoiler) || (d["is_spoiler"] = spoiler)
+    return d
+end

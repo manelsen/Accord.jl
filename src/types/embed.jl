@@ -149,6 +149,9 @@ multiple fields.
 - `provider::Optional{EmbedProvider}`: Provider information (read-only).
 - `author::Optional{EmbedAuthor}`: Author information.
 - `fields::Optional{Vector{EmbedField}}`: Up to 25 fields.
+- `components::Optional{Vector{Component}}`: The single Container of a
+  `"components"` embed, a link preview built from components (read-only).
+- `flags::Optional{Int}`: [`EmbedFlags`](@ref) bits, such as content-scan results (read-only).
 
 # Example
 ```julia
@@ -177,4 +180,21 @@ push!(embed.fields, EmbedField(name="CPU", value="15%", inline=true))
     provider::Optional{EmbedProvider}
     author::Optional{EmbedAuthor}
     fields::Optional{Vector{EmbedField}}
+    components::Optional{Vector{Component}}
+    flags::Optional{Int}
+end
+
+"""
+    EmbedFlags
+
+Bits of `Embed.flags`. The `CONTAINS_*` flags are set by Discord's content
+scanning of the embed's media.
+
+[Discord docs](https://docs.discord.com/developers/resources/message#embed-object-embed-flags)
+"""
+module EmbedFlags
+    const CONTAINS_EXPLICIT_CONTENT  = 1 << 4
+    const IS_CONTENT_INVENTORY_ENTRY = 1 << 5
+    const CONTAINS_GORE_CONTENT      = 1 << 6
+    const CONTAINS_SELF_HARM_CONTENT = 1 << 7
 end

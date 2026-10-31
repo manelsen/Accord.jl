@@ -22,6 +22,63 @@ An option within a select menu component.
 end
 
 """
+    ContentScanMetadata
+
+Results of Discord's content scanning of a media item. `flags` combines
+[`ContentScanFlags`](@ref). Scanning may finish after the message is sent, so
+the metadata can first arrive in a later message update.
+"""
+@discord_struct ContentScanMetadata begin
+    flags::Int
+end
+
+"""
+    ContentScanFlags
+
+Bits of `ContentScanMetadata.flags`.
+
+[Discord docs](https://docs.discord.com/developers/components/reference#unfurled-media-item)
+"""
+module ContentScanFlags
+    const IS_EXPLICIT_CONTENT  = 1 << 0
+    const IS_GORE_CONTENT      = 1 << 1
+    const IS_SELF_HARM_CONTENT = 1 << 2
+end
+
+"""
+    UnfurledMediaItem
+
+Media shown by a Thumbnail, Media Gallery item or File component, as received.
+Only `url` is set by the sender (an `https://` URL or `attachment://filename`);
+Discord fills in the rest. `flags` has `1 << 0` for animated images.
+
+[Discord docs](https://docs.discord.com/developers/components/reference#unfurled-media-item)
+"""
+@discord_struct UnfurledMediaItem begin
+    url::String
+    proxy_url::Optional{String}
+    height::Maybe{Int}
+    width::Maybe{Int}
+    placeholder::Optional{String}
+    placeholder_version::Optional{Int}
+    content_type::Optional{String}
+    flags::Optional{Int}
+    content_scan_metadata::Optional{ContentScanMetadata}
+    attachment_id::Optional{Snowflake}
+end
+
+"""
+    MediaGalleryItem
+
+One item of a received Media Gallery component.
+"""
+@discord_struct MediaGalleryItem begin
+    media::UnfurledMediaItem = UnfurledMediaItem()
+    description::Maybe{String}
+    spoiler::Optional{Bool}
+end
+
+"""
     Component
 
 Represents an interactive message component (Buttons, Select Menus, Text Inputs).
@@ -54,6 +111,8 @@ interactions.
 - `default::Optional{Bool}`: Initial state of a Checkbox.
 - `file_types::Optional{Vector{String}}`: Accepted types of a File Upload.
 - `accent_color::Maybe{Int}`: Accent colour of a Container.
+- `media::Optional{UnfurledMediaItem}`: Media of a Thumbnail or File.
+- `items::Optional{Vector{MediaGalleryItem}}`: Items of a Media Gallery.
 
 # Example
 ```julia
@@ -95,8 +154,8 @@ row = Component(type=ComponentTypes.ACTION_ROW, components=[button])
     sku_id::Optional{Snowflake}
     # Components V2
     content::Optional{String}
-    media::Optional{Any}
-    items::Optional{Vector{Any}}
+    media::Optional{UnfurledMediaItem}
+    items::Optional{Vector{MediaGalleryItem}}
     accessory::Optional{Any}
     spoiler::Optional{Bool}
     description::Optional{String}

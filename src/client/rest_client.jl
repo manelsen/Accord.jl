@@ -147,6 +147,13 @@ const REST_ENDPOINTS = (
     # invite
     :get_invite,
     :delete_invite,
+    :get_invite_target_users,
+    :update_invite_target_users,
+    :add_invite_target_user,
+    :remove_invite_target_user,
+    :bulk_add_invite_target_users,
+    :bulk_delete_invite_target_users,
+    :get_invite_target_users_job_status,
     # message
     :get_channel_messages,
     :search_guild_messages,

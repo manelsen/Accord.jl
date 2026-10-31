@@ -61,10 +61,11 @@ include("types/member.jl")
 include("types/ban.jl")
 
 # Types that depend on base types
+# Before embed.jl: "components" embeds hold components
+include("types/component.jl")
 include("types/embed.jl")
 include("types/attachment.jl")
 include("types/reaction.jl")
-include("types/component.jl")
 include("types/poll.jl")
 include("types/channel.jl")
 include("types/message.jl")
@@ -199,8 +200,9 @@ export Snowflake
 # Main Discord Types
 export User, Guild, UnavailableGuild, DiscordChannel, Message, Member, Role, Emoji
 export Embed, Attachment, Component, Interaction
+export UnfurledMediaItem, MediaGalleryItem, ContentScanMetadata, ContentScanFlags, EmbedFlags
 export MessageSnapshot, SnapshotMessage, MessagePin, ChannelPins, MessageSearchResults, PrimaryGuild, RoleColors
-export Invite, Webhook, AuditLog, AutoModRule, ScheduledEvent, Poll
+export Invite, InviteTargetUsersJob, InviteTargetUsersJobStatuses, Webhook, AuditLog, AutoModRule, ScheduledEvent, Poll
 export Presence, Activity, VoiceState, VoiceRegion
 export InteractionContext, InteractionData, InteractionDataOption, ApplicationCommand
 export Overwrite, Ban, ThreadMember
@@ -273,7 +275,7 @@ public timestamp, has_flag, Optional, Nullable, Maybe, Internals, internals
 # Interaction helpers
 public respond, defer, followup
 public get_options, get_option, custom_id, selected_values, modal_values, modal_files, target
-public found_messages
+public found_messages, attachment_edit
 # Check guards (use as `@check Accord.has_permissions(...)`)
 public has_permissions, is_owner, is_in_guild, cooldown
 # Component and embed builders

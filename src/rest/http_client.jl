@@ -64,7 +64,8 @@ function discord_request(
 end
 
 # Build a multipart form with `payload_json` and `files[i]` parts. `files` is a
-# collection of `(filename, data, content_type)` tuples.
+# collection of `(filename, data, content_type)` tuples; a fourth element names
+# the form field instead of `files[i]` (e.g. `target_users_file`).
 function _multipart_body(body, files)
     form_data = Vector{Pair{Symbol, Any}}()
 
@@ -72,8 +73,10 @@ function _multipart_body(body, files)
         push!(form_data, :payload_json => JSON3.write(body))
     end
 
-    for (i, (filename, data, content_type)) in enumerate(files)
-        push!(form_data, Symbol("files[$i]") => HTTP.Forms.Multipart(filename, IOBuffer(data), content_type))
+    for (i, file) in enumerate(files)
+        filename, data, content_type = file
+        field = length(file) >= 4 ? Symbol(file[4]) : Symbol("files[$i]")
+        push!(form_data, field => HTTP.Forms.Multipart(filename, IOBuffer(data), content_type))
     end
 
     HTTP.Forms.Form(form_data)
@@ -144,9 +147,9 @@ resp = discord_put(client.ratelimiter, "/channels/\$(channel_id)/pins/\$(msg_id)
     token=client.token)
 ```
 """
-function discord_put(rl::RateLimiter, path::String; token::String, body=nothing, reason=nothing)
+function discord_put(rl::RateLimiter, path::String; token::String, body=nothing, files=nothing, reason=nothing)
     route = Route("PUT", path)
-    discord_request(rl, route; token, body, reason)
+    discord_request(rl, route; token, body, files, reason)
 end
 
 """
