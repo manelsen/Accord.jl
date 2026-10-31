@@ -76,7 +76,8 @@ jobs:
           git clone --depth 1 --branch "$LIBDAVE_REF" https://github.com/discord/libdave.git "$RUNNER_TEMP/libdave"
           cd "$RUNNER_TEMP/libdave"
           echo "LIBDAVE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
-          git submodule update --init --depth 1 cpp/vcpkg
+          # vcpkg resolves port versions from its git history: no shallow clone
+          git submodule update --init cpp/vcpkg
       - name: Cache libdave build
         id: libdave-cache
         uses: actions/cache@v4

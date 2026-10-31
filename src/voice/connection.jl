@@ -204,15 +204,16 @@ function _voice_handle_binary(session::VoiceGatewaySession, frame::AbstractVecto
 end
 
 # The DAVE session for this connection, created on first use.
-function _dave_session!(session::VoiceGatewaySession)
-    if isnothing(session.dave)
-        LibDave.available() ||
-            error("Discord sent a DAVE message but libdave is not loaded (set ENV[\"ACCORD_LIBDAVE\"])")
-        session.dave = DaveSession(string(session.user_id), session.channel_id.value;
-            send_json = (op, d) -> _voice_send_json(session, op, d),
-            send_binary = (op, payload) -> _voice_send_binary(session, op, payload))
-    end
-    return session.dave
+function _dave_session!(session::VoiceGatewaySession)::DaveSession
+    ds = session.dave
+    ds isa DaveSession && return ds
+    LibDave.available() ||
+        error("Discord sent a DAVE message but libdave is not loaded (set ENV[\"ACCORD_LIBDAVE\"])")
+    ds = DaveSession(string(session.user_id), session.channel_id.value;
+        send_json = (op, d) -> _voice_send_json(session, op, d),
+        send_binary = (op, payload) -> _voice_send_binary(session, op, payload))
+    session.dave = ds
+    return ds
 end
 
 # Participant tracking (ops 11/13) is harmless without libdave: skip quietly.
