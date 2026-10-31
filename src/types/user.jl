@@ -5,7 +5,7 @@ The server tag a user displays next to their name (`User.primary_guild`).
 
 # Fields
 - `identity_guild_id::Maybe{Snowflake}`: The guild whose tag is shown.
-- `identity_enabled::Maybe{Bool}`: Whether the tag is shown; `nothing` when Discord cleared it.
+- `identity_enabled::Maybe{Bool}`: Whether the tag is shown; empty when Discord cleared it.
 - `tag::Maybe{String}`: The tag text (up to 4 characters).
 - `badge::Maybe{String}`: The badge image hash.
 """

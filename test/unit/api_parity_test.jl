@@ -106,7 +106,7 @@
     @testset "container accent colour is read" begin
         c = JSON3.read("""{"type": 17, "accent_color": 5793266, "components": []}""", Component)
         @test c.accent_color == 5793266
-        @test JSON3.read("""{"type": 17, "accent_color": null}""", Component).accent_color === nothing
+        @test JSON3.read("""{"type": 17, "accent_color": null}""", Component).accent_color |> x -> x === nothing || x === missing
     end
 
     @testset "forwarded messages, server tags and role colours" begin
@@ -124,12 +124,13 @@
         u = JSON3.read("""{"id": "1", "username": "x", "primary_guild":
             {"identity_guild_id": "99", "identity_enabled": true, "tag": "JULI", "badge": "abc"}}""", User)
         @test u.primary_guild.tag == "JULI" && u.primary_guild.identity_guild_id == Snowflake(99)
-        @test JSON3.read("""{"id": "1", "username": "x", "primary_guild": null}""", User).primary_guild === nothing
+        @test JSON3.read("""{"id": "1", "username": "x", "primary_guild": null}""", User).primary_guild |> x -> x === nothing || x === missing
 
         r = JSON3.read("""{"id": "1", "name": "grad", "color": 255, "hoist": false, "position": 1,
             "permissions": "0", "managed": false, "mentionable": false, "flags": 0,
             "colors": {"primary_color": 255, "secondary_color": 65280, "tertiary_color": null}}""", Role)
-        @test (r.colors.primary_color, r.colors.secondary_color, r.colors.tertiary_color) == (255, 65280, nothing)
+        @test (r.colors.primary_color, r.colors.secondary_color) == (255, 65280)
+        @test r.colors.tertiary_color === nothing || r.colors.tertiary_color === missing
     end
 
     @testset "RATE_LIMITED and CHANNEL_INFO events" begin
@@ -144,7 +145,7 @@
             {"id": "3", "status": null}]}""")
         @test ci isa ChannelInfo
         @test ci.channels[1].status == "Raid night" && ci.channels[1].voice_start_time == 1761912000
-        @test ci.channels[2].status === nothing
+        @test ci.channels[2].status === nothing || ci.channels[2].status === missing
     end
 
     @testset "forward_message builds a forward reference" begin

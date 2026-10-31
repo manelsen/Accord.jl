@@ -753,6 +753,16 @@ function update_presence(client::Client; status::String="online", activities::Ve
     end
 end
 
+# A rate-limited gateway request is dropped by Discord; say so, or the caller
+# waits forever for a reply (e.g. member chunks) that will never come.
+function _warn_rate_limited(e::RateLimited)
+    meta = e.meta
+    guild_id = (ismissing(meta) || isnothing(meta)) ? nothing : get(meta, :guild_id, get(meta, "guild_id", nothing))
+    what = e.opcode == GatewayOpcodes.REQUEST_GUILD_MEMBERS ?
+        "request_guild_members (all members: at most once per guild every 30 s)" : "gateway opcode $(e.opcode)"
+    @warn "Discord rate-limited $what; the request was dropped" guild_id retry_after=e.retry_after
+end
+
 """
     request_guild_members(client, guild_id; query="", limit=0, presences=false, user_ids=nothing, nonce=nothing)
 
@@ -769,16 +779,6 @@ request_guild_members(client, guild_id; query="J", limit=10)
 request_guild_members(client, guild_id; user_ids=[Snowflake("123456789")])
 ```
 """
-# A rate-limited gateway request is dropped by Discord; say so, or the caller
-# waits forever for a reply (e.g. member chunks) that will never come.
-function _warn_rate_limited(e::RateLimited)
-    meta = e.meta
-    guild_id = (ismissing(meta) || isnothing(meta)) ? nothing : get(meta, :guild_id, get(meta, "guild_id", nothing))
-    what = e.opcode == GatewayOpcodes.REQUEST_GUILD_MEMBERS ?
-        "request_guild_members (all members: at most once per guild every 30 s)" : "gateway opcode $(e.opcode)"
-    @warn "Discord rate-limited $what; the request was dropped" guild_id retry_after=e.retry_after
-end
-
 function request_guild_members(client::Client, guild_id::Snowflake; query::String="", limit::Int=0, presences::Bool=false, user_ids=nothing, nonce=nothing)
     shard_id = shard_for_guild(guild_id, client.num_shards)
     shard = client.shards[shard_id + 1]

@@ -160,7 +160,7 @@ A pinned message and when it was pinned, as returned by [`get_pinned_messages`](
 """
 @discord_struct MessagePin begin
     pinned_at::String
-    message::Message
+    message::Optional{Message}
 end
 
 """
