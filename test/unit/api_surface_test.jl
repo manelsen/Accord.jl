@@ -4,7 +4,7 @@
     @testset "generic names are public but not exported" begin
         for name in (:start, :stop, :on, :respond, :defer, :followup, :target,
                      :button, :embed, :section, :container, :separator, :timestamp,
-                     :connect!, :play!, :Optional, :Nullable, Symbol("Accord.@on"), Symbol("Accord.@embed"))
+                     :connect!, :play!, :Optional, :Nullable, Symbol("@on"), Symbol("@embed"))
             @test (name, Base.isexported(Accord, name)) == (name, false)
             @test (name, Base.ispublic(Accord, name)) == (name, true)
         end

@@ -586,14 +586,14 @@
         end
     end
 
-    @testset "Accord.@on" begin
+    @testset "@on" begin
         expr = @macroexpand Accord.@on client ReadyEvent (c, e) -> nothing
         @test expr isa Expr
         expr_str = string(expr)
         @test occursin("ReadyEvent", expr_str)
     end
 
-    @testset "Accord.@embed" begin
+    @testset "@embed" begin
         e = Accord.@embed begin
             title("Test Title")
             description("Test Desc")
