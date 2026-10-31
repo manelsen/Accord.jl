@@ -22,6 +22,8 @@ All notable changes to this project will be documented in this file.
 - **Shard supervisor**: crashed shards are now actually restarted (the old check could never trigger), while intentional stops and fatal close codes are not retried. A `stop` issued during a reconnect back-off is no longer lost.
 - **Ready with several shards**: `start` / `wait_until_ready` now wait for every shard, not only the first.
 - **Voice packet nonce**: rtpsize packets now use the 4-byte incrementing nonce Discord specifies instead of a random 24-byte suffix.
+- **State cache crash**: `GUILD_CREATE` and `GUILD_MEMBER_ADD` crashed on members whose `user` is `null` (only `missing` was checked). Found by JET.
+- **CI was red on current Julia**: JET was capped at 0.11, which cannot install on Julia 1.12+, so the test environment never resolved. The docs build also failed (undefined binding in an `@docs` block, 14 docstrings missing from the manual); unresolved cookbook `@ref`s are now warnings.
 - **Project templates**: the bot template and example projects declared `Accord = { path = ... }` under `[deps]`, which is not a valid Project.toml, so scaffolded bots could not be instantiated. They now use Accord's UUID (with `[sources]` for the in-repo examples).
 
 ### Changed
