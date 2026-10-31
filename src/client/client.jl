@@ -470,6 +470,8 @@ function _event_loop(client::Client)
             end
         end
 
+        event isa RateLimited && _warn_rate_limited(event)
+
         # Notify wait_for waiters first: if the handler backlog is full, the
         # dispatch below blocks, and those handlers may be the ones waiting.
         _notify_waiters!(client, event)
@@ -553,6 +555,29 @@ end
 function reply(client::Client, message::Message; kwargs...)
     ref = Dict{String, Any}("message_id" => string(message.id))
     create_message(client, message.channel_id; message_reference=ref, kwargs...)
+end
+
+"""
+    forward_message(client::Client, channel_id::Snowflake, message::Message) -> Message
+
+Forward `message` to `channel_id`. The new message carries a snapshot of the
+original in `message_snapshots`; Discord does not allow content alongside it.
+The bot must be able to read the original message.
+
+# Example
+```julia
+on(client, MessageCreate) do c, event
+    startswith(something(event.message.content, ""), "!archive") &&
+        forward_message(c, ARCHIVE_CHANNEL, event.message)
+end
+```
+"""
+function forward_message(client::Client, channel_id::Snowflake, message::Message)
+    ref = Dict{String, Any}("type" => MessageReferenceTypes.FORWARD,
+                            "message_id" => string(message.id),
+                            "channel_id" => string(message.channel_id))
+    ismissing(message.guild_id) || (ref["guild_id"] = string(message.guild_id))
+    create_message(client, channel_id; message_reference=ref)
 end
 
 """
@@ -744,6 +769,16 @@ request_guild_members(client, guild_id; query="J", limit=10)
 request_guild_members(client, guild_id; user_ids=[Snowflake("123456789")])
 ```
 """
+# A rate-limited gateway request is dropped by Discord; say so, or the caller
+# waits forever for a reply (e.g. member chunks) that will never come.
+function _warn_rate_limited(e::RateLimited)
+    meta = e.meta
+    guild_id = (ismissing(meta) || isnothing(meta)) ? nothing : get(meta, :guild_id, get(meta, "guild_id", nothing))
+    what = e.opcode == GatewayOpcodes.REQUEST_GUILD_MEMBERS ?
+        "request_guild_members (all members: at most once per guild every 30 s)" : "gateway opcode $(e.opcode)"
+    @warn "Discord rate-limited $what; the request was dropped" guild_id retry_after=e.retry_after
+end
+
 function request_guild_members(client::Client, guild_id::Snowflake; query::String="", limit::Int=0, presences::Bool=false, user_ids=nothing, nonce=nothing)
     shard_id = shard_for_guild(guild_id, client.num_shards)
     shard = client.shards[shard_id + 1]
@@ -757,4 +792,43 @@ function request_guild_members(client::Client, guild_id::Snowflake; query::Strin
     !isnothing(nonce) && (d["nonce"] = nonce)
 
     send_to_shard(shard, GatewayCommand(GatewayOpcodes.REQUEST_GUILD_MEMBERS, d))
+end
+
+"""
+    request_soundboard_sounds(client::Client, guild_ids)
+
+Ask the gateway for the soundboard sounds of `guild_ids`; the answer arrives as
+one `SoundboardSounds` event per guild.
+"""
+function request_soundboard_sounds(client::Client, guild_ids::AbstractVector)
+    isempty(guild_ids) && return
+    # One request per shard, each listing the guilds it serves.
+    by_shard = Dict{Int, Vector{String}}()
+    for g in guild_ids
+        gid = g isa Snowflake ? g : Snowflake(g)
+        push!(get!(by_shard, shard_for_guild(gid, client.num_shards), String[]), string(gid))
+    end
+    for (shard_id, ids) in by_shard
+        send_to_shard(client.shards[shard_id + 1],
+            GatewayCommand(GatewayOpcodes.REQUEST_SOUNDBOARD_SOUNDS, Dict("guild_ids" => ids)))
+    end
+end
+
+"""
+    request_channel_info(client::Client, guild_id; fields=["status", "voice_start_time"])
+
+Ask the gateway for the voice status and start time of a guild's channels; the
+answer arrives as a [`ChannelInfo`](@ref) event.
+
+# Example
+```julia
+request_channel_info(client, guild_id)
+info = wait_for(e -> e.guild_id == guild_id, client, ChannelInfo; timeout = 10)
+```
+"""
+function request_channel_info(client::Client, guild_id::Snowflake;
+                              fields::AbstractVector{<:AbstractString} = ["status", "voice_start_time"])
+    shard = client.shards[shard_for_guild(guild_id, client.num_shards) + 1]
+    send_to_shard(shard, GatewayCommand(GatewayOpcodes.REQUEST_CHANNEL_INFO,
+        Dict("guild_id" => string(guild_id), "fields" => collect(String, fields))))
 end

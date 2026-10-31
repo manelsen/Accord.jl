@@ -321,9 +321,9 @@ function trigger_typing_indicator(rl::RateLimiter, channel_id::Snowflake; token:
 end
 
 """
-    get_pinned_messages(rl::RateLimiter, channel_id::Snowflake; token::String) -> Vector{Message}
+    get_pinned_messages(rl::RateLimiter, channel_id::Snowflake; token::String, before=nothing, limit=50) -> ChannelPins
 
-Get all pinned messages in a channel.
+Get one page of a channel's pinned messages, newest first.
 
 Use this when a bot needs to display or manage pinned messages, such as
 in a pin archive command or pin management utility.
@@ -334,19 +334,25 @@ in a pin archive command or pin management utility.
 
 # Keyword Arguments
 - `token::String` — Bot authentication token.
+- `before` — ISO8601 timestamp: only pins made before it. Use the last
+  `pinned_at` of the previous page to page backwards.
+- `limit::Int` — Pins per page, 1–50 (default 50).
+
+# Returns
+A [`ChannelPins`](@ref): `items` (each a [`MessagePin`](@ref) with `message`
+and `pinned_at`) and `has_more`.
 
 # Permissions
 Requires `VIEW_CHANNEL` and `READ_MESSAGE_HISTORY`.
 
-# Errors
-- HTTP 403 if missing required permissions.
-- HTTP 404 if the channel does not exist.
-
-[Discord docs](https://discord.com/developers/docs/resources/channel#get-pinned-messages)
+[Discord docs](https://discord.com/developers/docs/resources/message#get-channel-pins)
 """
-function get_pinned_messages(rl::RateLimiter, channel_id::Snowflake; token::String)
-    resp = discord_get(rl, "/channels/$(channel_id)/pins"; token)
-    parse_response_array(Message, resp)
+function get_pinned_messages(rl::RateLimiter, channel_id::Snowflake; token::String,
+                             before=nothing, limit::Integer=50)
+    query = ["limit" => string(limit)]
+    isnothing(before) || push!(query, "before" => string(before))
+    resp = discord_get(rl, "/channels/$(channel_id)/messages/pins"; token, query)
+    parse_response(ChannelPins, resp)
 end
 
 """
@@ -354,29 +360,16 @@ end
 
 Pin a message in a channel.
 
-Use this when a bot needs to pin important messages, such as announcement
-messages, rules, or key information that should remain visible.
-
-# Arguments
-- `rl::RateLimiter` — The rate limiter instance for request throttling.
-- `channel_id::Snowflake` — The ID of the channel.
-- `message_id::Snowflake` — The ID of the message to pin.
-
-# Keyword Arguments
-- `token::String` — Bot authentication token.
-- `reason::String` — Audit log reason for pinning (optional).
+Use this when a bot needs to highlight important messages, such as
+pinning announcements or saving key information.
 
 # Permissions
-Requires `MANAGE_MESSAGES`.
+Requires `PIN_MESSAGES` (`MANAGE_MESSAGES` no longer grants it since February 2026).
 
-# Errors
-- HTTP 403 if missing required permissions.
-- HTTP 404 if the channel or message does not exist.
-
-[Discord docs](https://discord.com/developers/docs/resources/channel#pin-message)
+[Discord docs](https://discord.com/developers/docs/resources/message#pin-message)
 """
 function pin_message(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake; token::String, reason=nothing)
-    discord_put(rl, "/channels/$(channel_id)/pins/$(message_id)"; token, reason)
+    discord_put(rl, "/channels/$(channel_id)/messages/pins/$(message_id)"; token, reason)
 end
 
 """
@@ -387,26 +380,31 @@ Unpin a message in a channel.
 Use this when a bot needs to remove a pinned message, such as when
 unpinning outdated announcements or managing a limited number of pins.
 
-# Arguments
-- `rl::RateLimiter` — The rate limiter instance for request throttling.
-- `channel_id::Snowflake` — The ID of the channel.
-- `message_id::Snowflake` — The ID of the message to unpin.
-
-# Keyword Arguments
-- `token::String` — Bot authentication token.
-- `reason::String` — Audit log reason for unpinning (optional).
-
 # Permissions
-Requires `MANAGE_MESSAGES`.
+Requires `PIN_MESSAGES`.
 
-# Errors
-- HTTP 403 if missing required permissions.
-- HTTP 404 if the channel, message, or pin does not exist.
-
-[Discord docs](https://discord.com/developers/docs/resources/channel#unpin-message)
+[Discord docs](https://discord.com/developers/docs/resources/message#unpin-message)
 """
 function unpin_message(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake; token::String, reason=nothing)
-    discord_delete(rl, "/channels/$(channel_id)/pins/$(message_id)"; token, reason)
+    discord_delete(rl, "/channels/$(channel_id)/messages/pins/$(message_id)"; token, reason)
+end
+
+"""
+    set_voice_channel_status(rl::RateLimiter, channel_id::Snowflake; token::String, status="", reason=nothing)
+
+Set the status text shown under a voice channel (up to 500 characters); an
+empty `status` clears it.
+
+# Permissions
+Requires `SET_VOICE_CHANNEL_STATUS`, plus `MANAGE_CHANNELS` when the bot is not
+connected to that channel.
+
+[Discord docs](https://discord.com/developers/docs/resources/channel#set-voice-channel-status)
+"""
+function set_voice_channel_status(rl::RateLimiter, channel_id::Snowflake; token::String,
+                                  status::AbstractString="", reason=nothing)
+    discord_put(rl, "/channels/$(channel_id)/voice-status"; token, reason,
+                body=Dict("status" => isempty(status) ? nothing : status))
 end
 
 # Thread endpoints

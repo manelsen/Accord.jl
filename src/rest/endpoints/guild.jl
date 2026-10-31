@@ -647,6 +647,19 @@ function get_guild_roles(rl::RateLimiter, guild_id::Snowflake; token::String)
 end
 
 """
+    get_guild_role_member_counts(rl::RateLimiter, guild_id::Snowflake; token::String) -> Dict{Snowflake, Int}
+
+How many members have each role (the `@everyone` role is not included).
+
+[Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-role-member-counts)
+"""
+function get_guild_role_member_counts(rl::RateLimiter, guild_id::Snowflake; token::String)
+    resp = discord_get(rl, "/guilds/$(guild_id)/roles/member-counts"; token)
+    raw = JSON3.read(resp.body, Dict{String, Int})
+    return Dict(Snowflake(k) => v for (k, v) in raw)
+end
+
+"""
     create_guild_role(rl::RateLimiter, guild_id::Snowflake; token::String, body::Dict=Dict(), reason=nothing) -> Role
 
 Create a new role in a guild.

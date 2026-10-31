@@ -37,7 +37,8 @@ interactions.
 - `emoji::Optional{Emoji}`: Emoji displayed on the component.
 - `url::Optional{String}`: URL for link buttons.
 - `disabled::Optional{Bool}`: Whether the component is inactive.
-- `components::Optional{Vector{Component}}`: Children (for Action Rows).
+- `components::Optional{Vector{Component}}`: Children (Action Rows, Sections, Containers).
+- `component::Optional{Component}`: The wrapped child of a Label (modals).
 - `options::Optional{Vector{SelectOption}}`: Choices for select menus.
 - `placeholder::Optional{String}`: Placeholder text.
 - `min_values::Optional{Int}`: Minimum number of items to select.
@@ -45,7 +46,14 @@ interactions.
 - `min_length::Optional{Int}`: Minimum input length (Text Input).
 - `max_length::Optional{Int}`: Maximum input length (Text Input).
 - `required::Optional{Bool}`: Whether input is mandatory.
-- `value::Optional{String}`: Pre-filled value.
+- `value::Optional{Any}`: A Text Input's text, a Radio Group's chosen value
+  (`nothing` when none) or a Checkbox's `Bool`. Modal submissions only, except
+  the pre-filled value of a Text Input.
+- `values::Optional{Vector{String}}`: Submitted values of a select, Checkbox
+  Group or File Upload (attachment ids) inside a modal.
+- `default::Optional{Bool}`: Initial state of a Checkbox.
+- `file_types::Optional{Vector{String}}`: Accepted types of a File Upload.
+- `accent_color::Maybe{Int}`: Accent colour of a Container.
 
 # Example
 ```julia
@@ -79,7 +87,11 @@ row = Component(type=ComponentTypes.ACTION_ROW, components=[button])
     min_length::Optional{Int}
     max_length::Optional{Int}
     required::Optional{Bool}
-    value::Optional{String}
+    value::Optional{Any}
+    values::Optional{Vector{String}}
+    default::Optional{Bool}
+    file_types::Optional{Vector{String}}
+    component::Optional{Component}
     sku_id::Optional{Snowflake}
     # Components V2
     content::Optional{String}
@@ -90,6 +102,6 @@ row = Component(type=ComponentTypes.ACTION_ROW, components=[button])
     description::Optional{String}
     divider::Optional{Bool}
     spacing::Optional{Int}
-    color::Optional{Int}
+    accent_color::Maybe{Int}
     id::Optional{Int}
 end

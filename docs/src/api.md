@@ -43,8 +43,11 @@ on_error
 wait_until_ready
 wait_for
 reply
+forward_message
 update_presence
 request_guild_members
+request_soundboard_sounds
+request_channel_info
 activity
 ```
 
@@ -163,6 +166,7 @@ get_answer_voters
 end_poll
 pin_message
 unpin_message
+set_voice_channel_status
 get_pinned_messages
 ```
 
@@ -200,6 +204,7 @@ create_guild_ban
 remove_guild_ban
 bulk_guild_ban
 get_guild_roles
+get_guild_role_member_counts
 get_guild_role
 create_guild_role
 modify_guild_role_positions
@@ -358,7 +363,6 @@ create_guild_template
 sync_guild_template
 modify_guild_template
 delete_guild_template
-create_guild_from_template
 get_current_application
 modify_current_application
 get_application_role_connection_metadata_records
@@ -402,6 +406,7 @@ get_option
 custom_id
 selected_values
 modal_values
+modal_files
 target
 run_checks
 drain_pending_checks!
@@ -423,6 +428,11 @@ mentionable_select
 channel_select
 select_option
 text_input
+label
+file_upload
+radio_group
+checkbox_group
+checkbox
 action_row
 embed
 embed_footer
@@ -513,10 +523,15 @@ worker_id
 process_id
 increment
 User
+PrimaryGuild
 Member
 Role
 DiscordChannel
 Message
+MessageSnapshot
+SnapshotMessage
+MessagePin
+ChannelPins
 Embed
 Interaction
 Emoji
@@ -568,6 +583,7 @@ SelectOption
 ```@docs
 GuildFeatures
 RoleTags
+RoleColors
 Ban
 GuildTemplate
 ```
@@ -679,6 +695,7 @@ ButtonStyles
 TextInputStyles
 ActivityTypes
 MessageTypes
+MessageReferenceTypes
 VerificationLevels
 DefaultMessageNotificationLevels
 ExplicitContentFilterLevels
@@ -759,6 +776,8 @@ MsgFlagLoading
 MsgFlagFailedToMentionSomeRolesInThread
 MsgFlagSuppressNotifications
 MsgFlagIsVoiceMessage
+MsgFlagHasSnapshot
+MsgFlagIsComponentsV2
 ```
 
 ### User Flags
@@ -823,7 +842,14 @@ RoleFlagInPrompt
 ### Attachment Flags
 ```@docs
 AttachmentFlags
+AttachFlagIsClip
+AttachFlagIsThumbnail
 AttachFlagIsRemix
+AttachFlagIsSpoiler
+AttachFlagContainsExplicitContent
+AttachFlagIsAnimated
+AttachFlagContainsGoreContent
+AttachFlagContainsSelfHarmContent
 ```
 
 ### SKU Flags
@@ -954,6 +980,9 @@ WelcomeScreen
 WelcomeScreenChannel
 VoiceChannelStatusUpdate
 VoiceChannelStartTimeUpdate
+RateLimited
+ChannelInfo
+ChannelInfoEntry
 create_poll
 modify_thread
 create_forum_tag

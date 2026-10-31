@@ -24,6 +24,23 @@ Extra attributes describing a special role (e.g., bot role, booster role).
 end
 
 """
+    RoleColors
+
+A role's colours (`Role.colors`). Gradient and holographic roles use the
+secondary and tertiary colours, which need the guild feature `ENHANCED_ROLE_COLORS`.
+
+# Fields
+- `primary_color::Int`: The main colour (same value as the deprecated `Role.color`).
+- `secondary_color::Maybe{Int}`: Second gradient stop.
+- `tertiary_color::Maybe{Int}`: Third stop (holographic roles).
+"""
+@discord_struct RoleColors begin
+    primary_color::Int
+    secondary_color::Maybe{Int}
+    tertiary_color::Maybe{Int}
+end
+
+"""
     Role
 
 Represents a Discord guild role. Roles are used to grant permissions to users
@@ -32,7 +49,8 @@ and group them in the member list.
 # Fields
 - `id::Snowflake`: The unique ID of the role.
 - `name::String`: The name of the role (e.g., "@everyone", "Moderator").
-- `color::Int`: The integer representation of the hex color code.
+- `color::Int`: The role colour as an integer (deprecated by Discord in favour of `colors`).
+- `colors::Optional{RoleColors}`: Primary, secondary and tertiary colours.
 - `hoist::Bool`: Whether the role is pinned (hoisted) in the user listing.
 - `icon::Optional{String}`: The role's icon hash.
 - `unicode_emoji::Optional{String}`: The role's unicode emoji.
@@ -57,6 +75,7 @@ println("Moderator role ID: \$(mod_role.id)")
     id::Snowflake
     name::String
     color::Int
+    colors::Optional{RoleColors}
     hoist::Bool
     icon::Optional{String}
     unicode_emoji::Optional{String}

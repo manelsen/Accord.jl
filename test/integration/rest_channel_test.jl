@@ -90,12 +90,18 @@
         end
 
         @testset "get_pinned_messages" begin
-            handler, cap = capture_handler(mock_json([message_json()]))
+            pins = Dict("items" => [Dict("pinned_at" => "2026-10-31T12:00:00+00:00",
+                                         "message" => message_json())],
+                        "has_more" => true)
+            handler, cap = capture_handler(mock_json(pins))
             with_mock_rl(handler) do rl, token
-                result = Accord.get_pinned_messages(rl, ch_id; token)
-                @test result isa Vector{Message}
+                result = Accord.get_pinned_messages(rl, ch_id; token, limit=10)
+                @test result isa ChannelPins
+                @test result.has_more
+                @test only(result.items).message isa Message
+                @test only(result.items).pinned_at == "2026-10-31T12:00:00+00:00"
                 @test cap[][1] == "GET"
-                @test contains(cap[][2], "/pins")
+                @test contains(cap[][2], "/messages/pins?limit=10")
             end
         end
 
@@ -104,7 +110,7 @@
             with_mock_rl(handler) do rl, token
                 Accord.pin_message(rl, ch_id, Snowflake(400); token)
                 @test cap[][1] == "PUT"
-                @test contains(cap[][2], "/pins/400")
+                @test contains(cap[][2], "/messages/pins/400")
             end
         end
 
@@ -113,7 +119,7 @@
             with_mock_rl(handler) do rl, token
                 Accord.unpin_message(rl, ch_id, Snowflake(400); token)
                 @test cap[][1] == "DELETE"
-                @test contains(cap[][2], "/pins/400")
+                @test contains(cap[][2], "/messages/pins/400")
             end
         end
 

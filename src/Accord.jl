@@ -199,6 +199,7 @@ export Snowflake
 # Main Discord Types
 export User, Guild, UnavailableGuild, DiscordChannel, Message, Member, Role, Emoji
 export Embed, Attachment, Component, Interaction
+export MessageSnapshot, SnapshotMessage, MessagePin, ChannelPins, PrimaryGuild, RoleColors
 export Invite, Webhook, AuditLog, AutoModRule, ScheduledEvent, Poll
 export Presence, Activity, VoiceState, VoiceRegion
 export InteractionContext, InteractionData, InteractionDataOption, ApplicationCommand
@@ -208,14 +209,15 @@ export Sticker, StageInstance, GuildTemplate
 # Client & Lifecycle
 export Client, wait_until_ready
 export wait_for, EventWaiter
-export create_message, edit_message, delete_message, create_reaction
+export create_message, edit_message, delete_message, create_reaction, forward_message
 export create_poll, modify_thread
 export create_forum_tag, modify_forum_tag, delete_forum_tag
 export get_channel, get_guild, get_user
 export update_voice_state, update_presence, request_guild_members
+export request_soundboard_sounds, request_channel_info
 
 # Events
-export AbstractEvent, UnknownEvent, ReadyEvent
+export AbstractEvent, UnknownEvent, ReadyEvent, RateLimited, ChannelInfo
 export ChannelCreate, ChannelDelete
 export GuildCreate, GuildDelete
 export GuildMemberAdd, GuildMemberRemove, GuildMemberUpdate
@@ -234,7 +236,7 @@ export @on_message, @option, @check, @group, @subcommand
 export edit_response, show_modal, sync_commands!
 
 # Enums (as modules)
-export ChannelTypes, MessageTypes, InteractionTypes
+export ChannelTypes, MessageTypes, MessageReferenceTypes, InteractionTypes
 export ApplicationCommandTypes, ApplicationCommandOptionTypes
 export ComponentTypes, ButtonStyles, TextInputStyles
 export ActivityTypes
@@ -253,7 +255,7 @@ export PermSendMessages, PermEmbedLinks, PermAttachFiles, PermReadMessageHistory
 export PermConnect, PermSpeak
 export PermViewChannel, PermManageMessages
 
-export MessageFlags, MsgFlagEphemeral, MsgFlagSuppressEmbeds
+export MessageFlags, MsgFlagEphemeral, MsgFlagSuppressEmbeds, MsgFlagIsComponentsV2
 
 # Voice types
 export VoiceClient
@@ -270,11 +272,12 @@ public start, stop, on, on_error, reply, @on
 public timestamp, has_flag, Optional, Nullable, Maybe, Internals, internals
 # Interaction helpers
 public respond, defer, followup
-public get_options, get_option, custom_id, selected_values, modal_values, target
+public get_options, get_option, custom_id, selected_values, modal_values, modal_files, target
 # Check guards (use as `@check Accord.has_permissions(...)`)
 public has_permissions, is_owner, is_in_guild, cooldown
 # Component and embed builders
 public action_row, button, string_select, select_option, text_input
+public label, file_upload, radio_group, checkbox_group, checkbox
 public user_select, role_select, mentionable_select, channel_select
 public embed, @embed, embed_field, embed_footer, embed_author, command_option, activity
 public container, section, text_display, thumbnail, media_gallery, media_gallery_item

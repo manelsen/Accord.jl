@@ -188,7 +188,7 @@ Use this to process form data submitted by users via Modals.
 # Example
 ```julia
 register_modal!(client.command_tree, "feedback_form", ctx -> begin
-    input = ctx.interaction.data.components[1].components[1].value
+    input = modal_values(ctx)["message"]
     reply(ctx, "Received: \$input")
 end)
 ```

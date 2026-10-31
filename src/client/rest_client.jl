@@ -39,6 +39,7 @@ const REST_ENDPOINTS = (
     :get_pinned_messages,
     :pin_message,
     :unpin_message,
+    :set_voice_channel_status,
     :start_thread_from_message,
     :start_thread_without_message,
     :start_thread_in_forum,
@@ -88,6 +89,7 @@ const REST_ENDPOINTS = (
     :remove_guild_ban,
     :bulk_guild_ban,
     :get_guild_roles,
+    :get_guild_role_member_counts,
     :create_guild_role,
     :modify_guild_role_positions,
     :modify_guild_role,
@@ -114,7 +116,6 @@ const REST_ENDPOINTS = (
     :sync_guild_template,
     :modify_guild_template,
     :delete_guild_template,
-    :create_guild_from_template,
     # interaction
     :get_global_application_commands,
     :create_global_application_command,

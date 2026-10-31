@@ -202,8 +202,11 @@ const IntentAll = IntentAllNonPrivileged | IntentGuildMembers | IntentGuildPrese
     PermCreateEvents         = 1 << 44
     PermUseExternalSounds    = 1 << 45
     PermSendVoiceMessages    = 1 << 46
+    PermSetVoiceChannelStatus = 1 << 48
     PermSendPolls            = 1 << 49
     PermUseExternalApps      = 1 << 50
+    PermPinMessages          = 1 << 51
+    PermBypassSlowmode       = 1 << 52
 end
 
 """
@@ -247,6 +250,8 @@ StructTypes.construct(::Type{Permissions}, v::Integer) = Permissions(UInt64(v))
     MsgFlagFailedToMentionSomeRolesInThread   = 1 << 8
     MsgFlagSuppressNotifications              = 1 << 12
     MsgFlagIsVoiceMessage                     = 1 << 13
+    MsgFlagHasSnapshot                        = 1 << 14
+    MsgFlagIsComponentsV2                     = 1 << 15
 end
 
 """
@@ -371,7 +376,14 @@ RoleFlags
 
 # --- Attachment Flags ---
 @discord_flags AttachmentFlags begin
-    AttachFlagIsRemix = 1 << 2
+    AttachFlagIsClip                  = 1 << 0
+    AttachFlagIsThumbnail             = 1 << 1
+    AttachFlagIsRemix                 = 1 << 2
+    AttachFlagIsSpoiler               = 1 << 3
+    AttachFlagContainsExplicitContent = 1 << 4
+    AttachFlagIsAnimated              = 1 << 5
+    AttachFlagContainsGoreContent     = 1 << 6
+    AttachFlagContainsSelfHarmContent = 1 << 7
 end
 
 """
