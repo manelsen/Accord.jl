@@ -335,7 +335,7 @@ function _dispatch_command(handler::Function, checks::Vector{Function}, options:
 
     # 3. No more subcommands to route, call the handler
     try
-        handler(ctx)
+        Base.invokelatest(handler, ctx)
     catch e
         @error "Error in command handler" exception=(e, catch_backtrace())
     end
@@ -403,7 +403,7 @@ function dispatch_interaction!(tree::CommandTree, client, interaction::Interacti
 
         if !isnothing(handler)
             try
-                handler(ctx)
+                Base.invokelatest(handler, ctx)
             catch e
                 @error "Error in component handler" custom_id=cid exception=(e, catch_backtrace())
             end
@@ -418,7 +418,7 @@ function dispatch_interaction!(tree::CommandTree, client, interaction::Interacti
         handler = get(tree.autocomplete_handlers, ac_name, nothing)
         if !isnothing(handler)
             try
-                handler(ctx)
+                Base.invokelatest(handler, ctx)
             catch e
                 @error "Error in autocomplete handler" command=ac_name exception=(e, catch_backtrace())
             end
@@ -434,7 +434,7 @@ function dispatch_interaction!(tree::CommandTree, client, interaction::Interacti
         handler = get(tree.modal_handlers, modal_cid, nothing)
         if !isnothing(handler)
             try
-                handler(ctx)
+                Base.invokelatest(handler, ctx)
             catch e
                 @error "Error in modal handler" custom_id=modal_cid exception=(e, catch_backtrace())
             end

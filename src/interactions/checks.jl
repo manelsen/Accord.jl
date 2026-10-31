@@ -335,7 +335,7 @@ a default ephemeral error message.
 function run_checks(checks::AbstractVector{<:Function}, ctx::InteractionContext)
     for check_fn in checks
         try
-            result = check_fn(ctx)
+            result = Base.invokelatest(check_fn, ctx)
             if !result
                 # Send default error if not already responded
                 if !ctx.responded[]

@@ -381,7 +381,7 @@ function _notify_waiters!(client::Client, event::AbstractEvent)
         for (i, waiter) in enumerate(client._waiters)
             if event isa waiter.event_type
                 try
-                    if waiter.check(event)
+                    if Base.invokelatest(waiter.check, event)
                         isopen(waiter.channel) && put!(waiter.channel, event)
                         push!(matched, i)
                     end

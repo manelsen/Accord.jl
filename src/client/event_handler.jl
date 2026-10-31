@@ -104,13 +104,13 @@ function dispatch_event!(eh::EventHandler, client, event::AbstractEvent)
     current_event = event
     for mw in middleware
         try
-            result = mw(client, current_event)
+            result = Base.invokelatest(mw, client, current_event)
             if isnothing(result)
                 return  # Middleware cancelled the event
             end
             current_event = result
         catch e
-            eh.error_handler(client, current_event, e)
+            Base.invokelatest(eh.error_handler, client, current_event, e)
             return
         end
     end
@@ -123,9 +123,9 @@ function dispatch_event!(eh::EventHandler, client, event::AbstractEvent)
 
     for handler in handlers
         try
-            handler(client, current_event)
+            Base.invokelatest(handler, client, current_event)
         catch e
-            eh.error_handler(client, current_event, e)
+            Base.invokelatest(eh.error_handler, client, current_event, e)
         end
     end
 
@@ -133,9 +133,9 @@ function dispatch_event!(eh::EventHandler, client, event::AbstractEvent)
     if event_type != AbstractEvent
         for handler in abstract_handlers
             try
-                handler(client, current_event)
+                Base.invokelatest(handler, client, current_event)
             catch e
-                eh.error_handler(client, current_event, e)
+                Base.invokelatest(eh.error_handler, client, current_event, e)
             end
         end
     end

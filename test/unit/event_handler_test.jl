@@ -114,4 +114,27 @@
         
         @test caught_event[] === evt
     end
+
+    @testset "handler defined after the dispatch loop started" begin
+        eh = EventHandler()
+        errors = Ref(0)
+        eh.error_handler = (c, e, err) -> (errors[] += 1)
+        events = Channel{Any}(1)
+        done = Channel{Bool}(1)
+        # A long-lived task runs in the world it started in, like the client's event loop
+        loop = Threads.@spawn for ev in events
+            dispatch_event!(eh, MockEHClient(), ev)
+            put!(done, true)
+        end
+        # Defining a method afterwards, as at the REPL, makes it too new for that task
+        make_handler = Core.eval(@__MODULE__, :(hits -> (c, e) -> (hits[] += 1)))
+        hits = Ref(0)
+        register_handler!(eh, TestEvent, Base.invokelatest(make_handler, hits))
+        put!(events, TestEvent("late"))
+        take!(done)
+        close(events)
+        wait(loop)
+        @test hits[] == 1
+        @test errors[] == 0
+    end
 end
