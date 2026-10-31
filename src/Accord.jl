@@ -144,6 +144,8 @@ include("voice/opus.jl")
 include("voice/udp.jl")
 include("voice/player.jl")
 include("voice/sources.jl")
+include("voice/libdave.jl")
+include("voice/dave.jl")
 include("voice/connection.jl")
 include("voice/client.jl")
 
@@ -280,6 +282,8 @@ public file_component, separator, unfurled_media
 # Voice verbs
 public connect!, disconnect!, play!, stop!, pause!, resume!, is_playing
 public opus_encode, opus_decode, set_bitrate!, set_signal!, read_frame, close_source
+# DAVE end-to-end encryption (libdave bindings)
+public LibDave
 # Every REST endpoint, called with a Client: `Accord.get_guild_member(client, guild_id, user_id)`
 eval(Expr(:public, filter(n -> !Base.isexported(@__MODULE__, n), collect(REST_ENDPOINTS))...))
 

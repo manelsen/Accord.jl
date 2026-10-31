@@ -15,7 +15,7 @@
 - **`@check` Guards:** Declarative pre-execution checks for permissions, ownership, and custom conditions.
 - **`wait_for` Conversations:** Lightweight state machines using Julia Channels — no manual state management.
 - **State Injection:** Pass your database, config, or services via `ctx.state` — zero globals.
-- **Voice (currently unavailable):** Opus encoding and AEAD transport encryption are implemented, but Discord has required the DAVE end-to-end encryption protocol for all voice connections since March 2026 and Accord does not support DAVE yet, so voice connections are rejected. Support is in progress.
+- **Voice playback with DAVE:** Opus encoding, AEAD transport encryption and the DAVE end-to-end encryption protocol Discord requires since March 2026. DAVE runs on Discord's [libdave](https://github.com/discord/libdave), which you build yourself for now and point to with `ACCORD_LIBDAVE` (see the [voice recipe](docs/src/cookbook/05-voice.md)). Receiving audio is not implemented.
 - **Efficient Caching:** Automatic state management with customizable LRU/TTL strategies.
 - **Type Safety:** Leveraging Julia's type system to catch bugs before they happen.
 - **Async First:** Built on top of Julia's Tasks and Channels for non-blocking I/O.

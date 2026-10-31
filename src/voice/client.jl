@@ -114,6 +114,7 @@ function connect!(vc::VoiceClient)
 
     voice_gateway_connect(session)
     wait(session.ready)
+    session.connected || error("Voice gateway connection failed (close code: $(session.close_code))")
 
     # Step 4: IP Discovery
     @info "Performing IP discovery"
@@ -126,8 +127,9 @@ function connect!(vc::VoiceClient)
     @info "Selected encryption mode" mode=vc.encryption_mode
     send_select_protocol(session, our_ip, our_port, vc.encryption_mode)
 
-    # Wait briefly for session description
-    sleep(1.0)
+    # Wait for the session description (secret key and DAVE protocol version)
+    wait(session.described)
+    session.connected || error("Voice gateway closed during the handshake (close code: $(session.close_code))")
 
     vc.connected = true
     @info "Voice connection established" guild_id=vc.guild_id channel_id=vc.channel_id
@@ -160,10 +162,13 @@ function disconnect!(vc::VoiceClient)
         vc.udp_socket = nothing
     end
 
-    # Close voice gateway
+    # Close voice gateway (and drop the DAVE state; libdave handles are freed by finalizers)
     session = vc.session
     if !isnothing(session)
         session.connected = false
+        ws = session.ws
+        isnothing(ws) || try close(ws) catch end
+        session.dave = nothing
         vc.session = nothing
     end
 
@@ -241,7 +246,16 @@ function _send_audio(vc::VoiceClient, opus_data::Vector{UInt8})
 
     header = rtp_header(vc.sequence, vc.timestamp, session.ssrc)
 
-    # Encrypt based on mode
+    # End-to-end (DAVE) encryption of the frame first, transport encryption of
+    # the packet second. A frame DAVE can't encrypt yet (epoch transition) is
+    # dropped rather than sent in the clear.
+    dave = session.dave
+    if !isnothing(dave)
+        opus_data = dave_encrypt(dave, session.ssrc, opus_data)
+        isnothing(opus_data) && return
+    end
+
+    # Transport encryption
     encrypted = _encrypt_audio(vc, header, opus_data)
 
     # Send via UDP

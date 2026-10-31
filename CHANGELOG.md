@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [0.4.0] - Unreleased
 
+### Added
+- **DAVE end-to-end encryption for voice.** Accord speaks voice gateway v8 and the DAVE protocol (MLS key exchange, epoch transitions, downgrade to plain transport and recovery from invalid commits), encrypting every outgoing Opus frame before transport encryption. The cryptography is Discord's libdave, loaded at runtime from `ACCORD_LIBDAVE` or `Accord.LibDave.load!(path)`. When a call requires DAVE and no key is available yet, frames are dropped rather than sent unencrypted. Close code 4017 (E2EE required) now produces an error that says how to enable it.
+- Voice heartbeats carry `seq_ack`, and `connect!` waits for Discord's session description instead of sleeping a fixed second.
+
 ### Breaking
 - **Handlers run in parallel.** Event handlers are spawned on Julia's default threadpool (`Threads.@spawn`) instead of `@async`, so with more than one thread they run concurrently, up to `handler_concurrency`. State shared between your handlers must be thread-safe. With a single thread nothing changes.
 - **Smaller export list.** `using Accord` now exports types, events, the command macros (`@slash_command`, `@option`, `@check`, …) and Discord-specific functions (`create_message`, `wait_for`, `sync_commands!`, …). Generic names are `public` but no longer exported, so they cannot clash with other packages: `start`, `stop`, `on`, `on_error`, `@on`, `respond`, `defer`, `followup`, `target`, `custom_id`, `get_option(s)`, `selected_values`, `modal_values`, the check guards (`has_permissions`, `is_owner`, `is_in_guild`, `cooldown`), every component/embed builder (`button`, `action_row`, `embed`, `@embed`, `section`, `container`, …), `timestamp`, `has_flag`, `Optional`, `Nullable`, `Internals` and the voice verbs (`connect!`, `play!`, `stop!`, …). Use `Accord.respond(...)` or `using Accord: respond`.
@@ -14,6 +18,7 @@ All notable changes to this project will be documented in this file.
 - Removed the unused `CodecZlib` dependency and the `GatewaySession.zlib_buffer` field (Accord never requested gateway compression).
 
 ### Fixed
+- **Voice opcodes.** `VoiceOpcodes` had wrong numbers for the DAVE and client-connect opcodes (10–16); they now match Discord's (11, 13, 21–31).
 - **Heartbeats can't be starved.** The gateway, heartbeat, rate limiter, command pump and voice loops run on the `:interactive` threadpool when Julia has one (`julia -t auto,1`). Before, everything shared one thread, and a handler doing long CPU work without yielding delayed heartbeats until Discord dropped the connection as a zombie.
 - **Thread-safe internals.** The rate limiter's buckets and global counters, the gateway send window and sequence number, heartbeat state, event-handler registration, per-guild cache stores and voice-state cache are now guarded by locks. The heartbeat marks a beat as pending before sending it, so a fast ACK on another thread can't be lost and misread as a zombie connection.
 - **Rate-limit majors come from the path.** `Route` reads the channel, guild and webhook id (and a token fingerprint) from the path itself; the 141 hand-written `major_params` arguments are gone. Nine endpoints had forgotten them (interaction follow-ups, `/users/@me/guilds/...`).

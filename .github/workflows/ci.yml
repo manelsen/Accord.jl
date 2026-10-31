@@ -5,7 +5,7 @@ on:
     branches: [master]
     tags: ['v*']
   pull_request:
-    branches: [master]
+    branches: [master, 'feat/**', 'refactor/**']
   workflow_dispatch:
 
 concurrency:
@@ -61,6 +61,55 @@ jobs:
         with:
           name: coverage-lcov-${{ matrix.os }}-${{ matrix.julia-version }}
           path: lcov.info
+
+  dave:
+    # Builds libdave (Discord's DAVE implementation) from source and runs the
+    # DAVE tests against it. Accord loads it through ACCORD_LIBDAVE.
+    name: DAVE (libdave)
+    runs-on: ubuntu-latest
+    env:
+      LIBDAVE_REF: main
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch libdave
+        run: |
+          git clone --depth 1 --branch "$LIBDAVE_REF" https://github.com/discord/libdave.git "$RUNNER_TEMP/libdave"
+          cd "$RUNNER_TEMP/libdave"
+          echo "LIBDAVE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          # vcpkg resolves port versions from its git history: no shallow clone
+          git submodule update --init cpp/vcpkg
+      - name: Cache libdave build
+        id: libdave-cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/libdave-dist
+          key: libdave-${{ runner.os }}-${{ env.LIBDAVE_SHA }}
+      - name: Build libdave (shared)
+        if: steps.libdave-cache.outputs.cache-hit != 'true'
+        run: |
+          cd "$RUNNER_TEMP/libdave/cpp"
+          ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
+          make shared
+          mkdir -p "$RUNNER_TEMP/libdave-dist"
+          find build -name 'libdave.so*' -exec cp -a {} "$RUNNER_TEMP/libdave-dist/" \;
+          ls -la "$RUNNER_TEMP/libdave-dist"
+      - name: Locate library
+        run: |
+          lib=$(ls "$RUNNER_TEMP"/libdave-dist/*.so* | head -1)
+          test -n "$lib"
+          echo "ACCORD_LIBDAVE=$lib" >> "$GITHUB_ENV"
+          nm -D --defined-only "$lib" | grep -c ' dave' || true
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: '1'
+      - uses: julia-actions/cache@v2
+      - name: Run DAVE tests
+        env:
+          JULIA_PKG_SERVER: ""
+          ACCORD_REQUIRE_LIBDAVE: "1"
+          ACCORD_TEST_WORKERS: "0"
+          JULIA_NUM_THREADS: "4,1"
+        run: julia --project -e 'using Pkg; Pkg.test(test_args=["dave"])'
 
   cli:
     name: AccordCLI

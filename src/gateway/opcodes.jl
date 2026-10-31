@@ -56,16 +56,18 @@ module VoiceOpcodes
     const RESUME              = 7
     const HELLO               = 8
     const RESUMED             = 9
-    const DAVE_MLS_EXTERNAL_SENDER = 10
-    const DAVE_MLS_KEY_PACKAGE     = 11
-    const DAVE_MLS_PROPOSALS       = 12
-    const DAVE_MLS_COMMIT_WELCOME  = 13
-    const DAVE_MLS_ANNOUNCE_COMMIT_TRANSITION = 14
-    const DAVE_MLS_WELCOME         = 15
-    const DAVE_MLS_INVALID_COMMIT_WELCOME     = 16
+    const CLIENTS_CONNECT     = 11
     const CLIENT_DISCONNECT   = 13
-    const DAVE_PREPARE_TRANSITION    = 21
-    const DAVE_EXECUTE_TRANSITION    = 22
-    const DAVE_TRANSITION_READY      = 23
-    const DAVE_PREPARE_EPOCH         = 24
+    # DAVE (end-to-end encryption). 25, 26, 27, 28, 29 and 30 are binary frames.
+    const DAVE_PREPARE_TRANSITION             = 21
+    const DAVE_EXECUTE_TRANSITION             = 22
+    const DAVE_TRANSITION_READY               = 23
+    const DAVE_PREPARE_EPOCH                  = 24
+    const DAVE_MLS_EXTERNAL_SENDER            = 25
+    const DAVE_MLS_KEY_PACKAGE                = 26
+    const DAVE_MLS_PROPOSALS                  = 27
+    const DAVE_MLS_COMMIT_WELCOME             = 28
+    const DAVE_MLS_ANNOUNCE_COMMIT_TRANSITION = 29
+    const DAVE_MLS_WELCOME                    = 30
+    const DAVE_MLS_INVALID_COMMIT_WELCOME     = 31
 end
