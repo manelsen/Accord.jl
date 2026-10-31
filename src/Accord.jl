@@ -257,6 +257,7 @@ public get_options, get_option, custom_id, selected_values, modal_values, target
 public has_permissions, is_owner, is_in_guild, cooldown
 # Component and embed builders
 public action_row, button, string_select, select_option, text_input
+public user_select, role_select, mentionable_select, channel_select
 public embed, @embed, embed_field, embed_footer, embed_author, command_option, activity
 public container, section, text_display, thumbnail, media_gallery, media_gallery_item
 public file_component, separator, unfurled_media

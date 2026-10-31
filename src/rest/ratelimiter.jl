@@ -294,23 +294,21 @@ function _get_bucket_key(rl::RateLimiter, route::Route)
 end
 
 function _update_ratelimit(rl::RateLimiter, route::Route, resp)
-    headers = Dict(lowercase(h.first) => h.second for h in resp.headers)
+    bucket_hash = HTTP.header(resp, "X-RateLimit-Bucket")
+    isempty(bucket_hash) || (rl.bucket_hashes[route.bucket_key] = bucket_hash)
 
-    if haskey(headers, "x-ratelimit-bucket")
-        rl.bucket_hashes[route.bucket_key] = headers["x-ratelimit-bucket"]
-    end
-    bucket_key = _get_bucket_key(rl, route)
-
-    bucket = get!(rl.buckets, bucket_key, BucketState())
+    bucket = get!(rl.buckets, _get_bucket_key(rl, route), BucketState())
     bucket.bucket_hash = get(rl.bucket_hashes, route.bucket_key, nothing)
 
-    if haskey(headers, "x-ratelimit-remaining")
-        bucket.remaining = parse(Int, headers["x-ratelimit-remaining"])
-    end
-    if haskey(headers, "x-ratelimit-reset")
-        bucket.reset_at = parse(Float64, headers["x-ratelimit-reset"])
-    elseif haskey(headers, "x-ratelimit-reset-after")
-        bucket.reset_at = time() + parse(Float64, headers["x-ratelimit-reset-after"])
+    remaining = HTTP.header(resp, "X-RateLimit-Remaining")
+    isempty(remaining) || (bucket.remaining = parse(Int, remaining))
+
+    reset = HTTP.header(resp, "X-RateLimit-Reset")
+    reset_after = HTTP.header(resp, "X-RateLimit-Reset-After")
+    if !isempty(reset)
+        bucket.reset_at = parse(Float64, reset)
+    elseif !isempty(reset_after)
+        bucket.reset_at = time() + parse(Float64, reset_after)
     end
 
     return bucket
@@ -321,16 +319,9 @@ function _get_retry_after(resp)
         body = JSON3.read(resp.body, Dict{String, Any})
         return Float64(get(body, "retry_after", 1.0))
     catch
-        # Try header
-        headers = Dict(lowercase(h.first) => h.second for h in resp.headers)
-        if haskey(headers, "retry-after")
-            return parse(Float64, headers["retry-after"])
-        end
-        return 1.0
+        header = HTTP.header(resp, "Retry-After")
+        return isempty(header) ? 1.0 : parse(Float64, header)
     end
 end
 
-function _is_global_ratelimit(resp)
-    headers = Dict(lowercase(h.first) => h.second for h in resp.headers)
-    haskey(headers, "x-ratelimit-global")
-end
+_is_global_ratelimit(resp) = HTTP.hasheader(resp, "X-RateLimit-Global")

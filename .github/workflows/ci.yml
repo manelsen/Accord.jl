@@ -49,7 +49,8 @@ jobs:
         env:
           JULIA_PKG_SERVER: ""
           ACCORD_TEST_WORKERS: ${{ matrix.os == 'windows-latest' && '0' || '6' }}
-        run: julia --project -e 'using Pkg; Pkg.test(test_args=["default"])'
+        shell: bash
+        run: .github/scripts/annotate_failure.sh julia --project -e 'using Pkg; Pkg.test(test_args=["default"])'
       
       - uses: julia-actions/julia-processcoverage@v1
         if: matrix.os == 'ubuntu-latest'
@@ -72,7 +73,8 @@ jobs:
       - name: Test AccordCLI
         env:
           JULIA_PKG_SERVER: ""
-        run: julia --project=AccordCLI -e 'using Pkg; Pkg.test()'
+        shell: bash
+        run: .github/scripts/annotate_failure.sh julia --project=AccordCLI -e 'using Pkg; Pkg.test()'
 
   jet:
     name: Code Quality (Aqua + JET)
@@ -93,7 +95,8 @@ jobs:
       - name: Run Aqua + JET analysis
         env:
           JULIA_PKG_SERVER: ""
-        run: julia --project -e 'using Pkg; Pkg.test(test_args=["quality"])'
+        shell: bash
+        run: .github/scripts/annotate_failure.sh julia --project -e 'using Pkg; Pkg.test(test_args=["quality"])'
 
   docs:
     name: Documentation
@@ -117,4 +120,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
-        run: julia --project=docs/ docs/make.jl
+        shell: bash
+        run: .github/scripts/annotate_failure.sh julia --project=docs/ docs/make.jl

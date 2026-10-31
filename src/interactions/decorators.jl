@@ -30,7 +30,7 @@ end
 """
 macro on(client, event_type, handler)
     quote
-        $(@__MODULE__).on($(esc(handler)), $(esc(client)), $(esc(event_type)))
+        on($(esc(handler)), $(esc(client)), $(esc(event_type)))
     end
 end
 
@@ -188,7 +188,7 @@ julia> length(Accord.pending_checks()) # Verifies checks were queued
 """
 macro check(expr)
     quote
-        $(@__MODULE__).push_pending_check!($(esc(expr)))
+        push_pending_check!($(esc(expr)))
     end
 end
 
@@ -214,7 +214,7 @@ julia> length(client.event_handler.handlers[Accord.MessageCreate])
 """
 macro on_message(client, handler)
     quote
-        $(@__MODULE__).on($(esc(client)), $(@__MODULE__).MessageCreate) do _c_, _event_
+        on($(esc(client)), MessageCreate) do _c_, _event_
             _msg_ = _event_.message
             ismissing(_msg_.author) && return
             ismissing(_msg_.content) && return
@@ -222,6 +222,35 @@ macro on_message(client, handler)
             $(esc(handler))(_c_, _msg_)
         end
     end
+end
+
+# Expression that registers a command together with the pending `@check`
+# guards. `name`, `desc`, `handler` and `guild_id` are unescaped user
+# expressions; `options` is passed through as given (escaped by the caller,
+# or a gensym local). Unescaped names below resolve in Accord by hygiene.
+function _register_command_expr(client, name, desc, handler;
+                                options=nothing, guild_id=nothing, type=nothing)
+    kws = Any[Expr(:kw, :checks, :(drain_pending_checks!()))]
+    options === nothing || push!(kws, Expr(:kw, :options, options))
+    guild_id === nothing || push!(kws, Expr(:kw, :guild_id, :(_guild_id_kw($(esc(guild_id))))))
+    type === nothing || push!(kws, Expr(:kw, :type, type))
+    :(register_command!($(esc(client)).command_tree, $(esc(name)), $(esc(desc)), $(esc(handler)); $(kws...)))
+end
+
+# A guild id given to a command macro may be `nothing` at runtime (global command).
+_guild_id_kw(::Nothing) = missing
+_guild_id_kw(id) = Snowflake(id)
+
+# Shared body of @user_command and @message_command.
+function _context_menu_expr(macro_name::Symbol, type::Int, client, args)
+    if length(args) == 2
+        name, handler = args
+        return _register_command_expr(client, name, "", handler; type)
+    elseif length(args) == 3
+        guild_id, name, handler = args
+        return _register_command_expr(client, name, "", handler; type, guild_id)
+    end
+    error("Invalid @$macro_name syntax. Expected: @$macro_name client [guild_id] name handler")
 end
 
 """
@@ -328,14 +357,8 @@ macro slash_command(client, args...)
         return quote
             let
                 $(transformed_exprs...)
-                _checks_ = $(@__MODULE__).drain_pending_checks!()
-                if isnothing($(esc(guild_id)))
-                    $(@__MODULE__).register_command!($(esc(client)).command_tree, $(esc(name_expr)), $(esc(desc_expr)), $(esc(handler_val));
-                        options=$opts_sym, checks=_checks_)
-                else
-                    $(@__MODULE__).register_command!($(esc(client)).command_tree, $(esc(name_expr)), $(esc(desc_expr)), $(esc(handler_val));
-                        options=$opts_sym, guild_id=$(@__MODULE__).Snowflake($(esc(guild_id))), checks=_checks_)
-                end
+                $(_register_command_expr(client, name_expr, desc_expr, handler_val;
+                                         options=opts_sym, guild_id))
             end
         end
     end
@@ -344,41 +367,19 @@ macro slash_command(client, args...)
     if length(args) == 3
         # @slash_command client name description handler
         name, desc, handler = args
-        return quote
-            _checks_ = $(@__MODULE__).drain_pending_checks!()
-            $(@__MODULE__).register_command!($(esc(client)).command_tree, $(esc(name)), $(esc(desc)), $(esc(handler));
-                checks=_checks_)
-        end
+        return _register_command_expr(client, name, desc, handler)
+    elseif length(args) == 4 && args[3] isa Expr && args[3].head == :vect
+        # @slash_command client name description options handler
+        name, desc, options, handler = args
+        return _register_command_expr(client, name, desc, handler; options=esc(options))
     elseif length(args) == 4
-        # Could be @slash_command client guild_id name description handler 
-        # OR @slash_command client name description options handler
-        arg1, arg2, arg3, arg4 = args
-        
-        if arg3 isa Expr && arg3.head == :vect
-            # @slash_command client name description options handler
-            name, desc, options, handler = arg1, arg2, arg3, arg4
-            return quote
-                _checks_ = $(@__MODULE__).drain_pending_checks!()
-                $(@__MODULE__).register_command!($(esc(client)).command_tree, $(esc(name)), $(esc(desc)), $(esc(handler));
-                    options=$(esc(options)), checks=_checks_)
-            end
-        else
-            # @slash_command client guild_id name description handler
-            guild_id, name, desc, handler = arg1, arg2, arg3, arg4
-            return quote
-                _checks_ = $(@__MODULE__).drain_pending_checks!()
-                $(@__MODULE__).register_command!($(esc(client)).command_tree, $(esc(name)), $(esc(desc)), $(esc(handler));
-                    guild_id=$(@__MODULE__).Snowflake($(esc(guild_id))), checks=_checks_)
-            end
-        end
+        # @slash_command client guild_id name description handler
+        guild_id, name, desc, handler = args
+        return _register_command_expr(client, name, desc, handler; guild_id)
     elseif length(args) == 5
         # @slash_command client guild_id name description options handler
         guild_id, name, desc, options, handler = args
-        return quote
-            _checks_ = $(@__MODULE__).drain_pending_checks!()
-            $(@__MODULE__).register_command!($(esc(client)).command_tree, $(esc(name)), $(esc(desc)), $(esc(handler));
-                options=$(esc(options)), guild_id=$(@__MODULE__).Snowflake($(esc(guild_id))), checks=_checks_)
-        end
+        return _register_command_expr(client, name, desc, handler; options=esc(options), guild_id)
     else
         error("Invalid @slash_command syntax. Expected: @slash_command client [guild_id] name description [options] handler")
     end
@@ -400,7 +401,7 @@ end
 """
 macro button_handler(client, custom_id, handler)
     quote
-        $(@__MODULE__).register_component!($(esc(client)).command_tree, $(esc(custom_id)), $(esc(handler)))
+        register_component!($(esc(client)).command_tree, $(esc(custom_id)), $(esc(handler)))
     end
 end
 
@@ -421,7 +422,7 @@ end
 """
 macro select_handler(client, custom_id, handler)
     quote
-        $(@__MODULE__).register_component!($(esc(client)).command_tree, $(esc(custom_id)), $(esc(handler)))
+        register_component!($(esc(client)).command_tree, $(esc(custom_id)), $(esc(handler)))
     end
 end
 
@@ -442,7 +443,7 @@ end
 """
 macro modal_handler(client, custom_id, handler)
     quote
-        $(@__MODULE__).register_modal!($(esc(client)).command_tree, $(esc(custom_id)), $(esc(handler)))
+        register_modal!($(esc(client)).command_tree, $(esc(custom_id)), $(esc(handler)))
     end
 end
 
@@ -466,7 +467,7 @@ end
 """
 macro autocomplete(client, command_name, handler)
     quote
-        $(@__MODULE__).register_autocomplete!($(esc(client)).command_tree, $(esc(command_name)), $(esc(handler)))
+        register_autocomplete!($(esc(client)).command_tree, $(esc(command_name)), $(esc(handler)))
     end
 end
 
@@ -587,26 +588,7 @@ julia> @user_command client 123 "Warn User" (ctx) -> "Warned";
 ```
 """
 macro user_command(client, args...)
-    if length(args) == 2
-        # @user_command client name handler
-        name, handler = args
-        return quote
-            _checks_ = $(@__MODULE__).drain_pending_checks!()
-            $(@__MODULE__).register_command!($(esc(client)).command_tree, $(esc(name)), "", $(esc(handler));
-                type=$(@__MODULE__).ApplicationCommandTypes.USER, checks=_checks_)
-        end
-    elseif length(args) == 3
-        # @user_command client guild_id name handler
-        guild_id, name, handler = args
-        return quote
-            _checks_ = $(@__MODULE__).drain_pending_checks!()
-            $(@__MODULE__).register_command!($(esc(client)).command_tree, $(esc(name)), "", $(esc(handler));
-                type=$(@__MODULE__).ApplicationCommandTypes.USER,
-                guild_id=$(@__MODULE__).Snowflake($(esc(guild_id))), checks=_checks_)
-        end
-    else
-        error("Invalid @user_command syntax. Expected: @user_command client [guild_id] name handler")
-    end
+    _context_menu_expr(:user_command, ApplicationCommandTypes.USER, client, args)
 end
 
 """
@@ -627,26 +609,7 @@ julia> @message_command client 123 "Report" (ctx) -> "Reported";
 ```
 """
 macro message_command(client, args...)
-    if length(args) == 2
-        # @message_command client name handler
-        name, handler = args
-        return quote
-            _checks_ = $(@__MODULE__).drain_pending_checks!()
-            $(@__MODULE__).register_command!($(esc(client)).command_tree, $(esc(name)), "", $(esc(handler));
-                type=$(@__MODULE__).ApplicationCommandTypes.MESSAGE, checks=_checks_)
-        end
-    elseif length(args) == 3
-        # @message_command client guild_id name handler
-        guild_id, name, handler = args
-        return quote
-            _checks_ = $(@__MODULE__).drain_pending_checks!()
-            $(@__MODULE__).register_command!($(esc(client)).command_tree, $(esc(name)), "", $(esc(handler));
-                type=$(@__MODULE__).ApplicationCommandTypes.MESSAGE,
-                guild_id=$(@__MODULE__).Snowflake($(esc(guild_id))), checks=_checks_)
-        end
-    else
-        error("Invalid @message_command syntax. Expected: @message_command client [guild_id] name handler")
-    end
+    _context_menu_expr(:message_command, ApplicationCommandTypes.MESSAGE, client, args)
 end
 
 # Map symbols to ApplicationCommandOptionTypes constants
@@ -696,7 +659,7 @@ macro option(type_sym, name, description, kwargs...)
     kw_exprs = [Expr(:kw, ex.args[1], esc(ex.args[2])) for ex in kwargs if ex isa Expr && ex.head == :(=)]
 
     quote
-        $(@__MODULE__).command_option(;
+        command_option(;
             type=$type_val,
             name=$(esc(name)),
             description=$(esc(description)),
