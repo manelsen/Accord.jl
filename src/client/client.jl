@@ -31,6 +31,9 @@ The main Discord client that orchestrates gateway connections, REST API calls, a
     - `handler_concurrency` — controls the number of concurrently executing handlers so slow workflows
       (e.g. `wait_for`) can't starve the main loop. Increase the value only if you know your handlers
       are fast and you need extra throughput; keeping the default `16` is enough for most bots.
+    - `handler_backlog` — maximum number of handler tasks alive at once (running plus queued,
+      default `64 * handler_concurrency`). When it is reached the event loop waits, which applies
+      back-pressure to the gateway instead of growing memory without bound.
 
 # Example
 ```julia
@@ -67,6 +70,7 @@ mutable struct Client{S} <: AbstractClient
     _handler_tasks::Set{Task}
     _handler_tasks_lock::ReentrantLock
     _handler_sem::Base.Semaphore
+    _handler_backlog::Base.Semaphore
 end
 
 function Client(token::String;
@@ -80,8 +84,11 @@ function Client(token::String;
     member_strategy::CacheStrategy = CacheLRU(10_000),
     presence_strategy::CacheStrategy = CacheNever(),
     handler_concurrency::Int = 16,
+    handler_backlog::Int = 64 * handler_concurrency,
 )
     handler_concurrency < 1 && throw(ArgumentError("handler_concurrency must be >= 1"))
+    handler_backlog < handler_concurrency &&
+        throw(ArgumentError("handler_backlog must be >= handler_concurrency"))
 
     # Ensure token has Bot prefix
     actual_token = startswith(token, "Bot ") ? token : "Bot $token"
@@ -119,6 +126,7 @@ function Client(token::String;
         Set{Task}(),
         ReentrantLock(),
         Base.Semaphore(handler_concurrency),
+        Base.Semaphore(handler_backlog),
     )
 
     # Register interaction dispatcher
@@ -214,8 +222,8 @@ function start(client::Client; blocking::Bool=true)
     client._supervisor_task = @async _supervisor_loop(client)
 
     if blocking
-        # Wait for first shard to be ready
-        wait(client.shards[1].ready)
+        # Ready means every shard has received READY
+        foreach(s -> wait(s.ready), client.shards)
         notify(client.ready)
 
         # Block until stopped
@@ -230,10 +238,10 @@ function start(client::Client; blocking::Bool=true)
         stop(client)
     else
         # Non-blocking: wait for ready in background
-        @async begin
-            wait(client.shards[1].ready)
+        errormonitor(@async begin
+            foreach(s -> wait(s.ready), client.shards)
             notify(client.ready)
-        end
+        end)
     end
 end
 
@@ -396,30 +404,32 @@ function _untrack_handler_task!(client::Client, task::Task)
     nothing
 end
 
+# Run the handlers for `event` in a new task. Two limits apply:
+# - `_handler_sem` (`handler_concurrency`) caps how many handlers *run* at once.
+#   It is acquired inside the task, so a handler blocked in `wait_for` never
+#   stops the event loop from delivering the event it is waiting for.
+# - `_handler_backlog` (`handler_backlog`) caps how many handler tasks *exist*
+#   (running + queued). It is acquired here, before the task is created, so a
+#   burst of events applies back-pressure to the gateway instead of spawning an
+#   unbounded number of tasks.
 function _dispatch_event_async!(client::Client, event::AbstractEvent)
-    sem = client._handler_sem
+    Base.acquire(client._handler_backlog)
     task = @async begin
-        Base.acquire(sem)
         try
-            dispatch_event!(client.event_handler, client, event)
-        catch e
-            @error "Unhandled async event dispatch error" event_type=typeof(event) exception=e
+            Base.acquire(client._handler_sem)
+            try
+                dispatch_event!(client.event_handler, client, event)
+            catch e
+                @error "Unhandled async event dispatch error" event_type=typeof(event) exception=e
+            finally
+                Base.release(client._handler_sem)
+            end
         finally
-            Base.release(sem)
+            _untrack_handler_task!(client, current_task())
+            Base.release(client._handler_backlog)
         end
     end
-
     _track_handler_task!(client, task)
-
-    @async begin
-        try
-            wait(task)
-        catch
-            # Ignore secondary task failures; original task already logs.
-        finally
-            _untrack_handler_task!(client, task)
-        end
-    end
 
     nothing
 end
@@ -459,12 +469,13 @@ function _event_loop(client::Client)
             end
         end
 
+        # Notify wait_for waiters first: if the handler backlog is full, the
+        # dispatch below blocks, and those handlers may be the ones waiting.
+        _notify_waiters!(client, event)
+
         # Dispatch to handlers concurrently so slow handlers (e.g. wait_for)
         # do not block the main event ingestion loop.
         _dispatch_event_async!(client, event)
-
-        # Notify any wait_for waiters
-        _notify_waiters!(client, event)
     end
 end
 
@@ -479,9 +490,9 @@ function _supervisor_loop(client::Client)
             # If the task is finished but we didn't stop the bot, restart it
             task = shard.task
             if !isnothing(task) && istaskdone(task) && client.running
-                # Check if it was an intentional stop (connected would be false)
-                # shard.session.connected is managed by gateway_connect and stop_shard
-                if shard.session.connected
+                # Intentional stops and fatal close codes (bad token, disallowed
+                # intents) must not be retried; anything else is a crash.
+                if !shard.session.stopped && !shard.session.fatal
                     @error "Shard $(shard.id) died unexpectedly! Restarting..."
                     start_shard(shard, client.token, client.intents)
                 end

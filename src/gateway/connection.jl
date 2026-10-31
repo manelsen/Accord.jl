@@ -1,7 +1,7 @@
 # Gateway WebSocket connection lifecycle
 #
 # Internal module: Manages the WebSocket connection to Discord's gateway, including
-# connect/reconnect logic, zlib decompression, opcode dispatch (HELLO, HEARTBEAT,
+# connect/reconnect logic, opcode dispatch (HELLO, HEARTBEAT,
 # IDENTIFY, RESUME), and event routing to the client's event channel.
 
 const GATEWAY_URL = "wss://gateway.discord.gg/?v=$(API_VERSION)&encoding=json"
@@ -41,14 +41,72 @@ mutable struct GatewaySession
     seq_ref::Ref{Union{Int,Nothing}}  # shared with heartbeat
     heartbeat_task::Nullable{Task}
     heartbeat_state::Nullable{HeartbeatState}
-    zlib_buffer::IOBuffer
     stop_event::Base.Event
     connected::Bool
+    send_lock::ReentrantLock        # serialises every frame written to the socket
+    command_times::Vector{Float64}  # send timestamps for the gateway send limit
+    stopped::Bool                   # set by stop_shard; survives reconnect attempts
+    fatal::Bool                     # closed with a non-reconnectable code
 end
 
 function GatewaySession()
     GatewaySession(nothing, nothing, nothing, nothing, Ref{Union{Int,Nothing}}(nothing),
-                   nothing, nothing, IOBuffer(), Base.Event(), false)
+                   nothing, nothing, Base.Event(), false, ReentrantLock(), Float64[],
+                   false, false)
+end
+
+# Discord allows 120 gateway sends per 60 seconds per connection. Commands are
+# held to a lower budget so heartbeats, IDENTIFY and RESUME always fit.
+const GATEWAY_SEND_WINDOW = 60.0
+const GATEWAY_COMMAND_LIMIT = 110
+
+# Write one frame to the gateway socket. Every writer (receive loop, heartbeat,
+# command pump) goes through `session.send_lock` so frames never interleave.
+function _ws_send(session::GatewaySession, ws, payload::AbstractString)
+    lock(session.send_lock) do
+        HTTP.WebSockets.send(ws, payload)
+    end
+end
+
+# Block until one more command fits in the gateway send window, then record it.
+function _gateway_rate_wait!(session::GatewaySession;
+                             limit::Int=GATEWAY_COMMAND_LIMIT,
+                             window::Float64=GATEWAY_SEND_WINDOW)
+    times = session.command_times
+    while true
+        now = time()
+        filter!(t -> now - t < window, times)
+        if length(times) < limit
+            push!(times, now)
+            return
+        end
+        sleep(max(0.01, times[1] + window - now))
+    end
+end
+
+# Forward client commands (presence, voice state, member requests) to the
+# socket as soon as they are queued, within the gateway send limit. Runs for
+# the lifetime of one connection; `alive[]` turns false when it closes.
+function _command_pump(ws, commands_channel::Channel{GatewayCommand},
+                       session::GatewaySession, alive::Ref{Bool})
+    while alive[] && !session.stop_event.set
+        if !isready(commands_channel)
+            sleep(0.05)
+            continue
+        end
+        cmd = take!(commands_channel)
+        _gateway_rate_wait!(session)
+        if !alive[]
+            # Connection closed while waiting: hand the command to the next one
+            put!(commands_channel, cmd)
+            break
+        end
+        try
+            _send_gateway_command(session, ws, cmd)
+        catch e
+            @warn "Failed to send gateway command" op=cmd.op exception=e
+        end
+    end
 end
 
 """
@@ -59,7 +117,6 @@ Use this internal function to establish and maintain a WebSocket connection to D
 Main gateway connection loop. Runs as a `Task`.
 - Connects to Discord gateway via WebSocket
 - Handles IDENTIFY/RESUME
-- Decompresses zlib-stream payloads
 - Dispatches events to `events_channel` (which receives [`AbstractEvent`](@ref)s)
 - Receives commands from `commands_channel` (which receives [`GatewayCommand`](@ref)s)
 - Auto-reconnects on disconnection
@@ -79,8 +136,9 @@ function gateway_connect(
 )
     reconnect = true
     resume = false
+    session.fatal = false
 
-    while reconnect
+    while reconnect && !session.stopped
         resume_url = session.resume_gateway_url
         url = if resume && !isnothing(resume_url)
             resume_url * "/?v=$(API_VERSION)&encoding=json"
@@ -94,7 +152,6 @@ function gateway_connect(
             HTTP.WebSockets.open(url; readtimeout=0) do ws
                 session.ws = ws
                 session.connected = true
-                session.zlib_buffer = IOBuffer()
                 session.stop_event = Base.Event()
 
                 _gateway_loop(ws, token, intents, shard, events_channel,
@@ -110,6 +167,7 @@ function gateway_connect(
                         @error "Cannot reconnect — fatal close code" code
                         # DIAGNOSTICS
                         Accord.Diagnoser.report(e, catch_backtrace())
+                        session.fatal = true
                         reconnect = false
                         continue
                     end
@@ -130,10 +188,8 @@ function gateway_connect(
             stop_heartbeat!(hb)
         end
 
-        # If session was explicitly stopped (connected set to false externally), don't reconnect
-        if !session.connected
-            reconnect = false
-        end
+        # If the shard was explicitly stopped, don't reconnect
+        session.stopped && (reconnect = false)
         session.connected = false
 
         if reconnect
@@ -158,6 +214,19 @@ function _gateway_loop(
     session::GatewaySession,
     resume::Bool,
 )
+    alive = Ref(true)
+    errormonitor(@async _command_pump(ws, commands_channel, session, alive))
+    try
+        _gateway_receive_loop(ws, token, intents, shard, events_channel,
+                              ready_event, session, resume)
+    finally
+        alive[] = false
+    end
+    return nothing
+end
+
+function _gateway_receive_loop(ws, token, intents, shard, events_channel,
+                               ready_event, session::GatewaySession, resume::Bool)
     while !session.stop_event.set
         data = try
             HTTP.WebSockets.receive(ws)
@@ -171,8 +240,8 @@ function _gateway_loop(
             break
         end
 
-        # Decompress zlib-stream
-        payload = _decompress(session, data)
+        # Accord does not request transport compression, so frames are plain JSON
+        payload = _frame_text(data)
         isnothing(payload) && continue
 
         # Parse JSON
@@ -228,22 +297,23 @@ function _gateway_loop(
             end
             interval_ms = round(Int, interval)
             # Start heartbeat (use session's persistent seq_ref)
-            hb_task, hb_state = start_heartbeat(ws, interval_ms, session.seq_ref, session.stop_event)
+            hb_task, hb_state = start_heartbeat(ws, interval_ms, session.seq_ref, session.stop_event;
+                                                send_lock=session.send_lock)
             session.heartbeat_task = hb_task
             session.heartbeat_state = hb_state
 
             # Identify or Resume
             if resume && !isnothing(session.session_id)
-                _send_resume(ws, token, session.session_id, session.seq)
+                _send_resume(session, ws, token, session.session_id, session.seq)
             else
-                _send_identify(ws, token, intents, shard)
+                _send_identify(session, ws, token, intents, shard)
             end
 
         elseif op == GatewayOpcodes.HEARTBEAT
             # Immediately send heartbeat
             seq = session.seq
             payload_str = isnothing(seq) ? """{"op":1,"d":null}""" : """{"op":1,"d":$seq}"""
-            HTTP.WebSockets.send(ws, payload_str)
+            _ws_send(session, ws, payload_str)
 
         elseif op == GatewayOpcodes.HEARTBEAT_ACK
             hb_state = session.heartbeat_state
@@ -264,12 +334,6 @@ function _gateway_loop(
             end
             sleep(1.0 + rand() * 4.0)
             break
-        end
-
-        # Process commands from the client
-        while isready(commands_channel)
-            cmd = take!(commands_channel)
-            _send_gateway_command(ws, cmd)
         end
     end
 end
@@ -296,7 +360,8 @@ function _handle_dispatch(event_name, data, events_channel, session, ready_event
     end
 end
 
-function _decompress(session::GatewaySession, data)
+# Text of a gateway frame, or `nothing` for frames that carry no payload.
+function _frame_text(data)
     if data isa Vector{UInt8}
         return String(data)
     elseif data isa String
@@ -306,7 +371,7 @@ function _decompress(session::GatewaySession, data)
     end
 end
 
-function _send_identify(ws, token, intents, shard)
+function _send_identify(session::GatewaySession, ws, token, intents, shard)
     payload = Dict(
         "op" => GatewayOpcodes.IDENTIFY,
         "d" => Dict(
@@ -320,10 +385,10 @@ function _send_identify(ws, token, intents, shard)
             "shard" => [shard[1], shard[2]],
         )
     )
-    HTTP.WebSockets.send(ws, JSON3.write(payload))
+    _ws_send(session, ws, JSON3.write(payload))
 end
 
-function _send_resume(ws, token, session_id, seq)
+function _send_resume(session::GatewaySession, ws, token, session_id, seq)
     payload = Dict(
         "op" => GatewayOpcodes.RESUME,
         "d" => Dict(
@@ -332,10 +397,10 @@ function _send_resume(ws, token, session_id, seq)
             "seq" => seq,
         )
     )
-    HTTP.WebSockets.send(ws, JSON3.write(payload))
+    _ws_send(session, ws, JSON3.write(payload))
 end
 
-function _send_gateway_command(ws, cmd::GatewayCommand)
+function _send_gateway_command(session::GatewaySession, ws, cmd::GatewayCommand)
     payload = Dict("op" => cmd.op, "d" => cmd.data)
-    HTTP.WebSockets.send(ws, JSON3.write(payload))
+    _ws_send(session, ws, JSON3.write(payload))
 end

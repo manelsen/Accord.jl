@@ -2,9 +2,8 @@
     using Accord
     const AI = Accord.internals
     const VoiceGatewaySession = AI.VoiceGatewaySession
-    const CRYPTO_SECRETBOX_KEYBYTES = AI.CRYPTO_SECRETBOX_KEYBYTES
-    const CRYPTO_SECRETBOX_NONCEBYTES = AI.CRYPTO_SECRETBOX_NONCEBYTES
-    const xsalsa20_poly1305_encrypt = AI.xsalsa20_poly1305_encrypt
+    const encrypt_rtpsize = AI.encrypt_rtpsize
+    const decrypt_rtpsize = AI.decrypt_rtpsize
     const rtp_header = AI.rtp_header
     const ENCRYPTION_MODES = AI.ENCRYPTION_MODES
     const select_encryption_mode = AI.select_encryption_mode
@@ -144,8 +143,8 @@
     end
 
     @testset "Voice encryption flow" begin
-        key = zeros(UInt8, CRYPTO_SECRETBOX_KEYBYTES)
-        nonce = zeros(UInt8, CRYPTO_SECRETBOX_NONCEBYTES)
+        key = zeros(UInt8, 32)
+        header = rtp_header(UInt16(1), UInt32(960), UInt32(100))
 
         # Simulate audio data
         pcm_data = rand(Int16, OPUS_FRAME_SIZE * OPUS_CHANNELS)
@@ -154,10 +153,11 @@
         encoder = OpusEncoder()
         opus_data = opus_encode(encoder, pcm_data)
 
-        # Encrypt
-        encrypted = xsalsa20_poly1305_encrypt(key, nonce, opus_data)
+        # Encrypt: ciphertext + 16-byte tag + 4-byte nonce counter
+        encrypted = encrypt_rtpsize("aead_xchacha20_poly1305_rtpsize", key, UInt32(1), header, opus_data)
 
-        @test length(encrypted) == length(opus_data) + 16  # MAC
+        @test length(encrypted) == length(opus_data) + 16 + 4
+        @test decrypt_rtpsize("aead_xchacha20_poly1305_rtpsize", key, header, encrypted) == opus_data
     end
 
     @testset "RTP packet construction flow" begin
@@ -195,14 +195,13 @@
         @test !isempty(opus_data)
 
         # 3. Encrypt
-        key = zeros(UInt8, CRYPTO_SECRETBOX_KEYBYTES)
-        nonce = zeros(UInt8, CRYPTO_SECRETBOX_NONCEBYTES)
-        encrypted = xsalsa20_poly1305_encrypt(key, nonce, opus_data)
+        key = zeros(UInt8, 32)
+        header = rtp_header(UInt16(0), UInt32(0), UInt32(100))
+        encrypted = encrypt_rtpsize("aead_xchacha20_poly1305_rtpsize", key, UInt32(1), header, opus_data)
 
         @test !isempty(encrypted)
 
-        # 4. Build RTP header
-        header = rtp_header(UInt16(0), UInt32(0), UInt32(100))
+        # 4. RTP header (authenticated, not encrypted)
 
         @test length(header) == 12
 
@@ -215,18 +214,14 @@
     @testset "Encryption mode selection" begin
         server_modes = ENCRYPTION_MODES
 
-        mode = select_encryption_mode(server_modes)
-
-        @test mode in ENCRYPTION_MODES
-        @test mode == "aead_xchacha20_poly1305_rtpsize"
+        @test select_encryption_mode(server_modes; aes_available=true) == "aead_aes256_gcm_rtpsize"
+        @test select_encryption_mode(server_modes; aes_available=false) == "aead_xchacha20_poly1305_rtpsize"
     end
 
-    @testset "Encryption mode selection priority" begin
+    @testset "Discontinued modes are rejected" begin
         modes = ["xsalsa20_poly1305", "xsalsa20_poly1305_suffix"]
 
-        mode = select_encryption_mode(modes)
-
-        @test mode == "xsalsa20_poly1305_suffix"
+        @test_throws ErrorException select_encryption_mode(modes)
     end
 
     @testset "AudioPlayer with multiple sources" begin
@@ -284,9 +279,9 @@
         vc = VoiceClient(client, Snowflake(1), Snowflake(2))
 
         # Check encryption mode can be set
-        vc.encryption_mode = "xsalsa20_poly1305"
+        vc.encryption_mode = "aead_xchacha20_poly1305_rtpsize"
 
-        @test vc.encryption_mode == "xsalsa20_poly1305"
+        @test vc.encryption_mode == "aead_xchacha20_poly1305_rtpsize"
     end
 
     @testset "VoiceClient with all encryption modes" begin

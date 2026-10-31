@@ -5,6 +5,12 @@
 
 **Prerequisites:** [Recipe 03](03-slash-commands.md), `ffmpeg` installed, `IntentGuildVoiceStates` enabled
 
+!!! warning "Voice is currently unavailable"
+    Since March 1, 2026, Discord only admits clients that implement the DAVE
+    end-to-end encryption protocol into voice calls. Accord does not implement
+    DAVE yet, so `connect!` will be rejected by Discord. This recipe documents
+    the API as it will work once DAVE support lands.
+
 ---
 
 !!! warning "System Dependencies for Voice"

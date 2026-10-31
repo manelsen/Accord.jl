@@ -15,7 +15,7 @@
 - **`@check` Guards:** Declarative pre-execution checks for permissions, ownership, and custom conditions.
 - **`wait_for` Conversations:** Lightweight state machines using Julia Channels — no manual state management.
 - **State Injection:** Pass your database, config, or services via `ctx.state` — zero globals.
-- **High-Performance Voice:** Built-in support for Opus encoding and encryption for music/voice bots.
+- **Voice (currently unavailable):** Opus encoding and AEAD transport encryption are implemented, but Discord has required the DAVE end-to-end encryption protocol for all voice connections since March 2026 and Accord does not support DAVE yet, so voice connections are rejected. Support is in progress.
 - **Efficient Caching:** Automatic state management with customizable LRU/TTL strategies.
 - **Type Safety:** Leveraging Julia's type system to catch bugs before they happen.
 - **Async First:** Built on top of Julia's Tasks and Channels for non-blocking I/O.
@@ -27,6 +27,17 @@
 ```julia
 using Pkg
 Pkg.add("Accord")
+```
+
+### Project generator (optional)
+
+The `accord` command-line tool, which scaffolds new bot projects and checks your environment, lives in the separate [`AccordCLI`](AccordCLI/) package so the library itself stays lean:
+
+```julia
+using Pkg
+Pkg.add(url="https://github.com/manelsen/Accord.jl", subdir="AccordCLI")
+using AccordCLI
+AccordCLI.onboard_impl("MyBot"; modules="moderation,utils")
 ```
 
 ---
@@ -92,15 +103,15 @@ start(client)
 The documentation is organized into two main parts:
 
 - **[API Reference](docs/API.md)**: Exhaustive list of types, functions, and events.
-- **[Cookbook](docs/cookbook/index.md)**: Step-by-step recipes for everything from basic bots to AI agents and voice transcription.
+- **[Cookbook](docs/src/cookbook/index.md)**: Step-by-step recipes for everything from basic bots to AI agents and voice transcription.
 
 ### Popular Recipes:
-- [Your First Bot](docs/cookbook/01-basic-bot.md)
-- [Rich Embeds & Files](docs/cookbook/02-messages-and-embeds.md)
-- [Slash Commands & Autocomplete](docs/cookbook/03-slash-commands.md)
-- [Interactive Buttons & Modals](docs/cookbook/04-buttons-selects-modals.md)
-- [Voice Playback & Whisper AI](docs/cookbook/05-voice.md)
-- [LLM-Powered AI Agent](docs/cookbook/16-ai-agent.md)
+- [Your First Bot](docs/src/cookbook/01-basic-bot.md)
+- [Rich Embeds & Files](docs/src/cookbook/02-messages-and-embeds.md)
+- [Slash Commands & Autocomplete](docs/src/cookbook/03-slash-commands.md)
+- [Interactive Buttons & Modals](docs/src/cookbook/04-buttons-selects-modals.md)
+- [Voice Playback & Whisper AI](docs/src/cookbook/05-voice.md)
+- [LLM-Powered AI Agent](docs/src/cookbook/16-ai-agent.md)
 
 ---
 

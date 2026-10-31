@@ -31,7 +31,7 @@
 
         put!(events, BlockingEvent(1))
 
-        deadline = time() + 1.0
+        deadline = time() + 10.0  # generous: first dispatch includes compilation
         while !slow_started.set && time() < deadline
             sleep(0.01)
         end
@@ -39,7 +39,7 @@
 
         put!(events, FastEvent(2))
 
-        deadline = time() + 1.0
+        deadline = time() + 10.0  # generous: first dispatch includes compilation
         while !fast_done.set && time() < deadline
             sleep(0.01)
         end
@@ -50,6 +50,42 @@
         client.running = false
         close(events)
         wait(loop_task)
+    end
+
+    @testset "handler backlog bounds the number of handler tasks" begin
+        client = Client("Bot test_token"; handler_concurrency=1, handler_backlog=2)
+        events = client.shards[1].events
+
+        release = Base.Event()
+        on(client, BlockingEvent) do _, _
+            wait(release)
+        end
+
+        client.running = true
+        loop_task = @async Accord._event_loop(client)
+
+        for i in 1:5
+            put!(events, BlockingEvent(i))
+        end
+        sleep(0.2)
+
+        @test length(client._handler_tasks) <= 2
+        @test isready(events)   # the loop is applying back-pressure
+
+        notify(release)
+        deadline = time() + 10.0
+        while (isready(events) || !isempty(client._handler_tasks)) && time() < deadline
+            sleep(0.01)
+        end
+        @test isempty(client._handler_tasks)
+
+        client.running = false
+        close(events)
+        wait(loop_task)
+    end
+
+    @testset "invalid handler_backlog is rejected" begin
+        @test_throws ArgumentError Client("Bot test_token"; handler_concurrency=4, handler_backlog=2)
     end
 
     @testset "stop cancels pending wait_for" begin

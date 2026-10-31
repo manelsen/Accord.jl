@@ -44,48 +44,54 @@ function discord_request(
         push!(headers, "X-Audit-Log-Reason" => HTTP.URIs.escapeuri(reason))
     end
 
-    request_body = nothing
-
-    if !isnothing(files) && !isempty(files)
-        # Multipart form upload
-        parts = HTTP.Forms.Form[]
-        form_data = Vector{Pair{Symbol, Any}}()
-
-        if !isnothing(body)
-            push!(form_data, :payload_json => JSON3.write(body))
-        end
-
-        for (i, (filename, data, content_type)) in enumerate(files)
-            push!(form_data, Symbol("files[$i]") => HTTP.Forms.Multipart(filename, IOBuffer(data), content_type))
-        end
-
-        request_body = HTTP.Forms.Form(form_data)
+    request_body = if !isnothing(files) && !isempty(files)
+        # Multipart forms are streams that are consumed when sent, so pass a
+        # factory: the rate limiter builds a fresh form for every attempt.
+        () -> _multipart_body(body, files)
     elseif !isnothing(body)
         push!(headers, "Content-Type" => "application/json")
-        request_body = JSON3.write(body)
+        JSON3.write(body)
+    else
+        nothing
     end
 
     result_ch = Channel{Any}(1)
     job = RestJob(route, route.method, request_url, headers, request_body, result_ch)
 
-    try
-        return submit_rest(rl, job)
-    catch e
-        # DIAGNOSTICS: Intercept HTTP errors to show friendly boxes
-        if e isa HTTP.StatusError
-            try
-                diag = Accord.Diagnoser.diagnose(e, catch_backtrace())
-                if !isnothing(diag)
-                    buf = IOBuffer()
-                    Accord.Diagnoser.render(buf, diag)
-                    printstyled(stderr, String(take!(buf)), color=:red)
-                end
-            catch
-                # Don't let diagnostics crash the actual error handling
-            end
-        end
-        rethrow()
+    resp = submit_rest(rl, job)
+    resp.status >= 400 && _report_http_error(resp)
+    return resp
+end
+
+# Build a multipart form with `payload_json` and `files[i]` parts. `files` is a
+# collection of `(filename, data, content_type)` tuples.
+function _multipart_body(body, files)
+    form_data = Vector{Pair{Symbol, Any}}()
+
+    if !isnothing(body)
+        push!(form_data, :payload_json => JSON3.write(body))
     end
+
+    for (i, (filename, data, content_type)) in enumerate(files)
+        push!(form_data, Symbol("files[$i]") => HTTP.Forms.Multipart(filename, IOBuffer(data), content_type))
+    end
+
+    HTTP.Forms.Form(form_data)
+end
+
+# Print a friendly diagnostic box for well-known Discord API errors.
+function _report_http_error(resp::HTTP.Response)
+    try
+        diag = Accord.Diagnoser.diagnose(resp, nothing)
+        if !isnothing(diag)
+            buf = IOBuffer()
+            Accord.Diagnoser.render(buf, diag)
+            printstyled(stderr, String(take!(buf)), color=:red)
+        end
+    catch
+        # Don't let diagnostics crash the actual error handling
+    end
+    nothing
 end
 
 """

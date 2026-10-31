@@ -146,6 +146,26 @@
             end
         end
 
+        @testset "create_interaction_response with files (multipart)" begin
+            captured = Ref{Any}(nothing)
+            handler = (method, url, headers, body) -> begin
+                captured[] = (headers=headers, body=body)
+                return HTTP.Response(204)
+            end
+
+            with_mock_rl(handler) do rl, token
+                resp = Accord.create_interaction_response(
+                    rl, Snowflake(12345), "interaction_token_abc";
+                    token,
+                    body=Dict("type" => 4, "data" => Dict("content" => "file")),
+                    files=[("a.txt", Vector{UInt8}("hello"), "text/plain")],
+                )
+                @test resp.status == 204
+                @test captured[].body isa HTTP.Forms.Form
+                @test !haskey(Dict(captured[].headers), "Content-Type")
+            end
+        end
+
         @testset "get_original_interaction_response" begin
             handler, cap = capture_handler(mock_json(message_json()))
             with_mock_rl(handler) do rl, token

@@ -127,10 +127,11 @@
 
         # Route's bucket_key should now map to Discord's hash
         @test rl.bucket_hashes[route.bucket_key] == discord_hash
-        @test _get_bucket_key(rl, route) == discord_hash
-        # Bucket state should be stored under the hash
-        @test haskey(rl.buckets, discord_hash)
-        @test rl.buckets[discord_hash].remaining == 5
+        # Bucket state is keyed by Discord's hash *plus* the major parameter
+        @test _get_bucket_key(rl, route) == "$discord_hash:channel_id:100"
+        @test haskey(rl.buckets, "$discord_hash:channel_id:100")
+        @test rl.buckets["$discord_hash:channel_id:100"].remaining == 5
+        @test rl.buckets["$discord_hash:channel_id:100"].bucket_hash == discord_hash
     end
 
     @testset "Header parsing — case insensitive" begin
@@ -210,7 +211,7 @@
             do_request(route)
 
             @test rl.bucket_hashes[route.bucket_key] == "discord-hash-xyz"
-            @test rl.buckets["discord-hash-xyz"].remaining == 3
+            @test rl.buckets["discord-hash-xyz:channel_id:1"].remaining == 3
         finally
             stop_ratelimiter!(rl)
         end
@@ -274,8 +275,8 @@
             do_request(r1)
             do_request(r2)
 
-            @test rl.buckets["bucket-ch111"].remaining == 5
-            @test rl.buckets["bucket-ch222"].remaining == 9
+            @test rl.buckets["bucket-ch111:channel_id:111"].remaining == 5
+            @test rl.buckets["bucket-ch222:channel_id:222"].remaining == 9
         finally
             stop_ratelimiter!(rl)
         end
@@ -307,6 +308,145 @@
         try
             route = Route("GET", "/test")
             @test_throws ErrorException do_request(route)
+        finally
+            stop_ratelimiter!(rl)
+        end
+    end
+
+    # ── Bucket identity ─────────────────────────────────────────────────────────
+
+    @testset "same hash, different channels → independent buckets" begin
+        rl = RateLimiter()
+        r1 = Route("POST", "/channels/{channel_id}/messages", "channel_id" => "111")
+        r2 = Route("POST", "/channels/{channel_id}/messages", "channel_id" => "222")
+        _update_ratelimit(rl, r1, rl_response(200; remaining=0, reset=time()+5.0, bucket="shared"))
+        _update_ratelimit(rl, r2, rl_response(200; remaining=4, reset=time()+5.0, bucket="shared"))
+
+        @test _get_bucket_key(rl, r1) != _get_bucket_key(rl, r2)
+        @test rl.buckets[_get_bucket_key(rl, r1)].remaining == 0
+        @test rl.buckets[_get_bucket_key(rl, r2)].remaining == 4
+    end
+
+    @testset "substituted paths share a bucket across minor ids" begin
+        r1 = Route("DELETE", "/channels/111111111111/messages/222222222222", "channel_id" => "111111111111")
+        r2 = Route("DELETE", "/channels/111111111111/messages/333333333333", "channel_id" => "111111111111")
+        r3 = Route("DELETE", "/channels/999999999999/messages/333333333333", "channel_id" => "999999999999")
+        @test r1.bucket_key == r2.bucket_key
+        @test r1.bucket_key != r3.bucket_key
+        @test url(r1) == "https://discord.com/api/v10/channels/111111111111/messages/222222222222"
+    end
+
+    @testset "webhook tokens never appear in bucket keys" begin
+        secret = "s3cr3t-T0KEN_abc"
+        r = Route("POST", "/webhooks/123456789012/$secret",
+                  "webhook_id" => "123456789012", "webhook_token" => secret)
+        @test !occursin(secret, r.bucket_key)
+        @test occursin(secret, url(r))
+
+        other = Route("POST", "/webhooks/123456789012/other-token",
+                      "webhook_id" => "123456789012", "webhook_token" => "other-token")
+        @test r.bucket_key != other.bucket_key
+    end
+
+    # ── Retry semantics ─────────────────────────────────────────────────────────
+
+    @testset "POST is not re-sent after a network error" begin
+        call_count = Ref(0)
+        rl, do_request = with_mock_rl() do m, u, h, b
+            call_count[] += 1
+            error("connection reset")
+        end
+        try
+            @test_throws ErrorException do_request(Route("POST", "/test"), "POST")
+            @test call_count[] == 1
+        finally
+            stop_ratelimiter!(rl)
+        end
+    end
+
+    @testset "body factory is rebuilt on every attempt" begin
+        bodies = Any[]
+        call_count = Ref(0)
+        rl = RateLimiter()
+        rl.request_handler = (m, u, h, b) -> begin
+            call_count[] += 1
+            push!(bodies, b)
+            if call_count[] == 1
+                rl_response(429; body=JSON3.write(Dict("retry_after" => 0.01)))
+            else
+                rl_response(200)
+            end
+        end
+        start_ratelimiter!(rl)
+        try
+            built = Ref(0)
+            factory = () -> (built[] += 1; IOBuffer("payload"))
+            job = RestJob(Route("POST", "/test"), "POST", url(Route("POST", "/test")),
+                ["Authorization" => "Bot test"], factory, Channel{Any}(1))
+            resp = submit_rest(rl, job)
+            @test resp.status == 200
+            @test built[] == 2
+            @test bodies[1] !== bodies[2]
+        finally
+            stop_ratelimiter!(rl)
+        end
+    end
+
+    @testset "persistent 429 returns the response instead of hanging" begin
+        rl, do_request = with_mock_rl() do m, u, h, b
+            rl_response(429; body=JSON3.write(Dict("retry_after" => 0.001)))
+        end
+        try
+            t = @async do_request(Route("GET", "/always-429"))
+            deadline = time() + 10
+            while !istaskdone(t) && time() < deadline
+                sleep(0.01)
+            end
+            @test istaskdone(t)
+            @test fetch(t).status == 429
+        finally
+            stop_ratelimiter!(rl)
+        end
+    end
+
+    # ── Concurrency ─────────────────────────────────────────────────────────────
+
+    @testset "a waiting bucket does not block other buckets" begin
+        rl, do_request = with_mock_rl() do m, u, h, b
+            if contains(u, "channels/111")
+                rl_response(200; remaining=0, reset_after=3.0, bucket="slow")
+            else
+                rl_response(200; remaining=5, reset_after=3.0, bucket="fast")
+            end
+        end
+        try
+            slow = Route("GET", "/channels/{channel_id}/messages", "channel_id" => "111")
+            fast = Route("GET", "/channels/{channel_id}/messages", "channel_id" => "222")
+            do_request(fast)                    # warm up the code path
+            do_request(slow)                    # bucket "slow" is now exhausted for 3s
+            blocked = @async do_request(slow)   # has to wait for the reset
+            sleep(0.05)
+            t0 = time()
+            resp = do_request(fast)
+            @test resp.status == 200
+            @test time() - t0 < 1.5
+            @test !istaskdone(blocked)
+            wait(blocked)
+        finally
+            stop_ratelimiter!(rl)
+        end
+    end
+
+    @testset "global budget is enforced proactively" begin
+        rl, do_request = with_mock_rl(; global_limit=3) do m, u, h, b
+            rl_response(200)
+        end
+        try
+            t0 = time()
+            for i in 1:4
+                do_request(Route("GET", "/users/$i"))
+            end
+            @test time() - t0 >= 0.9   # 4th request had to wait for the next window
         finally
             stop_ratelimiter!(rl)
         end

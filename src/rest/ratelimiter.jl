@@ -1,8 +1,13 @@
-# Rate limiter actor — manages per-bucket and global rate limits
+# Rate limiter — manages per-bucket and global rate limits
 #
 # Internal module: Implements Discord's rate limiting protocol. Tracks per-route
-# bucket limits and global rate limits. Automatically retries on 429 responses
-# with the `Retry-After` delay. Uses an actor pattern (async Task + Channel).
+# bucket limits and the global request budget. Automatically retries on 429
+# responses with the `Retry-After` delay.
+#
+# Concurrency model: a dispatcher task takes jobs from a Channel and runs each
+# one in its own task. Requests in the same bucket are serialised by a
+# per-bucket lock; requests in different buckets run concurrently, so a bucket
+# that is waiting for its reset never blocks the others.
 
 """Use this internal struct to track rate limit state for each Discord API bucket.
 
@@ -25,6 +30,10 @@ BucketState() = BucketState(1, 0.0, nothing)
 
 A REST job submitted to the [`RateLimiter`](@ref).
 
+`body` is either the request body itself (`nothing`, a `String`, bytes) or a
+zero-argument function that builds it. Use a function for bodies that are
+consumed when sent, such as multipart forms, so every retry gets a fresh body.
+
 # Example
 ```julia
 result_ch = Channel{Any}(1)
@@ -36,20 +45,25 @@ struct RestJob
     method::String
     url::String
     headers::Vector{Pair{String,String}}
-    body::Any  # Nothing, String, Vector{UInt8}, or HTTP.Forms.Form
+    body::Any  # Nothing, String, Vector{UInt8}, or a () -> body factory
     result::Channel{Any}  # receives (HTTP.Response or Exception)
 end
 
 """
     RateLimiter
 
-Use this actor to manage Discord API requests and automatically respect rate limits.
+Use this to manage Discord API requests and automatically respect rate limits.
 
-Actor that processes REST requests respecting Discord's rate limits.
+Processes REST requests respecting Discord's per-bucket and global rate limits.
+Different buckets are served concurrently; requests within a bucket are sent
+one at a time.
 
 !!! note
     The rate limiter automatically retries on HTTP 429 responses (up to 5 times)
     using the `Retry-After` header. You do not need to handle rate limiting yourself.
+    Network errors are retried only for idempotent methods (GET, HEAD, PUT,
+    DELETE, OPTIONS), so a POST is never sent twice because of a dropped
+    connection.
 """
 mutable struct RateLimiter
     buckets::Dict{String, BucketState}
@@ -62,6 +76,8 @@ mutable struct RateLimiter
     running::Bool
     request_handler::Function # (method, url, headers, body) -> HTTP.Response
     safety_buffer::Float64
+    global_window_start::Float64
+    bucket_locks::Dict{String, ReentrantLock}
 end
 
 function RateLimiter(;global_limit::Int=50, safety_buffer::Float64=0.1)
@@ -78,13 +94,15 @@ function RateLimiter(;global_limit::Int=50, safety_buffer::Float64=0.1)
                 HTTP.request(m, u, h, b; status_exception=false, retry=false)
             end
         end,
-        safety_buffer
+        safety_buffer,
+        0.0,
+        Dict{String, ReentrantLock}(),
     )
 end
 
 """Use this to begin processing REST jobs through the rate limiter.
 
-Start the [`RateLimiter`](@ref) actor loop.
+Start the [`RateLimiter`](@ref) dispatcher loop.
 
 # Example
 ```julia
@@ -100,11 +118,11 @@ end
 
 """Use this to gracefully shut down the rate limiter and stop processing jobs.
 
-Stop the [`RateLimiter`](@ref).
+Stop the [`RateLimiter`](@ref). Requests already in flight are allowed to finish.
 
 # Example
 ```julia
-stop_ratelimiter!(rl)  # closes job channel, stops actor
+stop_ratelimiter!(rl)  # closes job channel, stops dispatcher
 ```
 """
 function stop_ratelimiter!(rl::RateLimiter)
@@ -141,7 +159,61 @@ function _ratelimiter_loop(rl::RateLimiter)
             rethrow()
         end
 
-        _process_job(rl, job)
+        # One task per job: buckets are independent, so a long wait in one
+        # bucket must not hold up requests to the others.
+        errormonitor(@async _run_job(rl, job))
+    end
+end
+
+function _run_job(rl::RateLimiter, job::RestJob)
+    lk = _bucket_lock(rl, job.route)
+    try
+        lock(lk) do
+            _process_job(rl, job)
+        end
+    catch e
+        # _process_job always answers the caller; this only guards against bugs
+        # in the limiter itself so the caller is never left waiting forever.
+        isready(job.result) || put!(job.result, e)
+    end
+end
+
+# Lock that serialises requests sharing the route's bucket key.
+_bucket_lock(rl::RateLimiter, route::Route) =
+    get!(() -> ReentrantLock(), rl.bucket_locks, route.bucket_key)
+
+const _IDEMPOTENT_METHODS = ("GET", "HEAD", "PUT", "DELETE", "OPTIONS")
+
+# Whether a request may be re-sent after a network error without side effects.
+_is_idempotent(method::AbstractString) = uppercase(method) in _IDEMPOTENT_METHODS
+
+# Materialise a job body; factories are called once per attempt.
+_materialize_body(body) = body isa Function ? Base.invokelatest(body) : body
+
+# Wait until the global budget (`global_limit` requests per second, plus any
+# global 429 cool-down) allows one more request, then consume it.
+function _acquire_global!(rl::RateLimiter)
+    while true
+        now = time()
+        if now < rl.global_reset_at
+            # Add safety buffer for clock drift/network jitter
+            wait_time = (rl.global_reset_at - now) + rl.safety_buffer
+            @debug "Global rate limit, waiting" wait_time
+            sleep(wait_time)
+            continue
+        end
+
+        if now - rl.global_window_start >= 1.0
+            rl.global_window_start = now
+            rl.global_remaining = rl.global_limit
+        end
+
+        if rl.global_remaining > 0
+            rl.global_remaining -= 1
+            return
+        end
+
+        sleep(max(0.0, rl.global_window_start + 1.0 - now))
     end
 end
 
@@ -149,15 +221,6 @@ function _process_job(rl::RateLimiter, job::RestJob)
     max_retries = 5
 
     for attempt in 1:max_retries
-        # Check global rate limit
-        now = time()
-        if now < rl.global_reset_at
-            # Add safety buffer for clock drift/network jitter
-            wait_time = (rl.global_reset_at - now) + rl.safety_buffer
-            @debug "Global rate limit, waiting" wait_time
-            sleep(wait_time)
-        end
-
         # Check bucket rate limit
         bucket_key = _get_bucket_key(rl, job.route)
         bucket = get(rl.buckets, bucket_key, nothing)
@@ -171,34 +234,16 @@ function _process_job(rl::RateLimiter, job::RestJob)
             end
         end
 
+        _acquire_global!(rl)
+
         # Execute request
+        local resp
         try
             # Use invokelatest to avoid world age issues in tests
-            resp = Base.invokelatest(rl.request_handler, job.method, job.url, job.headers, job.body)
-
-            # Update rate limit state from headers
-            _update_ratelimit(rl, job.route, resp)
-
-            if resp.status == 429
-                # Rate limited
-                retry_after = _get_retry_after(resp)
-                is_global = _is_global_ratelimit(resp)
-
-                if is_global
-                    @warn "Global rate limit hit" retry_after
-                    rl.global_reset_at = time() + retry_after
-                else
-                    @warn "Bucket rate limit hit" bucket_key retry_after
-                end
-
-                sleep(retry_after + rl.safety_buffer) # Buffer also on explicit 429
-                continue  # Retry
-            end
-
-            put!(job.result, resp)
-            return
+            resp = Base.invokelatest(rl.request_handler, job.method, job.url, job.headers,
+                                     _materialize_body(job.body))
         catch e
-            if attempt == max_retries
+            if attempt == max_retries || !_is_idempotent(job.method)
                 put!(job.result, e)
                 return
             end
@@ -206,32 +251,58 @@ function _process_job(rl::RateLimiter, job::RestJob)
             backoff = min(10.0, (2^attempt) * (0.5 + rand()))
             @warn "REST request failed, retrying with backoff" attempt backoff exception=e
             sleep(backoff)
+            continue
         end
+
+        # Update rate limit state from headers
+        _update_ratelimit(rl, job.route, resp)
+
+        if resp.status == 429 && attempt < max_retries
+            retry_after = _get_retry_after(resp)
+            if _is_global_ratelimit(resp)
+                @warn "Global rate limit hit" retry_after
+                rl.global_reset_at = time() + retry_after
+            else
+                @warn "Bucket rate limit hit" bucket_key retry_after
+            end
+
+            sleep(retry_after + rl.safety_buffer) # Buffer also on explicit 429
+            continue  # Retry
+        end
+
+        # Success, a non-429 error, or a 429 after the last retry: the caller
+        # always gets an answer.
+        put!(job.result, resp)
+        return
     end
 end
 
+# The major-parameter part of a route's bucket key (e.g. `channel_id:123`).
+# Discord buckets are shared per hash *and* per major parameter, so two
+# channels with the same bucket hash still have independent limits.
+function _major_key(route::Route)
+    parts = split(route.bucket_key, ':'; limit=3)
+    length(parts) == 3 ? String(parts[3]) : ""
+end
+
 function _get_bucket_key(rl::RateLimiter, route::Route)
-    # Use Discord's bucket hash if known, otherwise use route bucket key
-    get(rl.bucket_hashes, route.bucket_key, route.bucket_key)
+    # Use Discord's bucket hash (plus major params) if known, otherwise the route key
+    bucket_hash = get(rl.bucket_hashes, route.bucket_key, nothing)
+    isnothing(bucket_hash) && return route.bucket_key
+    major = _major_key(route)
+    isempty(major) ? bucket_hash : "$bucket_hash:$major"
 end
 
 function _update_ratelimit(rl::RateLimiter, route::Route, resp)
     headers = Dict(lowercase(h.first) => h.second for h in resp.headers)
 
-    # Update global
-    if haskey(headers, "x-ratelimit-global")
-        # This response is about global limits
-    end
-
-    # Update bucket
-    bucket_key = route.bucket_key
     if haskey(headers, "x-ratelimit-bucket")
-        hash = headers["x-ratelimit-bucket"]
-        rl.bucket_hashes[bucket_key] = hash
-        bucket_key = hash
+        rl.bucket_hashes[route.bucket_key] = headers["x-ratelimit-bucket"]
     end
+    bucket_key = _get_bucket_key(rl, route)
 
     bucket = get!(rl.buckets, bucket_key, BucketState())
+    bucket.bucket_hash = get(rl.bucket_hashes, route.bucket_key, nothing)
 
     if haskey(headers, "x-ratelimit-remaining")
         bucket.remaining = parse(Int, headers["x-ratelimit-remaining"])
@@ -242,13 +313,13 @@ function _update_ratelimit(rl::RateLimiter, route::Route, resp)
         bucket.reset_at = time() + parse(Float64, headers["x-ratelimit-reset-after"])
     end
 
-    rl.buckets[bucket_key] = bucket
+    return bucket
 end
 
 function _get_retry_after(resp)
     try
         body = JSON3.read(resp.body, Dict{String, Any})
-        return get(body, "retry_after", 1.0)
+        return Float64(get(body, "retry_after", 1.0))
     catch
         # Try header
         headers = Dict(lowercase(h.first) => h.second for h in resp.headers)

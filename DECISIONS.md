@@ -172,7 +172,7 @@ Adopt as a reliability standard a hybrid model:
 
 Initial execution is documented in:
 
-- `docs/PLAN-reliability-sprint.md`
+- `dev/PLAN-reliability-sprint.md`
 
 This plan defines the baseline, measurable goals, backlog by cost/benefit,
 Julia tools used, and Definition of Done.
@@ -189,4 +189,4 @@ Julia tools used, and Definition of Done.
 
 - Fixtures manifest: `test/integration/fixtures/_manifest.json`
 - Supported events mapping: `src/gateway/events.jl` (`EVENT_TYPES`)
-- Execution plan: `docs/PLAN-reliability-sprint.md`
+- Execution plan: `dev/PLAN-reliability-sprint.md`

@@ -3,7 +3,7 @@
 using Sockets
 using HTTP
 using JSON3
-using ..Accord: ACCORD_VERSION
+using Accord: ACCORD_VERSION
 
 function doctor_impl()
     println("🩺 Accord.jl Doctor — Diagnostic Report")

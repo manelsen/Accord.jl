@@ -386,14 +386,19 @@ the interaction.
 """
 function create_interaction_response(rl::RateLimiter, interaction_id::Snowflake, interaction_token::String; token::String, body::Dict, files=nothing)
     url = "$(API_BASE)/interactions/$(interaction_id)/$(interaction_token)/callback"
-    headers = [
-        "Content-Type" => "application/json",
-        "User-Agent" => USER_AGENT,
-    ]
+    headers = Pair{String,String}["User-Agent" => USER_AGENT]
 
-    # This endpoint is explicitly unauthenticated by Discord docs.
+    # This endpoint is explicitly unauthenticated by Discord docs, and it
+    # bypasses the rate limiter queue: the 3-second response window matters
+    # more than bucket bookkeeping for a single, per-interaction callback.
     _ = token
-    rl.request_handler("POST", url, headers, JSON3.write(body))
+    payload = if !isnothing(files) && !isempty(files)
+        _multipart_body(body, files)
+    else
+        push!(headers, "Content-Type" => "application/json")
+        JSON3.write(body)
+    end
+    rl.request_handler("POST", url, headers, payload)
 end
 
 """

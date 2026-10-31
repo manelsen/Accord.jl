@@ -295,7 +295,7 @@ function update_state!(state::State, event::GuildCreate)
         end
         for member in members
             user = member.user
-            if !ismissing(user)
+            if user isa User   # Maybe{User}: may be missing or null
                 state.users[user.id] = user
                 store[user.id] = member
             end
@@ -342,7 +342,7 @@ function update_state!(state::State, event::GuildMemberAdd)
         get!(state.members, event.guild_id, Store{Member}())
     end
     user = event.member.user
-    if !ismissing(user)
+    if user isa User   # Maybe{User}: may be missing or null
         state.users[user.id] = user
         store[user.id] = event.member
     end

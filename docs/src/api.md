@@ -873,8 +873,12 @@ RTPPacket
 
 ### Encryption
 ```@docs
-xsalsa20_poly1305_encrypt
-xsalsa20_poly1305_decrypt
+encrypt_rtpsize
+decrypt_rtpsize
+rtpsize_nonce
+aes256gcm_available
+aead_aes256gcm_encrypt
+aead_aes256gcm_decrypt
 aead_xchacha20_poly1305_encrypt
 aead_xchacha20_poly1305_decrypt
 ```
@@ -890,6 +894,26 @@ heartbeat_latency
 ### Private Helpers
 ```@docs
 _notify_waiters!
-_PENDING_CHECKS
+_CHECKS_TLS_KEY
 _resolve_perm
+```
+
+---
+
+## Additional Reference
+
+```@docs
+UnavailableGuild
+WelcomeScreen
+WelcomeScreenChannel
+VoiceChannelStatusUpdate
+VoiceChannelStartTimeUpdate
+create_poll
+modify_thread
+create_forum_tag
+modify_forum_tag
+delete_forum_tag
+parse_timestamp
+push_pending_check!
+@wrap_resource_event
 ```
