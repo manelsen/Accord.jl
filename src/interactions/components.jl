@@ -156,21 +156,20 @@ end
 
 """Use this to create text input fields inside modal dialogs.
 
-Create a Text Input component (for modals).
+Create a Text Input component (for modals). Wrap it in a [`label`](@ref), which
+carries the question shown to the user; the `label` keyword here is Discord's
+older form, still accepted inside an [`action_row`](@ref) but deprecated.
 
 # Example
 ```julia
-input = text_input(
-    custom_id="reason",
-    label="Reason for report",
-    style=TextInputStyles.PARAGRAPH,
-    placeholder="Describe what happened..."
-)
+label("Reason for report",
+      text_input(custom_id="reason", style=TextInputStyles.PARAGRAPH,
+                 placeholder="Describe what happened..."))
 ```
 """
 function text_input(;
     custom_id::String,
-    label::String,
+    label::String = "",
     style::Int = TextInputStyles.SHORT,
     min_length::Int = 0,
     max_length::Int = 4000,
@@ -181,16 +180,89 @@ function text_input(;
     ti = Dict{String, Any}(
         "type" => ComponentTypes.TEXT_INPUT,
         "custom_id" => custom_id,
-        "label" => label,
         "style" => style,
         "required" => required,
     )
+    !isempty(label) && (ti["label"] = label)
     min_length > 0 && (ti["min_length"] = min_length)
     max_length < 4000 && (ti["max_length"] = max_length)
     !isempty(value) && (ti["value"] = value)
     !isempty(placeholder) && (ti["placeholder"] = placeholder)
     ti
 end
+
+"""
+    label(text, component; description="") -> Dict
+
+Wrap one modal input with the question shown above it. Every interactive
+component of a modal goes in a Label: [`text_input`](@ref), the select menus,
+[`file_upload`](@ref), [`radio_group`](@ref), [`checkbox_group`](@ref) and
+[`checkbox`](@ref).
+
+# Example
+```julia
+show_modal(ctx; title="Report", custom_id="report", components=[
+    label("What happened?", text_input(custom_id="what", style=TextInputStyles.PARAGRAPH)),
+    label("Severity", radio_group(custom_id="sev", options=[
+        select_option(label="Low", value="low"),
+        select_option(label="High", value="high"),
+    ]); description="Pick one"),
+])
+```
+"""
+function label(text::AbstractString, component::AbstractDict; description::AbstractString = "")
+    _with_set(Dict{String, Any}("type" => ComponentTypes.LABEL, "label" => text,
+                                "component" => component); description)
+end
+
+"""
+    file_upload(; custom_id, min_values=1, max_values=1, required=true, file_types=String[])
+
+A file picker for modals (wrap it in a [`label`](@ref)). `file_types` restricts
+what can be chosen: `"image"`, `"video"`, `"audio"` or extensions like `".pdf"`.
+The submission carries attachment ids; read the files with [`modal_files`](@ref).
+"""
+function file_upload(; custom_id::String, min_values::Int = 1, max_values::Int = 1,
+                     required::Bool = true, file_types::Vector{String} = String[])
+    d = _with_set(Dict{String, Any}("type" => ComponentTypes.FILE_UPLOAD, "custom_id" => custom_id,
+                                    "min_values" => min_values, "max_values" => max_values,
+                                    "required" => required); file_types)
+    return d
+end
+
+"""
+    radio_group(; custom_id, options, required=true)
+
+Exactly-one choice for modals (wrap it in a [`label`](@ref)). `options` are
+[`select_option`](@ref)s, between 2 and 10; mark one with `default=true` to
+preselect it.
+"""
+function radio_group(; custom_id::String, options::Vector, required::Bool = true)
+    Dict{String, Any}("type" => ComponentTypes.RADIO_GROUP, "custom_id" => custom_id,
+                      "options" => options, "required" => required)
+end
+
+"""
+    checkbox_group(; custom_id, options, min_values=1, max_values=length(options), required=true)
+
+Multiple-choice checkboxes for modals (wrap it in a [`label`](@ref)). `options`
+are [`select_option`](@ref)s, up to 10.
+"""
+function checkbox_group(; custom_id::String, options::Vector, min_values::Int = 1,
+                        max_values::Int = length(options), required::Bool = true)
+    Dict{String, Any}("type" => ComponentTypes.CHECKBOX_GROUP, "custom_id" => custom_id,
+                      "options" => options, "min_values" => min_values,
+                      "max_values" => max_values, "required" => required)
+end
+
+"""
+    checkbox(; custom_id, default=false)
+
+A single yes/no box for modals (wrap it in a [`label`](@ref)). Discord does not
+let a lone checkbox be required; use a one-option [`checkbox_group`](@ref) for that.
+"""
+checkbox(; custom_id::String, default::Bool = false) =
+    _with_set(Dict{String, Any}("type" => ComponentTypes.CHECKBOX, "custom_id" => custom_id); default)
 
 """Use this to create rich embedded messages with formatted content.
 

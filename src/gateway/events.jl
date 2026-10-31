@@ -854,9 +854,52 @@ Sent when a voice channel's start time is updated.
     voice_start_time::Maybe{Int}
 end
 
+"""
+    RateLimited
+
+Sent when a gateway request was rate limited and dropped, so no reply will
+come. `opcode` is the request's opcode (8 for [`request_guild_members`](@ref)),
+`retry_after` is in seconds, and `meta` carries the request's `guild_id` and `nonce`.
+Accord also logs a warning when it arrives.
+
+[Discord docs](https://discord.com/developers/docs/events/gateway-events#rate-limited)
+"""
+@discord_struct RateLimited <: AbstractEvent begin
+    opcode::Int
+    retry_after::Float64
+    meta::Optional{Any}
+end
+
+"""
+    ChannelInfoEntry
+
+One channel in a [`ChannelInfo`](@ref) event: its `id` and, when requested,
+`status` and `voice_start_time` (Unix seconds).
+"""
+@discord_struct ChannelInfoEntry begin
+    id::Snowflake
+    status::Maybe{String}
+    voice_start_time::Maybe{Int}
+end
+
+"""
+    ChannelInfo
+
+Reply to [`request_channel_info`](@ref): the voice status and start time of a
+guild's channels.
+
+[Discord docs](https://discord.com/developers/docs/events/gateway-events#channel-info)
+"""
+@discord_struct ChannelInfo <: AbstractEvent begin
+    guild_id::Snowflake
+    channels::Vector{ChannelInfoEntry}
+end
+
 # Event name → type mapping
 const EVENT_TYPES = Dict{String, Type{<:AbstractEvent}}(
     "READY"                              => ReadyEvent,
+    "RATE_LIMITED"                       => RateLimited,
+    "CHANNEL_INFO"                       => ChannelInfo,
     "RESUMED"                            => ResumedEvent,
     "CHANNEL_CREATE"                     => ChannelCreate,
     "CHANNEL_UPDATE"                     => ChannelUpdate,

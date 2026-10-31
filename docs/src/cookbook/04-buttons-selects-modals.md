@@ -145,27 +145,22 @@ All specialized selects use [`@select_handler`](@ref) and [`selected_values`](@r
         title="Feedback Form",
         custom_id="feedback_modal",
         components=[
-            Accord.action_row([
+            Accord.label("Subject",
                 Accord.text_input(
                     custom_id="fb_subject",
-                    label="Subject",
                     style=TextInputStyles.SHORT,
                     placeholder="Brief summary...",
-                    required=true,
                     max_length=100,
-                ),
-            ]),
-            Accord.action_row([
+                )),
+            Accord.label("Details",
                 Accord.text_input(
                     custom_id="fb_body",
-                    label="Details",
                     style=TextInputStyles.PARAGRAPH,
                     placeholder="Tell us more...",
-                    required=true,
                     min_length=10,
                     max_length=2000,
-                ),
-            ]),
+                );
+                description="What happened, and what you expected"),
         ]
     )
 end
@@ -175,7 +170,7 @@ end
 
 ```julia
 @modal_handler client "feedback_modal" function(ctx)
-    values = Accord.modal_values(ctx)  # Dict{String, String}
+    values = Accord.modal_values(ctx)  # Dict{String, Any}: custom_id => value
     subject = values["fb_subject"]
     body = values["fb_body"]
 
@@ -188,6 +183,49 @@ end
         ]
     )
     Accord.respond(ctx; embeds=[e], ephemeral=true)
+end
+```
+
+!!! note "Labels"
+    Discord now wants every modal input wrapped in a [`label`](@ref), which holds
+    the question and an optional description. The older layout, a `text_input`
+    with its own `label=` inside an `action_row`, still works but is deprecated.
+
+### Choices, Checkboxes and File Uploads
+
+Besides text and select menus, a modal can hold radio buttons, checkboxes and
+file pickers. [`modal_values`](@ref) returns each in its natural type.
+
+```julia
+@slash_command client "signup" "Sign up for the event" function(ctx)
+    show_modal(ctx;
+        title="Event Signup",
+        custom_id="signup_modal",
+        components=[
+            Accord.label("Which day?", Accord.radio_group(custom_id="day", options=[
+                Accord.select_option(label="Saturday", value="sat"),
+                Accord.select_option(label="Sunday", value="sun"),
+            ])),
+            Accord.label("Sessions", Accord.checkbox_group(custom_id="sessions", options=[
+                Accord.select_option(label="Workshop", value="workshop"),
+                Accord.select_option(label="Talks", value="talks"),
+                Accord.select_option(label="Dinner", value="dinner"),
+            ]; min_values=0)),
+            Accord.label("Send me reminders", Accord.checkbox(custom_id="remind", default=true)),
+            Accord.label("Photo for your badge",
+                Accord.file_upload(custom_id="photo", required=false, file_types=["image"])),
+        ]
+    )
+end
+
+@modal_handler client "signup_modal" function(ctx)
+    v = Accord.modal_values(ctx)
+    day      = v["day"]          # "sat", "sun" (or nothing if the group is optional)
+    sessions = v["sessions"]     # Vector{String}, possibly empty
+    remind   = v["remind"]       # Bool
+    photos   = Accord.modal_files(ctx, "photo")   # Vector{Attachment}
+    Accord.respond(ctx; content="Signed up for $(day): $(join(sessions, ", ")); " *
+        "reminders $(remind ? "on" : "off"); $(length(photos)) photo(s)", ephemeral=true)
 end
 ```
 
@@ -210,8 +248,8 @@ end
         title="Bug Report",
         custom_id="bug_report_modal",
         components=[
-            Accord.action_row([Accord.text_input(custom_id="bug_title", label="Bug Title", style=TextInputStyles.SHORT, required=true)]),
-            Accord.action_row([Accord.text_input(custom_id="bug_desc", label="Description", style=TextInputStyles.PARAGRAPH, required=true)]),
+            Accord.label("Bug Title", Accord.text_input(custom_id="bug_title", style=TextInputStyles.SHORT)),
+            Accord.label("Description", Accord.text_input(custom_id="bug_desc", style=TextInputStyles.PARAGRAPH)),
         ]
     )
 end
@@ -292,12 +330,8 @@ end
         title="Create Support Ticket",
         custom_id="ticket_modal",
         components=[
-            Accord.action_row([
-                Accord.text_input(custom_id="ticket_subject", label="Subject", style=TextInputStyles.SHORT, required=true, placeholder="Brief description"),
-            ]),
-            Accord.action_row([
-                Accord.text_input(custom_id="ticket_details", label="Details", style=TextInputStyles.PARAGRAPH, required=true, placeholder="Describe your issue..."),
-            ]),
+            Accord.label("Subject", Accord.text_input(custom_id="ticket_subject", style=TextInputStyles.SHORT, placeholder="Brief description")),
+            Accord.label("Details", Accord.text_input(custom_id="ticket_details", style=TextInputStyles.PARAGRAPH, placeholder="Describe your issue...")),
         ]
     )
 end

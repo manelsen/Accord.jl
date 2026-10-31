@@ -11,6 +11,8 @@ module GatewayOpcodes
     const INVALID_SESSION       = 9
     const HELLO                 = 10
     const HEARTBEAT_ACK         = 11
+    const REQUEST_SOUNDBOARD_SOUNDS = 31
+    const REQUEST_CHANNEL_INFO  = 43
 end
 
 # Discord Gateway Close Event Codes

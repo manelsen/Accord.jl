@@ -1,4 +1,22 @@
 """
+    PrimaryGuild
+
+The server tag a user displays next to their name (`User.primary_guild`).
+
+# Fields
+- `identity_guild_id::Maybe{Snowflake}`: The guild whose tag is shown.
+- `identity_enabled::Maybe{Bool}`: Whether the tag is shown; empty when Discord cleared it.
+- `tag::Maybe{String}`: The tag text (up to 4 characters).
+- `badge::Maybe{String}`: The badge image hash.
+"""
+@discord_struct PrimaryGuild begin
+    identity_guild_id::Maybe{Snowflake}
+    identity_enabled::Maybe{Bool}
+    tag::Maybe{String}
+    badge::Maybe{String}
+end
+
+"""
     User
 
 Represents a Discord user. Users are global and not tied to any specific guild,
@@ -22,6 +40,8 @@ although they can have guild-specific metadata (see [`Member`](@ref)).
 - `premium_type::Maybe{Int}`: The type of Nitro subscription on a user's account.
 - `public_flags::Maybe{Int}`: The public flags on a user's account.
 - `avatar_decoration_data::Maybe{Any}`: Metadata about the user's avatar decoration.
+- `collectibles::Maybe{Any}`: Collectibles the user has (nameplates, …).
+- `primary_guild::Maybe{PrimaryGuild}`: The server tag the user displays.
 
 # Example
 ```julia
@@ -50,4 +70,6 @@ println("Hello, \$(user.username)!")
     premium_type::Maybe{Int}
     public_flags::Maybe{Int}
     avatar_decoration_data::Maybe{Any}
+    collectibles::Maybe{Any}
+    primary_guild::Maybe{PrimaryGuild}
 end

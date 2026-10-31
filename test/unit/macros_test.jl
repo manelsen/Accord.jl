@@ -155,6 +155,19 @@
         y::Int32
     end
 
+    @discord_struct TestNullInner begin
+        tag::Maybe{String}
+    end
+
+    @discord_struct TestNullStruct begin
+        name::String
+        topic::Maybe{String}
+        color::Maybe{Int}
+        icon::Nullable{String}
+        nick::Optional{String}
+        inner::Maybe{TestNullInner}
+    end
+
 
     @testset "@discord_struct" begin
 
@@ -258,6 +271,41 @@
             s = TestSmallNumStruct()
             @test s.x == Float32(0.0)
             @test s.y == Int32(0)
+        end
+
+        @testset "Maybe keeps null apart from absent on read" begin
+            s = JSON3.read("""{"name": "a", "topic": null, "icon": null, "inner": {"tag": null}}""", TestNullStruct)
+            @test s.topic === nothing
+            @test s.color === missing
+            @test s.icon === nothing
+            @test s.nick === missing
+            @test s.inner.tag === nothing
+            @test JSON3.read("""{"name": "a", "inner": null}""", TestNullStruct).inner === nothing
+            @test JSON3.read("""{"name": "a", "inner": {}}""", TestNullStruct).inner.tag === missing
+            @test JSON3.read("""{"name": "a", "topic": "t", "color": 3}""", TestNullStruct).color == 3
+        end
+
+        @testset "missing is omitted and nothing written as null" begin
+            s = TestNullStruct(name="a", topic=nothing, color=missing, icon=nothing,
+                               inner=TestNullInner(tag=nothing))
+            obj = JSON3.read(JSON3.write(s))
+            @test haskey(obj, :topic) && obj.topic === nothing
+            @test haskey(obj, :icon) && obj.icon === nothing
+            @test !haskey(obj, :color)
+            @test !haskey(obj, :nick)
+            @test haskey(obj.inner, :tag) && obj.inner.tag === nothing
+        end
+
+        @testset "null and absent survive a round trip" begin
+            # Nullable fields are always present: absent reads as nothing, written as null
+            for json in ("""{"name":"a","topic":null,"icon":null,"inner":{"tag":null}}""",
+                         """{"name":"a","color":7,"icon":"i"}""",
+                         """{"name":"a","icon":null,"nick":"n","inner":null}""")
+                @test JSON3.write(JSON3.read(json, TestNullStruct)) == json
+            end
+            s = TestNullStruct(name="a", topic=nothing, nick="n")
+            s2 = JSON3.read(JSON3.write(s), TestNullStruct)
+            @test s2.topic === nothing && s2.color === missing && s2.nick == "n"
         end
     end
 

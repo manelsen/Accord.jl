@@ -36,6 +36,8 @@
 @doc "This message failed to mention some roles and add their members to the thread." MsgFlagFailedToMentionSomeRolesInThread
 @doc "This message will not trigger push and desktop notifications." MsgFlagSuppressNotifications
 @doc "This message is a voice message." MsgFlagIsVoiceMessage
+@doc "This message carries a snapshot of a forwarded message (`message_snapshots`)." MsgFlagHasSnapshot
+@doc "The message uses Components V2: layout components, no `content` or `embeds`. Required when sending `container`, `section`, `text_display` and friends." MsgFlagIsComponentsV2
 
 @doc "Discord Employee" UserFlagStaff
 @doc "Partnered Server Owner" UserFlagPartner
@@ -76,7 +78,14 @@
 
 @doc "Role can be selected by members in an onboarding prompt." RoleFlagInPrompt
 
+@doc "The attachment is a clip from a stream." AttachFlagIsClip
+@doc "The attachment is the thumbnail of a thread in a media channel." AttachFlagIsThumbnail
 @doc "The attachment is a remix." AttachFlagIsRemix
+@doc "The attachment is marked as a spoiler." AttachFlagIsSpoiler
+@doc "Discord's scan flagged the attachment as explicit content." AttachFlagContainsExplicitContent
+@doc "The attachment is an animated image." AttachFlagIsAnimated
+@doc "Discord's scan flagged the attachment as gore." AttachFlagContainsGoreContent
+@doc "Discord's scan flagged the attachment as self-harm content." AttachFlagContainsSelfHarmContent
 
 @doc "SKU is available for purchase." SKUFlagAvailable
 @doc "SKU is a guild subscription." SKUFlagGuildSubscription

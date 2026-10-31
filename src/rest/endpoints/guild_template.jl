@@ -39,10 +39,3 @@ function delete_guild_template(rl::RateLimiter, guild_id::Snowflake, template_co
     discord_delete(rl, "/guilds/$(guild_id)/templates/$(template_code)"; token)
 end
 
-"""Use this to create a new server using an existing template as a starting point.
-
-Create a new guild from a template."""
-function create_guild_from_template(rl::RateLimiter, template_code::String; token::String, body::Dict)
-    resp = discord_post(rl, "/guilds/templates/$(template_code)"; token, body)
-    parse_response(Guild, resp)
-end

@@ -128,14 +128,5 @@
             end
         end
 
-        @testset "create_guild_from_template" begin
-            handler, cap = capture_handler(mock_json(guild_json()))
-            with_mock_rl(handler) do rl, token
-                result = Accord.create_guild_from_template(rl, "abc"; token, body=Dict("name" => "New Guild"))
-                @test result isa Guild
-                @test cap[][1] == "POST"
-                @test contains(cap[][2], "/guilds/templates/abc")
-            end
-        end
     end
 end

@@ -137,11 +137,21 @@ function selected_values(ctx::InteractionContext)
 end
 
 """
-    modal_values(ctx) -> Dict{String, String}
+    modal_values(ctx) -> Dict{String, Any}
 
-Use this to retrieve the values entered by the user in a modal form submission.
+Use this to retrieve what the user entered in a modal form submission.
 
-Get modal component values as a dictionary mapping [`custom_id`](@ref) to the input value.
+Maps each input's [`custom_id`](@ref) to its value:
+
+| Component | Value |
+|:--|:--|
+| [`text_input`](@ref) | `String` |
+| [`radio_group`](@ref) | chosen `String`, or `nothing` |
+| [`checkbox`](@ref) | `Bool` |
+| [`checkbox_group`](@ref), select menus | `Vector{String}` |
+| [`file_upload`](@ref) | `Vector{String}` of attachment ids (see [`modal_files`](@ref)) |
+
+Inputs may be wrapped in a [`label`](@ref) or, in the older layout, an action row.
 
 # Example
 ```julia
@@ -152,25 +162,51 @@ end)
 ```
 """
 function modal_values(ctx::InteractionContext)
+    result = Dict{String, Any}()
     data = ctx.interaction.data
-    ismissing(data) && return Dict{String, String}()
-    rows = data.components
-    ismissing(rows) && return Dict{String, String}()
+    ismissing(data) && return result
+    top = data.components
+    ismissing(top) && return result
+    foreach(c -> _collect_modal_value!(result, c), top)
+    return result
+end
 
-    result = Dict{String, String}()
-    for row in rows
-        inner = row.components
-        if !ismissing(inner)
-            for comp in inner
-                cid = comp.custom_id
-                val = comp.value
-                if !ismissing(cid) && !ismissing(val)
-                    result[cid] = val
-                end
-            end
-        end
+# Walk a submitted modal component: Labels wrap one child, action rows many.
+function _collect_modal_value!(result::Dict{String, Any}, c::Component)
+    child = c.component
+    ismissing(child) || _collect_modal_value!(result, child)
+    kids = c.components
+    ismissing(kids) || foreach(k -> _collect_modal_value!(result, k), kids)
+    cid = c.custom_id
+    ismissing(cid) && return result
+    if !ismissing(c.values)
+        result[cid] = c.values
+    elseif !ismissing(c.value)
+        result[cid] = c.value          # String, Bool or nothing (empty radio group)
     end
     return result
+end
+
+"""
+    modal_files(ctx, custom_id) -> Vector{Attachment}
+
+The files a user submitted through the [`file_upload`](@ref) with `custom_id`.
+Empty when the field is absent or nothing was uploaded.
+"""
+function modal_files(ctx::InteractionContext, custom_id::AbstractString)
+    ids = get(modal_values(ctx), custom_id, nothing)
+    ids isa AbstractVector || return Attachment[]
+    data = ctx.interaction.data
+    resolved = ismissing(data) ? missing : data.resolved
+    atts = ismissing(resolved) ? missing : resolved.attachments
+    (ismissing(atts) || isnothing(atts)) && return Attachment[]
+    out = Attachment[]
+    for id in ids
+        raw = get(atts, Symbol(id), get(atts, string(id), nothing))
+        isnothing(raw) && continue
+        push!(out, raw isa Attachment ? raw : JSON3.read(JSON3.write(raw), Attachment))
+    end
+    return out
 end
 
 """
@@ -394,7 +430,7 @@ Show a modal dialog to the user.
     show_modal(ctx;
         title="Feedback Form",
         custom_id="feedback_form",
-        components=[action_row([text_input(custom_id="message", label="Your feedback", style=TextInputStyles.PARAGRAPH)])]
+        components=[label("Your feedback", text_input(custom_id="message", style=TextInputStyles.PARAGRAPH))]
     )
 end
 ```

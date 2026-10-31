@@ -5,19 +5,36 @@ All notable changes to this project will be documented in this file.
 ## [0.4.0] - Unreleased
 
 ### Added
+- **Modal components.** Builders `label`, `file_upload`, `radio_group`, `checkbox_group` and `checkbox`. `modal_values` now returns a `Dict{String, Any}`: text and radio choices as `String` (`nothing` for an empty radio group), checkboxes as `Bool`, and checkbox groups, selects and file uploads as `Vector{String}`. Inputs are read inside Labels or legacy action rows. `modal_files(ctx, custom_id)` returns the uploaded `Attachment`s. `text_input`'s `label` keyword is optional, because the question now belongs in the Label.
+- **Components V2 flag.** Messages whose top-level components are layout components (`container`, `section`, `text_display`, …) get `MsgFlagIsComponentsV2` automatically.
+- **New permissions.** `PermPinMessages`, `PermBypassSlowmode` and `PermSetVoiceChannelStatus`. `has_permissions` now accepts every Discord permission name as a symbol (`:PIN_MESSAGES`, …).
+- **Forwarded messages.** `forward_message(client, channel_id, message)`, `Message.message_snapshots` (`MessageSnapshot`/`SnapshotMessage`), `MessageReference.type` and `MessageReferenceTypes`.
+- **Gateway.** `RateLimited` and `ChannelInfo` events. `request_soundboard_sounds` and `request_channel_info` (opcodes 31 and 43). A dropped `request_guild_members` now logs a warning instead of silently never answering.
+- **REST.** `set_voice_channel_status` and `get_guild_role_member_counts`.
+- **Fields.** `User.primary_guild` (`PrimaryGuild`, server tags), `User.collectibles` and `Role.colors` (`RoleColors`, gradient roles).
+- **Constants.**
+  - Message flags: `MsgFlagHasSnapshot`, `MsgFlagIsComponentsV2`.
+  - Attachment flags: spoiler, clip, thumbnail, animated, and the three content-scan flags.
+  - Component types: 18–23.
+  - Audit log events: 16, 33, 146, 190 and 191.
 - **DAVE end-to-end encryption for voice.** Accord speaks voice gateway v8 and the DAVE protocol (MLS key exchange, epoch transitions, downgrade to plain transport and recovery from invalid commits), encrypting every outgoing Opus frame before transport encryption. The cryptography is Discord's libdave, loaded at runtime from `ACCORD_LIBDAVE` or `Accord.LibDave.load!(path)`. When a call requires DAVE and no key is available yet, frames are dropped rather than sent unencrypted. Close code 4017 (E2EE required) now produces an error that says how to enable it.
 - Voice heartbeats carry `seq_ack`, and `connect!` waits for Discord's session description instead of sleeping a fixed second.
 
 ### Breaking
+- **Pins use Discord's new endpoints.** `get_pinned_messages` returns a `ChannelPins` page (`items` of `MessagePin` with `message` and `pinned_at`, plus `has_more`) and accepts `before`/`limit`. `pin_message`/`unpin_message` call `/messages/pins`, which require `PIN_MESSAGES`.
+- **`create_guild_from_template` removed.** Discord no longer lets apps create guilds.
+- **`Component.color` renamed to `accent_color`**, the field Discord actually sends for containers. It was never filled before.
 - **Handlers run in parallel.** Event handlers are spawned on Julia's default threadpool (`Threads.@spawn`) instead of `@async`, so with more than one thread they run concurrently, up to `handler_concurrency`. State shared between your handlers must be thread-safe. With a single thread nothing changes.
 - **Smaller export list.** `using Accord` now exports types, events, the command macros (`@slash_command`, `@option`, `@check`, …) and Discord-specific functions (`create_message`, `wait_for`, `sync_commands!`, …). Generic names are `public` but no longer exported, so they cannot clash with other packages: `start`, `stop`, `on`, `on_error`, `@on`, `respond`, `defer`, `followup`, `target`, `custom_id`, `get_option(s)`, `selected_values`, `modal_values`, the check guards (`has_permissions`, `is_owner`, `is_in_guild`, `cooldown`), every component/embed builder (`button`, `action_row`, `embed`, `@embed`, `section`, `container`, …), `timestamp`, `has_flag`, `Optional`, `Nullable`, `Internals` and the voice verbs (`connect!`, `play!`, `stop!`, …). Use `Accord.respond(...)` or `using Accord: respond`.
 - **Client-first REST API.** Every REST endpoint now accepts a `Client` in place of `(rl; token)`: `Accord.list_auto_moderation_rules(client, guild_id)` instead of `list_auto_moderation_rules(client.ratelimiter, guild_id; token=client.token)`. The `RateLimiter` form remains as the internal layer. Endpoints are public; the list is `Accord.REST_ENDPOINTS`.
 - `create_message(client, ...)` accepts `poll`, `flags` and `allowed_mentions`.
 - **CLI split out**: the `accord` command-line tool (`onboard`, `doctor`) moved to the `AccordCLI` package in `AccordCLI/`. `Accord` no longer depends on `Comonicon`, `Pkg` or `UUIDs`, and `Accord.AccordCLI` is gone.
 - **Voice transport encryption**: only `aead_aes256_gcm_rtpsize` (preferred, when the CPU has hardware AES) and `aead_xchacha20_poly1305_rtpsize` are supported. The `xsalsa20_poly1305*` modes, discontinued by Discord on 2024-11-18, were removed together with their functions and `CRYPTO_SECRETBOX_*` constants. `Accord.Internals` exposes `encrypt_rtpsize`, `decrypt_rtpsize` and `aes256gcm_available` instead.
+- **`Maybe` fields keep null apart from absent.** A JSON `null` in a `Maybe{T}` field now reads as `nothing`; an absent key stays `missing`. JSON3 used to read both as `missing`. On write, `missing` fields are omitted and `nothing` in a `Maybe`/`Nullable` field is written as `null`; before, it was the other way round. Code that tests only `ismissing(x)` on these fields now also sees `nothing`, so check with `x isa T`. As a result, a nickname, avatar or timeout cleared in `GUILD_MEMBER_UPDATE` now clears it in the cache too.
 - Removed the unused `CodecZlib` dependency and the `GatewaySession.zlib_buffer` field (Accord never requested gateway compression).
 
 ### Fixed
+- **Handlers added after `start` are called.** Event handlers, middleware, the error handler, command handlers and checks, component/autocomplete/modal handlers and `wait_for` predicates are now called with `invokelatest`. Before, a handler defined after the event loop started (at the REPL, for instance) was "too new" for the loop's world age and failed with a `MethodError` on every event. In the test suite, this flooded the logs with ~400k errors on Julia 1.13 and starved the CI runners.
 - **Voice opcodes.** `VoiceOpcodes` had wrong numbers for the DAVE and client-connect opcodes (10–16); they now match Discord's (11, 13, 21–31).
 - **Heartbeats can't be starved.** The gateway, heartbeat, rate limiter, command pump and voice loops run on the `:interactive` threadpool when Julia has one (`julia -t auto,1`). Before, everything shared one thread, and a handler doing long CPU work without yielding delayed heartbeats until Discord dropped the connection as a zombie.
 - **Thread-safe internals.** The rate limiter's buckets and global counters, the gateway send window and sequence number, heartbeat state, event-handler registration, per-guild cache stores and voice-state cache are now guarded by locks. The heartbeat marks a beat as pending before sending it, so a fast ACK on another thread can't be lost and misread as a zombie connection.

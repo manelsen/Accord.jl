@@ -74,6 +74,19 @@ end
 
 # --- Interaction Types ---
 """
+    MessageReferenceTypes
+
+Kinds of message reference (`MessageReference.type`): a reply (`DEFAULT`) or a
+forward (`FORWARD`), whose copy arrives in `Message.message_snapshots`.
+
+[Discord docs](https://discord.com/developers/docs/resources/message#message-reference-types)
+"""
+module MessageReferenceTypes
+    const DEFAULT = 0
+    const FORWARD = 1
+end
+
+"""
     InteractionTypes
 
 Constants for the various types of interactions in Discord.
@@ -170,6 +183,12 @@ module ComponentTypes
     const FILE               = 13
     const SEPARATOR          = 14
     const CONTAINER          = 17
+    # Modal components (wrapped in a LABEL)
+    const LABEL              = 18
+    const FILE_UPLOAD        = 19
+    const RADIO_GROUP        = 21
+    const CHECKBOX_GROUP     = 22
+    const CHECKBOX           = 23
 end
 
 # --- Button Styles ---
@@ -366,6 +385,7 @@ module AuditLogEventTypes
     const CHANNEL_OVERWRITE_CREATE = 13
     const CHANNEL_OVERWRITE_UPDATE = 14
     const CHANNEL_OVERWRITE_DELETE = 15
+    const CHANNEL_POSITION_UPDATE  = 16
     const MEMBER_KICK              = 20
     const MEMBER_PRUNE             = 21
     const MEMBER_BAN_ADD           = 22
@@ -378,6 +398,7 @@ module AuditLogEventTypes
     const ROLE_CREATE              = 30
     const ROLE_UPDATE              = 31
     const ROLE_DELETE              = 32
+    const ROLE_POSITION_UPDATE     = 33
     const INVITE_CREATE            = 40
     const INVITE_UPDATE            = 41
     const INVITE_DELETE            = 42
@@ -416,6 +437,7 @@ module AuditLogEventTypes
     const AUTO_MODERATION_BLOCK_MESSAGE = 143
     const AUTO_MODERATION_FLAG_TO_CHANNEL = 144
     const AUTO_MODERATION_USER_COMMUNICATION_DISABLED = 145
+    const AUTO_MODERATION_QUARANTINE_USER = 146
     const CREATOR_MONETIZATION_REQUEST_CREATED = 150
     const CREATOR_MONETIZATION_TERMS_ACCEPTED  = 151
     const ONBOARDING_PROMPT_CREATE = 163
@@ -423,7 +445,10 @@ module AuditLogEventTypes
     const ONBOARDING_PROMPT_DELETE = 165
     const ONBOARDING_CREATE        = 166
     const ONBOARDING_UPDATE        = 167
+    const HOME_SETTINGS_CREATE     = 190
+    const HOME_SETTINGS_UPDATE     = 191
     const VOICE_CHANNEL_STATUS_UPDATE = 192
+    const VOICE_CHANNEL_STATUS_CREATE = 192   # the name Discord's docs now use
     const VOICE_CHANNEL_STATUS_DELETE = 193
 end
 

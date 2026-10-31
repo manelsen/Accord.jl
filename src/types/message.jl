@@ -4,6 +4,7 @@
 end
 
 @discord_struct MessageReference begin
+    type::Optional{Int}          # MessageReferenceTypes: DEFAULT (reply) or FORWARD
     message_id::Optional{Snowflake}
     channel_id::Optional{Snowflake}
     guild_id::Optional{Snowflake}
@@ -32,6 +33,37 @@ end
     roles::Optional{Vector{Snowflake}}
     users::Optional{Vector{Snowflake}}
     replied_user::Optional{Bool}
+end
+
+"""
+    SnapshotMessage
+
+The part of a forwarded message that Discord copies into the forward: content,
+embeds, attachments, components and mentions, but no author.
+"""
+@discord_struct SnapshotMessage begin
+    type::Optional{Int}
+    content::Optional{String}
+    embeds::Optional{Vector{Embed}}
+    attachments::Optional{Vector{Attachment}}
+    timestamp::Optional{String}
+    edited_timestamp::Optional{String}
+    flags::Optional{Int}
+    mentions::Optional{Vector{User}}
+    mention_roles::Optional{Vector{Snowflake}}
+    stickers::Optional{Vector{Any}}
+    sticker_items::Optional{Vector{StickerItem}}
+    components::Optional{Vector{Component}}
+end
+
+"""
+    MessageSnapshot
+
+A copy of a forwarded message at the time it was forwarded (`Message.message_snapshots`).
+The copied fields are in `message`, a [`SnapshotMessage`](@ref).
+"""
+@discord_struct MessageSnapshot begin
+    message::Optional{SnapshotMessage}
 end
 
 """
@@ -74,6 +106,7 @@ attachments, embeds, and more.
 - `poll::Optional{Poll}`: An associated poll.
 - `guild_id::Optional{Snowflake}`: The ID of the guild the message was sent in.
 - `member::Optional{Member}`: Member properties for the author (only in some contexts).
+- `message_snapshots::Optional{Vector{MessageSnapshot}}`: The forwarded message, for forwards.
 
 # Example
 ```julia
@@ -117,4 +150,27 @@ end
     poll::Optional{Poll}
     guild_id::Optional{Snowflake}
     member::Optional{Member}
+    message_snapshots::Optional{Vector{MessageSnapshot}}
+end
+
+"""
+    MessagePin
+
+A pinned message and when it was pinned, as returned by [`get_pinned_messages`](@ref).
+"""
+@discord_struct MessagePin begin
+    pinned_at::String
+    message::Optional{Message}
+end
+
+"""
+    ChannelPins
+
+One page of a channel's pins: `items` (newest first) and `has_more`. Pass the
+last item's `pinned_at` (a `DateTime`) as `before` to [`get_pinned_messages`](@ref)
+for the next page.
+"""
+@discord_struct ChannelPins begin
+    items::Vector{MessagePin}
+    has_more::Bool
 end
