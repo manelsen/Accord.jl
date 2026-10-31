@@ -570,8 +570,6 @@ function edit_message(client::Client, channel_id::Snowflake, message_id::Snowfla
     body = _message_body(; omit_empty=false, kwargs...)
     edit_message(client.ratelimiter, channel_id, message_id; token=client.token, body, files)
 end
-    edit_message(client.ratelimiter, channel_id, message_id; token=client.token, body)
-end
 
 """
     delete_message(client::Client, channel_id::Snowflake, message_id::Snowflake; reason=nothing)
