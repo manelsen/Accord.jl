@@ -368,8 +368,9 @@ macro slash_command(client, args...)
         # @slash_command client name description handler
         name, desc, handler = args
         return _register_command_expr(client, name, desc, handler)
-    elseif length(args) == 4 && args[3] isa Expr && args[3].head == :vect
+    elseif length(args) == 4 && args[3] isa Expr && args[3].head in (:vect, :vcat)
         # @slash_command client name description options handler
+        # (options on separate lines parse as :vcat, a single option as :vect)
         name, desc, options, handler = args
         return _register_command_expr(client, name, desc, handler; options=esc(options))
     elseif length(args) == 4

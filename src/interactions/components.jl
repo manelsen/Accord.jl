@@ -12,10 +12,15 @@ function _with_set(d::Dict{String, Any}; kwargs...)
     return d
 end
 
-# Shared body of the select menu builders.
-_select(type::Int; custom_id::String, min_values::Int, max_values::Int, kwargs...) =
-    _with_set(Dict{String, Any}("type" => type, "custom_id" => custom_id,
-                                "min_values" => min_values, "max_values" => max_values); kwargs...)
+# Shared body of the select menu builders. `required` only applies in modals
+# (Discord's default there is true), so it is sent only when given.
+function _select(type::Int; custom_id::String, min_values::Int, max_values::Int,
+                 required::Union{Bool, Nothing} = nothing, kwargs...)
+    d = _with_set(Dict{String, Any}("type" => type, "custom_id" => custom_id,
+                                    "min_values" => min_values, "max_values" => max_values); kwargs...)
+    isnothing(required) || (d["required"] = required)
+    return d
+end
 
 """Use this to group buttons and select menus into a horizontal row.
 
@@ -71,6 +76,10 @@ options = [
 ]
 sel = string_select(custom_id="my_select", options=options, placeholder="Choose one...")
 ```
+
+In a modal, pass `required=false` to make the menu optional (Discord's default
+there is required); outside modals leave it unset. The same keyword exists on
+the other select builders.
 """
 function string_select(;
     custom_id::String,
@@ -79,8 +88,9 @@ function string_select(;
     min_values::Int = 1,
     max_values::Int = 1,
     disabled::Bool = false,
+    required::Union{Bool, Nothing} = nothing,
 )
-    _select(ComponentTypes.STRING_SELECT; custom_id, options, placeholder, min_values, max_values, disabled)
+    _select(ComponentTypes.STRING_SELECT; custom_id, options, placeholder, min_values, max_values, disabled, required)
 end
 
 """Use this to define individual options within a string select menu.
@@ -111,8 +121,8 @@ Create a User Select Menu.
 sel = user_select(custom_id="pick_user", placeholder="Select a member")
 ```
 """
-function user_select(; custom_id::String, placeholder::String="", min_values::Int=1, max_values::Int=1, disabled::Bool=false)
-    _select(ComponentTypes.USER_SELECT; custom_id, placeholder, min_values, max_values, disabled)
+function user_select(; custom_id::String, placeholder::String="", min_values::Int=1, max_values::Int=1, disabled::Bool=false, required::Union{Bool, Nothing}=nothing)
+    _select(ComponentTypes.USER_SELECT; custom_id, placeholder, min_values, max_values, disabled, required)
 end
 
 """Use this to create a dropdown for selecting server roles.
@@ -124,8 +134,8 @@ Create a Role Select Menu.
 sel = role_select(custom_id="assign_role", placeholder="Pick a role", max_values=3)
 ```
 """
-function role_select(; custom_id::String, placeholder::String="", min_values::Int=1, max_values::Int=1, disabled::Bool=false)
-    _select(ComponentTypes.ROLE_SELECT; custom_id, placeholder, min_values, max_values, disabled)
+function role_select(; custom_id::String, placeholder::String="", min_values::Int=1, max_values::Int=1, disabled::Bool=false, required::Union{Bool, Nothing}=nothing)
+    _select(ComponentTypes.ROLE_SELECT; custom_id, placeholder, min_values, max_values, disabled, required)
 end
 
 """Use this to create a dropdown for selecting users or roles.
@@ -137,8 +147,8 @@ Create a Mentionable Select Menu.
 sel = mentionable_select(custom_id="mention_target", placeholder="Pick a user or role")
 ```
 """
-function mentionable_select(; custom_id::String, placeholder::String="", min_values::Int=1, max_values::Int=1, disabled::Bool=false)
-    _select(ComponentTypes.MENTIONABLE_SELECT; custom_id, placeholder, min_values, max_values, disabled)
+function mentionable_select(; custom_id::String, placeholder::String="", min_values::Int=1, max_values::Int=1, disabled::Bool=false, required::Union{Bool, Nothing}=nothing)
+    _select(ComponentTypes.MENTIONABLE_SELECT; custom_id, placeholder, min_values, max_values, disabled, required)
 end
 
 """Use this to create a dropdown for selecting channels.
@@ -150,8 +160,8 @@ Create a Channel Select Menu.
 sel = channel_select(custom_id="log_channel", placeholder="Pick a text channel", channel_types=[0])
 ```
 """
-function channel_select(; custom_id::String, channel_types::Vector{Int}=Int[], placeholder::String="", min_values::Int=1, max_values::Int=1, disabled::Bool=false)
-    _select(ComponentTypes.CHANNEL_SELECT; custom_id, channel_types, placeholder, min_values, max_values, disabled)
+function channel_select(; custom_id::String, channel_types::Vector{Int}=Int[], placeholder::String="", min_values::Int=1, max_values::Int=1, disabled::Bool=false, required::Union{Bool, Nothing}=nothing)
+    _select(ComponentTypes.CHANNEL_SELECT; custom_id, channel_types, placeholder, min_values, max_values, disabled, required)
 end
 
 """Use this to create text input fields inside modal dialogs.

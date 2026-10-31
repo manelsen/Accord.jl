@@ -5,23 +5,21 @@ using Accord
 
 function setup_bridge(client::Client)
 
-    @slash_command client "webhook_setup" "Configures a bridge webhook for this channel" do ctx
-        ch_id = ctx.interaction.channel_id
-        
+    @slash_command client "webhook_setup" "Configures a bridge webhook for this channel" function(ctx)
         try
-            wh = Accord.create_webhook(ctx.client, ch_id; 
-                name="Accord Bridge")
-            
+            wh = Accord.create_webhook(ctx.client, ctx.channel_id; body=Dict("name" => "Accord Bridge"))
+            url = "https://discord.com/api/webhooks/$(wh.id)/$(wh.token)"
+
             e = Accord.embed(
                 title="Bridge Configured",
                 description="Use the following URL to send data from external apps:",
-                color=0x57F287
+                color=0x57F287,
+                fields=[Accord.embed_field("Webhook URL", "`$url`")],
             )
-            push!(e.fields, Accord.embed_field(name="Webhook URL", value="`$(wh.url)`"))
-            
-            Accord.respond(ctx, embeds=[e], flags=MsgFlagEphemeral)
+            Accord.respond(ctx; embeds=[e], ephemeral=true)
         catch e
-            Accord.respond(ctx, content="❌ Failed to create webhook.", flags=MsgFlagEphemeral)
+            @error "Failed to create webhook" exception=e
+            Accord.respond(ctx; content="❌ Failed to create webhook. I need the Manage Webhooks permission.", ephemeral=true)
         end
     end
 

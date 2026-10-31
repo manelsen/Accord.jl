@@ -5,38 +5,28 @@ using Accord
 
 function setup_tickets(client::Client)
 
-    @slash_command client "setup_tickets" "Spawns the ticket creation Accord.button (Admin only)" do ctx
-        # Note: default_member_permissions would go in the macro if using the block syntax
-        # For positional, we can use the @check macro or set it manually in sync_commands!
-        # Let's use the new block syntax I just implemented to test it!
-        
-        # Wait, I need to check if the block syntax supports default_member_permissions.
-        # I only added name, description, handler, and @option.
-        # Let's stick to do-blocks for now for consistency.
-        
-        btn = Accord.button(label="Open Ticket", style=ButtonStyles.PRIMARY, custom_id="ticket_open", emoji="🎫")
-        row = Accord.action_row([btn])
-        Accord.respond(ctx, content="Click below to open a support ticket:", components=[row])
+    @check Accord.has_permissions(:MANAGE_GUILD)
+    @slash_command client "setup_tickets" "Posts the ticket button in this channel (Manage Server only)" function(ctx)
+        btn = Accord.button(label="Open Ticket", style=ButtonStyles.PRIMARY, custom_id="ticket_open", emoji=Dict("name" => "🎫"))
+        Accord.respond(ctx; content="Click below to open a support ticket:", components=[Accord.action_row([btn])])
     end
 
     @button_handler client "ticket_open" function(ctx)
-        ti = Accord.text_input("subject", "Brief Subject", style=TextInputStyles.SHORT, required=true)
-        ti_desc = Accord.text_input("description", "Please describe your issue", style=TextInputStyles.PARAGRAPH, required=true)
-        show_modal(ctx, "ticket_modal", "Open a Support Ticket", [Accord.action_row([ti]), Accord.action_row([ti_desc])])
+        show_modal(ctx; title="Open a Support Ticket", custom_id="ticket_modal", components=[
+            Accord.label("Brief subject", Accord.text_input(custom_id="subject", style=TextInputStyles.SHORT, max_length=100)),
+            Accord.label("Please describe your issue", Accord.text_input(custom_id="description", style=TextInputStyles.PARAGRAPH)),
+        ])
     end
 
     @modal_handler client "ticket_modal" function(ctx)
-        subject = Accord.modal_values(ctx)["subject"]
-        description = Accord.modal_values(ctx)["description"]
-        user_name = ctx.interaction.member.user.username
-        
+        values = Accord.modal_values(ctx)
         e = Accord.embed(
-            title="Ticket: $subject",
-            description=description,
+            title="Ticket: $(values["subject"])",
+            description=values["description"],
             color=0x5865F2,
-            footer=Accord.embed_footer("Opened by $user_name")
+            footer=Accord.embed_footer("Opened by $(ctx.user.username)"),
         )
-        Accord.respond(ctx, content="Ticket opened successfully!", embeds=[e], flags=MsgFlagEphemeral)
+        Accord.respond(ctx; content="Ticket opened successfully!", embeds=[e], ephemeral=true)
     end
 
     println("🎫 Tickets module loaded.")

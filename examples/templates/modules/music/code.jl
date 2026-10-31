@@ -1,66 +1,57 @@
 # Music Module
 # Provides basic voice and music playback functionality.
+# Needs FFmpeg on the PATH, the Guild Voice States intent, and libdave
+# (set ACCORD_LIBDAVE; see the voice recipe in Accord's docs).
 
 using Accord
 
 function setup_music(client::Client)
-    # Track active voice clients per guild
-    # Local to the setup function to avoid collisions
+    # Track active voice clients per guild. Handlers run in parallel, so guard the Dict.
     voice_clients = Dict{Snowflake, VoiceClient}()
+    vc_lock = ReentrantLock()
 
-    @slash_command client "join" "Joins your current voice channel" do ctx
-        guild_id = ctx.interaction.guild_id
-        guild = fetch_guild(ctx.client, guild_id)
-        
-        # Simple search for user's voice state
-        vs = nothing
-        if !ismissing(guild.voice_states)
-            idx = findfirst(s -> s.user_id == ctx.interaction.member.user.id, guild.voice_states)
-            vs = isnothing(idx) ? nothing : guild.voice_states[idx]
-        end
-        
-        if isnothing(vs) || ismissing(vs.channel_id) || isnothing(vs.channel_id)
-            return Accord.respond(ctx, content="❌ You must be in a voice channel first!", flags=MsgFlagEphemeral)
-        end
+    @slash_command client "join" "Joins a voice channel" [
+        @option Channel "channel" "The voice channel to join" required=true channel_types=[ChannelTypes.GUILD_VOICE, ChannelTypes.GUILD_STAGE_VOICE]
+    ] function(ctx)
+        channel_id = Snowflake(Accord.get_option(ctx, "channel"))
+        Accord.defer(ctx)  # connecting takes a few seconds
 
-        vc = Accord.connect!(ctx.client, guild_id, vs.channel_id)
-        voice_clients[guild_id] = vc
-        
-        Accord.respond(ctx, content="Joined <#$(vs.channel_id)>! 🎶")
-    end
-
-    @slash_command client "play" "Plays a stream (URL) in the voice channel" [
-        @option String "url" "The URL to play" required=true
-    ] do ctx
-        guild_id = ctx.interaction.guild_id
-        url = Accord.get_option(ctx, "url")
-        
-        if !haskey(voice_clients, guild_id)
-            return Accord.respond(ctx, content="❌ I am not in a voice channel. Use `/join` first.", flags=MsgFlagEphemeral)
-        end
-
-        vc = voice_clients[guild_id]
-        
         try
-            source = FFmpegSource(url)
-            Accord.play!(vc, source)
-            Accord.respond(ctx, content="Now playing: $(url) 🔊")
+            vc = VoiceClient(ctx.client, ctx.guild_id, channel_id)
+            Accord.connect!(vc)
+            lock(() -> voice_clients[ctx.guild_id] = vc, vc_lock)
+            Accord.respond(ctx; content="Joined <#$channel_id>! 🎶")
         catch e
-            Accord.respond(ctx, content="❌ Failed to play audio.", flags=MsgFlagEphemeral)
+            @error "Failed to join voice" exception=e
+            Accord.respond(ctx; content="❌ Could not join <#$channel_id>.")
         end
     end
 
-    @slash_command client "stop" "Stops playback and leaves the voice channel" do ctx
-        guild_id = ctx.interaction.guild_id
-        
-        if haskey(voice_clients, guild_id)
-            vc = voice_clients[guild_id]
-            Accord.disconnect!(vc)
-            delete!(voice_clients, guild_id)
-            Accord.respond(ctx, content="Stopped and disconnected. 👋")
-        else
-            Accord.respond(ctx, content="❌ I am not in a voice channel.", flags=MsgFlagEphemeral)
+    @slash_command client "play" "Plays a file or stream URL in the voice channel" [
+        @option String "url" "The URL or file to play" required=true
+    ] function(ctx)
+        url = Accord.get_option(ctx, "url")
+        vc = lock(() -> get(voice_clients, ctx.guild_id, nothing), vc_lock)
+        if isnothing(vc)
+            return Accord.respond(ctx; content="❌ I am not in a voice channel. Use `/join` first.", ephemeral=true)
         end
+
+        try
+            Accord.play!(vc, FFmpegSource(url))
+            Accord.respond(ctx; content="Now playing: $url 🔊")
+        catch e
+            @error "Failed to play audio" exception=e
+            Accord.respond(ctx; content="❌ Failed to play audio.", ephemeral=true)
+        end
+    end
+
+    @slash_command client "stop" "Stops playback and leaves the voice channel" function(ctx)
+        vc = lock(() -> pop!(voice_clients, ctx.guild_id, nothing), vc_lock)
+        if isnothing(vc)
+            return Accord.respond(ctx; content="❌ I am not in a voice channel.", ephemeral=true)
+        end
+        Accord.disconnect!(vc)
+        Accord.respond(ctx; content="Stopped and disconnected. 👋")
     end
 
     println("🎵 Music module loaded (Requires FFmpeg).")

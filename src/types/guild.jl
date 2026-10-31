@@ -76,7 +76,7 @@ emojis, and (in `GUILD_CREATE` events) its channels and members.
 
 # Example
 ```julia
-guild = fetch_guild(client, guild_id)
+guild = get_guild(client, guild_id)
 println("Server name: \$(guild.name) (\$(guild.id))")
 ```
 

@@ -485,6 +485,20 @@
             @test cmd.options[1]["name"] == "query"
         end
 
+        @testset "options on separate lines (parsed as vcat)" begin
+            tree = CommandTree()
+            mock_client = (; command_tree=tree)
+
+            @slash_command mock_client "lfg" "Find a group" [
+                @option String "game" "Game name" required=true
+                @option String "description" "Details" required=false
+            ] function(ctx) end
+
+            cmd = tree.commands["lfg"]
+            @test ismissing(cmd.guild_id)
+            @test [o["name"] for o in cmd.options] == ["game", "description"]
+        end
+
         @testset "too few args throws error" begin
             @test_throws Exception @eval @slash_command client "only_name"
         end

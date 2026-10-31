@@ -2,65 +2,56 @@
 # Provides helpful utility commands for server and user information.
 
 using Accord
-using Dates
 
 function setup_utils(client::Client)
 
-    @slash_command client "server_info" "Displays information about the current server" do ctx
-        guild = fetch_guild(ctx.client, ctx.interaction.guild_id)
-        
+    @slash_command client "server_info" "Displays information about the current server" function(ctx)
+        guild = get_guild(ctx.client, ctx.guild_id)
+
         e = Accord.embed(
             title="Server Information: $(guild.name)",
             color=0x5865F2,
-            thumbnail=Accord.thumbnail(url="https://cdn.discordapp.com/icons/$(guild.id)/$(guild.icon).png")
+            thumbnail=guild.icon isa String ?
+                Dict("url" => "https://cdn.discordapp.com/icons/$(guild.id)/$(guild.icon).png") : nothing,
+            fields=[
+                Accord.embed_field("ID", string(guild.id); inline=true),
+                Accord.embed_field("Owner ID", string(guild.owner_id); inline=true),
+            ],
         )
-        
-        push!(e.fields, Accord.embed_field(name="ID", value=string(guild.id), inline=true))
-        push!(e.fields, Accord.embed_field(name="Owner ID", value=string(guild.owner_id), inline=true))
-        
-        Accord.respond(ctx, embeds=[e])
+        Accord.respond(ctx; embeds=[e])
     end
 
     @slash_command client "user_info" "Displays information about a user" [
         @option User "user" "The user to inspect" required=false
-    ] do ctx
-        target_user = Accord.get_option(ctx, "user", ctx.interaction.member.user)
-        
+    ] function(ctx)
+        user_id = Accord.get_option(ctx, "user")
+        user = isnothing(user_id) ? ctx.user : get_user(ctx.client, Snowflake(user_id))
+
         e = Accord.embed(
-            title="User Profile: $(target_user.username)",
+            title="User Profile: $(user.username)",
             color=0x57F287,
-            thumbnail=Accord.thumbnail(url="https://cdn.discordapp.com/avatars/$(target_user.id)/$(target_user.avatar).png")
+            thumbnail=user.avatar isa String ?
+                Dict("url" => "https://cdn.discordapp.com/avatars/$(user.id)/$(user.avatar).png") : nothing,
+            fields=[
+                Accord.embed_field("ID", string(user.id); inline=true),
+                Accord.embed_field("Bot?", user.bot === true ? "yes" : "no"; inline=true),
+            ],
         )
-        
-        push!(e.fields, Accord.embed_field(name="ID", value=string(target_user.id), inline=true))
-        push!(e.fields, Accord.embed_field(name="Bot?", value=string(get(target_user.bot, false)), inline=true))
-        
-        Accord.respond(ctx, embeds=[e])
+        Accord.respond(ctx; embeds=[e])
     end
 
     @slash_command client "poll" "Create a simple poll" [
         @option String "question" "The question to ask" required=true
-        @option String "options" "Comma-separated options (max 5)" required=true
-    ] do ctx
+        @option String "options" "Comma-separated options (max 10)" required=true
+    ] function(ctx)
         question = Accord.get_option(ctx, "question")
-        raw_options = split(Accord.get_option(ctx, "options"), ",")
-        
-        opts = map(strip, raw_options)
-        if length(opts) > 5
-            return Accord.respond(ctx, content="❌ Maximum 5 options allowed.", flags=MsgFlagEphemeral)
+        answers = filter(!isempty, String.(strip.(split(Accord.get_option(ctx, "options"), ","))))
+        if !(1 <= length(answers) <= 10)
+            return Accord.respond(ctx; content="❌ Give between 1 and 10 options.", ephemeral=true)
         end
 
-        poll_obj = Accord.Poll(
-            question = Accord.PollMedia(text=question),
-            answers = [Accord.PollAnswer(i, Accord.PollMedia(text=opt)) for (i, opt) in enumerate(opts)],
-            allow_multiselect = false,
-            layout_type = 1
-        )
-
-        Accord.create_message(ctx.client, ctx.interaction.channel_id; 
-            poll=poll_obj)
-        
-        Accord.respond(ctx, content="Poll created!", flags=MsgFlagEphemeral)
+        create_poll(ctx.client, ctx.channel_id; question, answers)
+        Accord.respond(ctx; content="Poll created!", ephemeral=true)
     end
 
     println("🔧 Utils module loaded.")

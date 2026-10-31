@@ -7,38 +7,31 @@ using JSON3
 
 function setup_ai(client::Client)
     # Configuration - Reads OPENAI_API_KEY from environment
-    API_KEY = get(ENV, "OPENAI_API_KEY", "")
-    MODEL = "gpt-3.5-turbo"
+    api_key = get(ENV, "OPENAI_API_KEY", "")
+    model = "gpt-4o-mini"
 
     @slash_command client "ask" "Ask the AI assistant anything" [
         @option String "prompt" "Your question" required=true
-    ] do ctx
+    ] function(ctx)
         prompt = Accord.get_option(ctx, "prompt")
-        
-        if isempty(API_KEY)
-            return Accord.respond(ctx, content="❌ OpenAI API key not configured. Set `OPENAI_API_KEY`.", flags=MsgFlagEphemeral)
+
+        if isempty(api_key)
+            return Accord.respond(ctx; content="❌ OpenAI API key not configured. Set `OPENAI_API_KEY`.", ephemeral=true)
         end
 
-        Accord.defer(ctx)
+        Accord.defer(ctx)  # the API call can take longer than Discord's 3 seconds
 
-        try
-            body = Dict(
-                "model" => MODEL,
-                "messages" => [Dict("role" => "user", "content" => prompt)]
-            )
-            
+        answer = try
+            body = Dict("model" => model, "messages" => [Dict("role" => "user", "content" => prompt)])
             resp = HTTP.post("https://api.openai.com/v1/chat/completions",
-                ["Authorization" => "Bearer $API_KEY", "Content-Type" => "application/json"],
-                JSON3.write(body)
-            )
-            
-            data = JSON3.read(resp.body)
-            answer = data.choices[1].message.content
-            
-            Accord.followup(ctx, content="**Prompt:** $prompt\n\n**AI:** $answer")
+                ["Authorization" => "Bearer $api_key", "Content-Type" => "application/json"],
+                JSON3.write(body))
+            JSON3.read(resp.body).choices[1].message.content
         catch e
-            Accord.followup(ctx, content="❌ Failed to get a response from the AI.")
+            @error "AI request failed" exception=e
+            "❌ Failed to get a response from the AI."
         end
+        Accord.respond(ctx; content=first("**Prompt:** $prompt\n\n**AI:** $answer", 2000))
     end
 
     println("🧠 AI module loaded (Requires OPENAI_API_KEY).")

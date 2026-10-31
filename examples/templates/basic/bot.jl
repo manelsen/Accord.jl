@@ -24,7 +24,7 @@ Accord.on(client, ReadyEvent) do c, event
     # Register slash commands defined below
     # In production, you might want to register globally (may take 1h)
     # or per guild (immediate) by passing guild_id=...
-    sync_commands!(c)
+    sync_commands!(c, c.command_tree)
 end
 
 # --- Commands ---

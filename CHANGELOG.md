@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [0.4.0] - Unreleased
 
 ### Added
+- **Optional selects in modals.** The select builders take `required`; pass `required=false` (with `min_values=0`) to make a select optional inside a modal. It is left out unless given.
 - **Modal components.** Builders `label`, `file_upload`, `radio_group`, `checkbox_group` and `checkbox`. `modal_values` now returns a `Dict{String, Any}`: text and radio choices as `String` (`nothing` for an empty radio group), checkboxes as `Bool`, and checkbox groups, selects and file uploads as `Vector{String}`. Inputs are read inside Labels or legacy action rows. `modal_files(ctx, custom_id)` returns the uploaded `Attachment`s. `text_input`'s `label` keyword is optional, because the question now belongs in the Label.
 - **Components V2 flag.** Messages whose top-level components are layout components (`container`, `section`, `text_display`, …) get `MsgFlagIsComponentsV2` automatically.
 - **New permissions.** `PermPinMessages`, `PermBypassSlowmode` and `PermSetVoiceChannelStatus`. `has_permissions` now accepts every Discord permission name as a symbol (`:PIN_MESSAGES`, …).
@@ -34,6 +35,8 @@ All notable changes to this project will be documented in this file.
 - Removed the unused `CodecZlib` dependency and the `GatewaySession.zlib_buffer` field (Accord never requested gateway compression).
 
 ### Fixed
+- **`@slash_command` with options on separate lines.** Two or more `@option`s written one per line parse as a `vcat`, which the macro took for a guild id, so `Snowflake("name")` failed. They are now read as the options list.
+- **Project templates work.** `examples/templates` (scaffolded by AccordCLI) did not parse: the modules used `@slash_command ... do ctx`, which isn't valid syntax, and called functions that don't exist (`fetch_guild`, `fetch_message`, `fetch_guild_channels`). They are rewritten against the current API, guard shared state now that handlers run in parallel, and a test loads every module and the scaffolded bot. The `stats` module now computes summary statistics, and `/join` in the music templates takes the voice channel as an option.
 - **Handlers added after `start` are called.** Event handlers, middleware, the error handler, command handlers and checks, component/autocomplete/modal handlers and `wait_for` predicates are now called with `invokelatest`. Before, a handler defined after the event loop started (at the REPL, for instance) was "too new" for the loop's world age and failed with a `MethodError` on every event. In the test suite, this flooded the logs with ~400k errors on Julia 1.13 and starved the CI runners.
 - **Voice opcodes.** `VoiceOpcodes` had wrong numbers for the DAVE and client-connect opcodes (10–16); they now match Discord's (11, 13, 21–31).
 - **Heartbeats can't be starved.** The gateway, heartbeat, rate limiter, command pump and voice loops run on the `:interactive` threadpool when Julia has one (`julia -t auto,1`). Before, everything shared one thread, and a handler doing long CPU work without yielding delayed heartbeats until Discord dropped the connection as a zombie.

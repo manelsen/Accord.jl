@@ -60,6 +60,14 @@
         fu = file_upload(custom_id="f", max_values=3, file_types=["image", ".pdf"])
         @test (fu["type"], fu["max_values"], fu["file_types"]) == (19, 3, ["image", ".pdf"])
         @test !haskey(file_upload(custom_id="f"), "file_types")
+
+        # Selects send `required` only when given, and send it even when false
+        @test !haskey(Accord.string_select(custom_id="s", options=opts), "required")
+        @test Accord.string_select(custom_id="s", options=opts, required=false)["required"] === false
+        for sel in (Accord.user_select, Accord.role_select, Accord.mentionable_select, Accord.channel_select)
+            @test !haskey(sel(custom_id="s"), "required")
+            @test sel(custom_id="s", min_values=0, required=false)["required"] === false
+        end
     end
 
     @testset "modal_values reads every input type" begin
