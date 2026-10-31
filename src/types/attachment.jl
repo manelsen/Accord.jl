@@ -21,7 +21,7 @@ audio file, or any other type of file.
 - `flags::Optional{Int}`: Attachment flags (see [`AttachmentFlags`](@ref)).
 
 # See Also
-- [Discord API: Attachment Object](https://discord.com/developers/docs/resources/message#attachment-object)
+- [Discord API: Attachment Object](https://docs.discord.com/developers/resources/message#attachment-object)
 """
 @discord_struct Attachment begin
     id::Snowflake

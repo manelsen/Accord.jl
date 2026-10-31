@@ -12,7 +12,7 @@ Represents a snapshot of a guild that can be used to create new guilds.
 - `source_guild_id::Snowflake`: ID of the guild it was based on.
 
 # See Also
-- [Discord API: Guild Template Object](https://discord.com/developers/docs/resources/guild-template#guild-template-object)
+- [Discord API: Guild Template Object](https://docs.discord.com/developers/resources/guild-template#guild-template-object)
 """
 @discord_struct GuildTemplate begin
     code::String

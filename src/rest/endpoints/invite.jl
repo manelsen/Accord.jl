@@ -21,7 +21,7 @@ validating invite links, checking expiration, or getting guild/channel info.
 # Errors
 - HTTP 404 if the invite does not exist or has expired.
 
-[Discord docs](https://discord.com/developers/docs/resources/invite#get-invite)
+[Discord docs](https://docs.discord.com/developers/resources/invite#get-invite)
 """
 function get_invite(rl::RateLimiter, invite_code::String; token::String, with_counts::Bool=false, with_expiration::Bool=false, guild_scheduled_event_id=nothing)
     query = Pair{String,String}[]
@@ -56,7 +56,7 @@ any invite in the guild.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the invite does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/invite#delete-invite)
+[Discord docs](https://docs.discord.com/developers/resources/invite#delete-invite)
 """
 function delete_invite(rl::RateLimiter, invite_code::String; token::String, reason=nothing)
     resp = discord_delete(rl, "/invites/$(invite_code)"; token, reason)

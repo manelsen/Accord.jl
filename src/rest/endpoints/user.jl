@@ -18,7 +18,7 @@ initialization to confirm authentication.
 # Errors
 - HTTP 401 if the token is invalid or expired.
 
-[Discord docs](https://discord.com/developers/docs/resources/user#get-current-user)
+[Discord docs](https://docs.discord.com/developers/resources/user#get-current-user)
 """
 function get_current_user(rl::RateLimiter; token::String)
     resp = discord_get(rl, "/users/@me"; token)
@@ -43,7 +43,7 @@ such as username, avatar, or public flags. Only returns public information.
 # Errors
 - HTTP 404 if the user does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/user#get-user)
+[Discord docs](https://docs.discord.com/developers/resources/user#get-user)
 """
 function get_user(rl::RateLimiter, user_id::Snowflake; token::String)
     resp = discord_get(rl, "/users/$(user_id)"; token)
@@ -73,7 +73,7 @@ Username changes are heavily rate limited (typically twice per hour).
 - HTTP 401 if the token is invalid.
 - HTTP 429 if too many username changes attempted.
 
-[Discord docs](https://discord.com/developers/docs/resources/user#modify-current-user)
+[Discord docs](https://docs.discord.com/developers/resources/user#modify-current-user)
 """
 function modify_current_user(rl::RateLimiter; token::String, body::Dict)
     resp = discord_patch(rl, "/users/@me"; token, body)
@@ -105,7 +105,7 @@ guild management features or admin dashboards.
 - HTTP 400 for a large-sharding bot that leaves out `shard`.
 - HTTP 401 if the token is invalid.
 
-[Discord docs](https://discord.com/developers/docs/resources/user#get-current-user-guilds)
+[Discord docs](https://docs.discord.com/developers/resources/user#get-current-user-guilds)
 """
 function get_current_user_guilds(rl::RateLimiter; token::String, limit::Int=200, before::Optional{Snowflake}=missing,
                                  after::Optional{Snowflake}=missing, shard::Union{Integer, Nothing}=nothing,
@@ -137,7 +137,7 @@ in a particular server, such as for permission validation before actions.
 # Errors
 - HTTP 404 if the bot is not a member of the guild.
 
-[Discord docs](https://discord.com/developers/docs/resources/user#get-current-user-guild-member)
+[Discord docs](https://docs.discord.com/developers/resources/user#get-current-user-guild-member)
 """
 function get_current_user_guild_member(rl::RateLimiter, guild_id::Snowflake; token::String)
     resp = discord_get(rl, "/users/@me/guilds/$(guild_id)/member"; token)
@@ -162,7 +162,7 @@ bot removal commands or guild blacklisting systems.
 # Errors
 - HTTP 404 if the bot is not a member of the guild.
 
-[Discord docs](https://discord.com/developers/docs/resources/user#leave-guild)
+[Discord docs](https://docs.discord.com/developers/resources/user#leave-guild)
 """
 function leave_guild(rl::RateLimiter, guild_id::Snowflake; token::String)
     discord_delete(rl, "/users/@me/guilds/$(guild_id)"; token)
@@ -191,7 +191,7 @@ such as for sending DMs, confirmation messages, or support interactions.
 - HTTP 400 if the user cannot be messaged.
 - HTTP 401 if the token is invalid.
 
-[Discord docs](https://discord.com/developers/docs/resources/user#create-dm)
+[Discord docs](https://docs.discord.com/developers/resources/user#create-dm)
 """
 function create_dm(rl::RateLimiter; token::String, recipient_id::Snowflake)
     body = Dict("recipient_id" => string(recipient_id))
@@ -217,7 +217,7 @@ do not have connections, this is more useful for OAuth2 applications.
 # Errors
 - HTTP 401 if the token is invalid.
 
-[Discord docs](https://discord.com/developers/docs/resources/user#get-user-connections)
+[Discord docs](https://docs.discord.com/developers/resources/user#get-current-user-connections)
 """
 function get_current_user_connections(rl::RateLimiter; token::String)
     resp = discord_get(rl, "/users/@me/connections"; token)
@@ -243,7 +243,7 @@ the current user (typically used with OAuth2 applications for role verification)
 - HTTP 401 if the token is invalid.
 - HTTP 404 if no role connection exists.
 
-[Discord docs](https://discord.com/developers/docs/resources/user#get-user-application-role-connection)
+[Discord docs](https://docs.discord.com/developers/resources/user#get-current-user-application-role-connection)
 """
 function get_current_user_application_role_connection(rl::RateLimiter, application_id::Snowflake; token::String)
     resp = discord_get(rl, "/users/@me/applications/$(application_id)/role-connection"; token)
@@ -270,7 +270,7 @@ for applications that provide role verification based on external platform data.
 - HTTP 400 if the metadata is invalid.
 - HTTP 401 if the token is invalid.
 
-[Discord docs](https://discord.com/developers/docs/resources/user#update-user-application-role-connection)
+[Discord docs](https://docs.discord.com/developers/resources/user#update-current-user-application-role-connection)
 """
 function update_current_user_application_role_connection(rl::RateLimiter, application_id::Snowflake; token::String, body::Dict)
     resp = discord_put(rl, "/users/@me/applications/$(application_id)/role-connection"; token, body)

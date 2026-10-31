@@ -32,7 +32,7 @@ sensitivity of audit log data.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/audit-log#get-guild-audit-log)
+[Discord docs](https://docs.discord.com/developers/resources/audit-log#get-guild-audit-log)
 """
 function get_guild_audit_log(rl::RateLimiter, guild_id::Snowflake; token::String,
         user_id=nothing, action_type=nothing, before=nothing, after=nothing, limit::Int=50)

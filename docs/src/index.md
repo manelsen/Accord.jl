@@ -53,5 +53,5 @@ Accord.start(client)
 ## Getting Help
 
 - **Documentation**: Use the search bar or browse the API Reference.
-- **Discord API**: Refer to the official [Discord Developer Portal](https://discord.com/developers/docs/intro) for API details.
+- **Discord API**: Refer to the official [Discord Developer Portal](https://docs.discord.com/developers/intro) for API details.
 - **Issues**: Report bugs or request features on [GitHub](https://github.com/manelsen/Accord.jl/issues).

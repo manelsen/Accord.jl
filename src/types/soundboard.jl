@@ -14,7 +14,7 @@ Represents a sound that can be played in a Discord voice channel's soundboard.
 - `user::Optional{User}`: User who uploaded the sound.
 
 # See Also
-- [Discord API: Soundboard Sound Object](https://discord.com/developers/docs/resources/soundboard#soundboard-sound-object)
+- [Discord API: Soundboard Sound Object](https://docs.discord.com/developers/resources/soundboard#soundboard-sound-object)
 """
 @discord_struct SoundboardSound begin
     name::String

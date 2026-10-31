@@ -18,7 +18,7 @@ sticker preview commands or content management systems.
 # Errors
 - HTTP 404 if the sticker does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/sticker#get-sticker)
+[Discord docs](https://docs.discord.com/developers/resources/sticker#get-sticker)
 """
 function get_sticker(rl::RateLimiter, sticker_id::Snowflake; token::String)
     resp = discord_get(rl, "/stickers/$(sticker_id)"; token)
@@ -42,7 +42,7 @@ for sticker browsing features or recommendations.
 # Errors
 - HTTP 401 if the token is invalid.
 
-[Discord docs](https://discord.com/developers/docs/resources/sticker#get-sticker-packs)
+[Discord docs](https://docs.discord.com/developers/resources/sticker#list-sticker-packs)
 """
 function list_sticker_packs(rl::RateLimiter; token::String)
     resp = discord_get(rl, "/sticker-packs"; token)
@@ -71,7 +71,7 @@ Requires `MANAGE_GUILD_EXPRESSIONS`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/sticker#list-guild-stickers)
+[Discord docs](https://docs.discord.com/developers/resources/sticker#list-guild-stickers)
 """
 function list_guild_stickers(rl::RateLimiter, guild_id::Snowflake; token::String)
     resp = discord_get(rl, "/guilds/$(guild_id)/stickers"; token)
@@ -100,7 +100,7 @@ Requires `MANAGE_GUILD_EXPRESSIONS`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the sticker or guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/sticker#get-guild-sticker)
+[Discord docs](https://docs.discord.com/developers/resources/sticker#get-guild-sticker)
 """
 function get_guild_sticker(rl::RateLimiter, guild_id::Snowflake, sticker_id::Snowflake; token::String)
     resp = discord_get(rl, "/guilds/$(guild_id)/stickers/$(sticker_id)"; token)
@@ -140,7 +140,7 @@ Requires `MANAGE_GUILD_EXPRESSIONS`.
 - HTTP 403 if missing required permissions or sticker limit reached.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/sticker#create-guild-sticker)
+[Discord docs](https://docs.discord.com/developers/resources/sticker#create-guild-sticker)
 """
 function create_guild_sticker(rl::RateLimiter, guild_id::Snowflake; token::String, name::String, description::String, tags::String, file, reason=nothing)
     files = [(name * ".png", file, "image/png")]
@@ -175,7 +175,7 @@ Requires `MANAGE_GUILD_EXPRESSIONS`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the sticker or guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/sticker#modify-guild-sticker)
+[Discord docs](https://docs.discord.com/developers/resources/sticker#modify-guild-sticker)
 """
 function modify_guild_sticker(rl::RateLimiter, guild_id::Snowflake, sticker_id::Snowflake; token::String, body::Dict, reason=nothing)
     resp = discord_patch(rl, "/guilds/$(guild_id)/stickers/$(sticker_id)"; token, body, reason)
@@ -206,7 +206,7 @@ Requires `MANAGE_GUILD_EXPRESSIONS`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the sticker or guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/sticker#delete-guild-sticker)
+[Discord docs](https://docs.discord.com/developers/resources/sticker#delete-guild-sticker)
 """
 function delete_guild_sticker(rl::RateLimiter, guild_id::Snowflake, sticker_id::Snowflake; token::String, reason=nothing)
     discord_delete(rl, "/guilds/$(guild_id)/stickers/$(sticker_id)"; token, reason)

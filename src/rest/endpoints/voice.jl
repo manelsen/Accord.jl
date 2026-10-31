@@ -21,7 +21,7 @@ or deprecated. Use `get_guild_voice_regions` for guild-specific regions.
 # Errors
 - HTTP 401 if the token is invalid.
 
-[Discord docs](https://discord.com/developers/docs/resources/voice#list-voice-regions)
+[Discord docs](https://docs.discord.com/developers/resources/voice#list-voice-regions)
 """
 function list_voice_regions(rl::RateLimiter; token::String)
     resp = discord_get(rl, "/voice/regions"; token)

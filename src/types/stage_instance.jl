@@ -12,7 +12,7 @@ Represents a live event in a Discord Stage channel.
 - `guild_scheduled_event_id::Nullable{Snowflake}`: ID of the associated scheduled event.
 
 # See Also
-- [Discord API: Stage Instance Object](https://discord.com/developers/docs/resources/stage-instance#stage-instance-object)
+- [Discord API: Stage Instance Object](https://docs.discord.com/developers/resources/stage-instance#stage-instance-object)
 """
 @discord_struct StageInstance begin
     id::Snowflake

@@ -17,7 +17,7 @@ Represents a user's voice connection status in a guild.
 - `suppress::Bool`: Whether the user is suppressed (for stages).
 
 # See Also
-- [Discord API: Voice State Object](https://discord.com/developers/docs/resources/voice#voice-state-object)
+- [Discord API: Voice State Object](https://docs.discord.com/developers/resources/voice#voice-state-object)
 """
 @discord_struct VoiceState begin
     guild_id::Optional{Snowflake}
@@ -41,7 +41,7 @@ end
 Represents a Discord voice server region.
 
 # See Also
-- [Discord API: Voice Region Object](https://discord.com/developers/docs/resources/voice#voice-region-object)
+- [Discord API: Voice Region Object](https://docs.discord.com/developers/resources/voice#voice-region-object)
 """
 @discord_struct VoiceRegion begin
     id::String

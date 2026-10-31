@@ -55,8 +55,6 @@ Beyond discord.py 2.7 parity (#6), from Discord's changelog up to 2026-10-30:
   temporary, testing-only opt-in that will change before GA, so it was left out.
 - `Application.flags_new`: there is no `Application` type yet
   (`get_current_application` returns a Dict), so the field is already readable.
-- Docstrings still link to `discord.com/developers/docs/...`, which now
-  redirects to `docs.discord.com/developers/...`.
 
 ## 6. Notes for whoever picks this up
 

@@ -9,7 +9,7 @@ The footer section of an [`Embed`](@ref).
 - `proxy_icon_url::Optional{String}`: A proxied URL of the footer icon.
 
 # See Also
-- [Discord API: Embed Footer](https://discord.com/developers/docs/resources/message#embed-object-embed-footer-structure)
+- [Discord API: Embed Footer](https://docs.discord.com/developers/resources/message#embed-object-embed-footer-structure)
 """
 @discord_struct EmbedFooter begin
     text::String
@@ -29,7 +29,7 @@ Image information within an [`Embed`](@ref).
 - `width::Optional{Int}`: Width of the image.
 
 # See Also
-- [Discord API: Embed Image](https://discord.com/developers/docs/resources/message#embed-object-embed-image-structure)
+- [Discord API: Embed Image](https://docs.discord.com/developers/resources/message#embed-object-embed-image-structure)
 """
 @discord_struct EmbedImage begin
     url::String
@@ -50,7 +50,7 @@ Thumbnail information for an [`Embed`](@ref), displayed at the top right.
 - `width::Optional{Int}`: Width of the thumbnail.
 
 # See Also
-- [Discord API: Embed Thumbnail](https://discord.com/developers/docs/resources/message#embed-object-embed-thumbnail-structure)
+- [Discord API: Embed Thumbnail](https://docs.discord.com/developers/resources/message#embed-object-embed-image-structure)
 """
 @discord_struct EmbedThumbnail begin
     url::String
@@ -65,7 +65,7 @@ end
 Video information within an [`Embed`](@ref).
 
 # See Also
-- [Discord API: Embed Video](https://discord.com/developers/docs/resources/message#embed-object-embed-video-structure)
+- [Discord API: Embed Video](https://docs.discord.com/developers/resources/message#embed-object-embed-video-structure)
 """
 @discord_struct EmbedVideo begin
     url::Optional{String}
@@ -80,7 +80,7 @@ end
 Provider information for an [`Embed`](@ref) (e.g., YouTube, Twitter).
 
 # See Also
-- [Discord API: Embed Provider](https://discord.com/developers/docs/resources/message#embed-object-embed-provider-structure)
+- [Discord API: Embed Provider](https://docs.discord.com/developers/resources/message#embed-object-embed-provider-structure)
 """
 @discord_struct EmbedProvider begin
     name::Optional{String}
@@ -99,7 +99,7 @@ Author information for an [`Embed`](@ref), displayed at the top.
 - `proxy_icon_url::Optional{String}`: A proxied URL of the author's icon.
 
 # See Also
-- [Discord API: Embed Author](https://discord.com/developers/docs/resources/message#embed-object-embed-author-structure)
+- [Discord API: Embed Author](https://docs.discord.com/developers/resources/message#embed-object-embed-author-structure)
 """
 @discord_struct EmbedAuthor begin
     name::String
@@ -119,7 +119,7 @@ A key-value field within an [`Embed`](@ref). Up to 25 fields can be added.
 - `inline::Optional{Bool}`: Whether the field should display inline with others.
 
 # See Also
-- [Discord API: Embed Field](https://discord.com/developers/docs/resources/message#embed-object-embed-field-structure)
+- [Discord API: Embed Field](https://docs.discord.com/developers/resources/message#embed-object-embed-field-structure)
 """
 @discord_struct EmbedField begin
     name::String
@@ -164,7 +164,7 @@ push!(embed.fields, EmbedField(name="CPU", value="15%", inline=true))
 ```
 
 # See Also
-- [Discord API: Embed Object](https://discord.com/developers/docs/resources/message#embed-object)
+- [Discord API: Embed Object](https://docs.discord.com/developers/resources/message#embed-object)
 """
 @discord_struct Embed begin
     title::Optional{String}

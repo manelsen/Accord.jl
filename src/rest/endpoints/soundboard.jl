@@ -17,7 +17,7 @@ as for sound previews or integration features.
 # Errors
 - HTTP 401 if the token is invalid.
 
-[Discord docs](https://discord.com/developers/docs/resources/soundboard#list-default-soundboard-sounds)
+[Discord docs](https://docs.discord.com/developers/resources/soundboard#list-default-soundboard-sounds)
 """
 function list_default_soundboard_sounds(rl::RateLimiter; token::String)
     resp = discord_get(rl, "/soundboard-default-sounds"; token)
@@ -46,7 +46,7 @@ Requires `MANAGE_GUILD_EXPRESSIONS`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/soundboard#list-guild-soundboard-sounds)
+[Discord docs](https://docs.discord.com/developers/resources/soundboard#list-guild-soundboard-sounds)
 """
 function list_guild_soundboard_sounds(rl::RateLimiter, guild_id::Snowflake; token::String)
     resp = discord_get(rl, "/guilds/$(guild_id)/soundboard-sounds"; token)
@@ -76,7 +76,7 @@ Requires `MANAGE_GUILD_EXPRESSIONS`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the sound or guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/soundboard#get-guild-soundboard-sound)
+[Discord docs](https://docs.discord.com/developers/resources/soundboard#get-guild-soundboard-sound)
 """
 function get_guild_soundboard_sound(rl::RateLimiter, guild_id::Snowflake, sound_id::Snowflake; token::String)
     resp = discord_get(rl, "/guilds/$(guild_id)/soundboard-sounds/$(sound_id)"; token)
@@ -113,7 +113,7 @@ Requires `MANAGE_GUILD_EXPRESSIONS`.
 - HTTP 403 if missing required permissions.
 - HTTP 429 if sound limit reached for the guild.
 
-[Discord docs](https://discord.com/developers/docs/resources/soundboard#create-guild-soundboard-sound)
+[Discord docs](https://docs.discord.com/developers/resources/soundboard#create-guild-soundboard-sound)
 """
 function create_guild_soundboard_sound(rl::RateLimiter, guild_id::Snowflake; token::String, body::Dict, reason=nothing)
     resp = discord_post(rl, "/guilds/$(guild_id)/soundboard-sounds"; token, body, reason=reason)
@@ -146,7 +146,7 @@ Requires `MANAGE_GUILD_EXPRESSIONS`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the sound or guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/soundboard#modify-guild-soundboard-sound)
+[Discord docs](https://docs.discord.com/developers/resources/soundboard#modify-guild-soundboard-sound)
 """
 function modify_guild_soundboard_sound(rl::RateLimiter, guild_id::Snowflake, sound_id::Snowflake; token::String, body::Dict, reason=nothing)
     resp = discord_patch(rl, "/guilds/$(guild_id)/soundboard-sounds/$(sound_id)"; token, body, reason)
@@ -177,7 +177,7 @@ Requires `MANAGE_GUILD_EXPRESSIONS`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the sound or guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/soundboard#delete-guild-soundboard-sound)
+[Discord docs](https://docs.discord.com/developers/resources/soundboard#delete-guild-soundboard-sound)
 """
 function delete_guild_soundboard_sound(rl::RateLimiter, guild_id::Snowflake, sound_id::Snowflake; token::String, reason=nothing)
     discord_delete(rl, "/guilds/$(guild_id)/soundboard-sounds/$(sound_id)"; token, reason)
@@ -207,7 +207,7 @@ Requires `SEND_MESSAGES` and the bot must be connected to the voice channel.
 - HTTP 403 if missing required permissions or not in the voice channel.
 - HTTP 404 if the channel or sound does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/soundboard#send-soundboard-sound)
+[Discord docs](https://docs.discord.com/developers/resources/soundboard#send-soundboard-sound)
 """
 function send_soundboard_sound(rl::RateLimiter, channel_id::Snowflake; token::String, body::Dict)
     discord_post(rl, "/channels/$(channel_id)/send-soundboard-sound"; token, body)

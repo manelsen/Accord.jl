@@ -4,7 +4,7 @@
 Extra usage statistics and metadata for a Discord [`Invite`](@ref).
 
 # See Also
-- [Discord API: Invite Metadata](https://discord.com/developers/docs/resources/invite#invite-metadata-object)
+- [Discord API: Invite Metadata](https://docs.discord.com/developers/resources/invite#invite-metadata-object)
 """
 @discord_struct InviteMetadata begin
     uses::Int
@@ -35,7 +35,7 @@ Invites are used to add users to guilds or group DMs.
 - `flags::Optional{Int}`: Invite flags; `1 << 0` marks a guest invite.
 
 # See Also
-- [Discord API: Invite Object](https://discord.com/developers/docs/resources/invite#invite-object)
+- [Discord API: Invite Object](https://docs.discord.com/developers/resources/invite#invite-object)
 """
 @discord_struct Invite begin
     type::Int

@@ -28,7 +28,7 @@ Requires `MANAGE_CHANNELS` and `MOVE_MEMBERS` in the Stage channel.
 - HTTP 403 if missing required permissions.
 - HTTP 409 if a stage instance already exists for this channel.
 
-[Discord docs](https://discord.com/developers/docs/resources/stage-instance#create-stage-instance)
+[Discord docs](https://docs.discord.com/developers/resources/stage-instance#create-stage-instance)
 """
 function create_stage_instance(rl::RateLimiter; token::String, body::Dict, reason=nothing)
     resp = discord_post(rl, "/stage-instances"; token, body, reason=reason)
@@ -53,7 +53,7 @@ such as the topic, privacy level, or associated guild scheduled event.
 # Errors
 - HTTP 404 if no stage instance exists for this channel.
 
-[Discord docs](https://discord.com/developers/docs/resources/stage-instance#get-stage-instance)
+[Discord docs](https://docs.discord.com/developers/resources/stage-instance#get-stage-instance)
 """
 function get_stage_instance(rl::RateLimiter, channel_id::Snowflake; token::String)
     resp = discord_get(rl, "/stage-instances/$(channel_id)"; token)
@@ -85,7 +85,7 @@ Requires `MANAGE_CHANNELS` and `MOVE_MEMBERS` in the Stage channel.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if no stage instance exists for this channel.
 
-[Discord docs](https://discord.com/developers/docs/resources/stage-instance#modify-stage-instance)
+[Discord docs](https://docs.discord.com/developers/resources/stage-instance#modify-stage-instance)
 """
 function modify_stage_instance(rl::RateLimiter, channel_id::Snowflake; token::String, body::Dict, reason=nothing)
     resp = discord_patch(rl, "/stage-instances/$(channel_id)"; token, body, reason)
@@ -115,7 +115,7 @@ Requires `MANAGE_CHANNELS` and `MOVE_MEMBERS` in the Stage channel.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if no stage instance exists for this channel.
 
-[Discord docs](https://discord.com/developers/docs/resources/stage-instance#delete-stage-instance)
+[Discord docs](https://docs.discord.com/developers/resources/stage-instance#delete-stage-instance)
 """
 function delete_stage_instance(rl::RateLimiter, channel_id::Snowflake; token::String, reason=nothing)
     discord_delete(rl, "/stage-instances/$(channel_id)"; token, reason)

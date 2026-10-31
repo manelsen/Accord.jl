@@ -28,7 +28,7 @@ end
 ```
 
 # See Also
-- [Discord API: Guild Member Object](https://discord.com/developers/docs/resources/guild#guild-member-object)
+- [Discord API: Guild Member Object](https://docs.discord.com/developers/resources/guild#guild-member-object)
 """
 @discord_struct Member begin
     user::Maybe{User}

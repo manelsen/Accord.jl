@@ -22,7 +22,7 @@ Requires `MANAGE_GUILD`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/auto-moderation#list-auto-moderation-rules-for-guild)
+[Discord docs](https://docs.discord.com/developers/resources/auto-moderation#list-auto-moderation-rules-for-guild)
 """
 function list_auto_moderation_rules(rl::RateLimiter, guild_id::Snowflake; token::String)
     resp = discord_get(rl, "/guilds/$(guild_id)/auto-moderation/rules"; token)
@@ -52,7 +52,7 @@ Requires `MANAGE_GUILD`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the rule or guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/auto-moderation#get-auto-moderation-rule)
+[Discord docs](https://docs.discord.com/developers/resources/auto-moderation#get-auto-moderation-rule)
 """
 function get_auto_moderation_rule(rl::RateLimiter, guild_id::Snowflake, rule_id::Snowflake; token::String)
     resp = discord_get(rl, "/guilds/$(guild_id)/auto-moderation/rules/$(rule_id)"; token)
@@ -88,7 +88,7 @@ Requires `MANAGE_GUILD`.
 - HTTP 403 if missing required permissions.
 - HTTP 429 if too many rules created.
 
-[Discord docs](https://discord.com/developers/docs/resources/auto-moderation#create-auto-moderation-rule)
+[Discord docs](https://docs.discord.com/developers/resources/auto-moderation#create-auto-moderation-rule)
 """
 function create_auto_moderation_rule(rl::RateLimiter, guild_id::Snowflake; token::String, body::Dict, reason=nothing)
     resp = discord_post(rl, "/guilds/$(guild_id)/auto-moderation/rules"; token, body, reason=reason)
@@ -121,7 +121,7 @@ Requires `MANAGE_GUILD`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the rule does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/auto-moderation#modify-auto-moderation-rule)
+[Discord docs](https://docs.discord.com/developers/resources/auto-moderation#modify-auto-moderation-rule)
 """
 function modify_auto_moderation_rule(rl::RateLimiter, guild_id::Snowflake, rule_id::Snowflake; token::String, body::Dict, reason=nothing)
     resp = discord_patch(rl, "/guilds/$(guild_id)/auto-moderation/rules/$(rule_id)"; token, body, reason)
@@ -152,7 +152,7 @@ Requires `MANAGE_GUILD`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the rule or guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/auto-moderation#delete-auto-moderation-rule)
+[Discord docs](https://docs.discord.com/developers/resources/auto-moderation#delete-auto-moderation-rule)
 """
 function delete_auto_moderation_rule(rl::RateLimiter, guild_id::Snowflake, rule_id::Snowflake; token::String, reason=nothing)
     discord_delete(rl, "/guilds/$(guild_id)/auto-moderation/rules/$(rule_id)"; token, reason)

@@ -18,7 +18,7 @@ for verifying configuration or displaying application information.
 # Errors
 - HTTP 401 if the token is invalid.
 
-[Discord docs](https://discord.com/developers/docs/resources/application#get-current-application)
+[Discord docs](https://docs.discord.com/developers/resources/application#get-current-application)
 """
 function get_current_application(rl::RateLimiter; token::String)
     resp = discord_get(rl, "/applications/@me"; token)
@@ -54,7 +54,7 @@ the application appears to users.
 - HTTP 400 if any field is invalid.
 - HTTP 401 if the token is invalid.
 
-[Discord docs](https://discord.com/developers/docs/resources/application#edit-current-application)
+[Discord docs](https://docs.discord.com/developers/resources/application#edit-current-application)
 """
 function modify_current_application(rl::RateLimiter; token::String, body::Dict)
     resp = discord_patch(rl, "/applications/@me"; token, body)
@@ -92,7 +92,7 @@ which allow users to obtain roles based on external platform data.
 - HTTP 401 if the token is invalid.
 - HTTP 404 if the application does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/application-role-connection-metadata#get-application-role-connection-metadata-records)
+[Discord docs](https://docs.discord.com/developers/resources/application-role-connection-metadata#get-application-role-connection-metadata-records)
 """
 function get_application_role_connection_metadata_records(rl::RateLimiter, application_id::Snowflake; token::String)
     resp = discord_get(rl, "/applications/$(application_id)/role-connections/metadata"; token)
@@ -128,7 +128,7 @@ what external data can be used to grant roles to users.
 - HTTP 401 if the token is invalid.
 - HTTP 404 if the application does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/application-role-connection-metadata#update-application-role-connection-metadata-records)
+[Discord docs](https://docs.discord.com/developers/resources/application-role-connection-metadata#update-application-role-connection-metadata-records)
 """
 function update_application_role_connection_metadata_records(rl::RateLimiter, application_id::Snowflake; token::String, body::Vector)
     resp = discord_put(rl, "/applications/$(application_id)/role-connections/metadata"; token, body=body)

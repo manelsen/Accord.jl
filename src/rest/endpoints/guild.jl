@@ -20,7 +20,7 @@ features, or member counts.
 - HTTP 403 if the bot is not in the guild.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#get-guild)
+[Discord docs](https://docs.discord.com/developers/resources/guild#get-guild)
 """
 function get_guild(rl::RateLimiter, guild_id::Snowflake; token::String, with_counts::Bool=false)
     resp = discord_get(rl, "/guilds/$(guild_id)"; token, query=with_counts ? ["with_counts" => "true"] : nothing)
@@ -45,7 +45,7 @@ before the user joins, such as for guild discovery features.
 # Errors
 - HTTP 404 if the guild is not public or does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-preview)
+[Discord docs](https://docs.discord.com/developers/resources/guild#get-guild-preview)
 """
 function get_guild_preview(rl::RateLimiter, guild_id::Snowflake; token::String)
     resp = discord_get(rl, "/guilds/$(guild_id)/preview"; token)
@@ -76,7 +76,7 @@ Requires `MANAGE_GUILD`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#modify-guild)
+[Discord docs](https://docs.discord.com/developers/resources/guild#modify-guild)
 """
 function modify_guild(rl::RateLimiter, guild_id::Snowflake; token::String, body::Dict, reason=nothing)
     resp = discord_patch(rl, "/guilds/$(guild_id)"; token, body, reason)
@@ -104,7 +104,7 @@ The bot must be the owner of the guild.
 - HTTP 403 if the bot is not the guild owner.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#delete-guild)
+[Discord docs](https://docs.discord.com/developers/resources/guild)
 """
 function delete_guild(rl::RateLimiter, guild_id::Snowflake; token::String)
     discord_delete(rl, "/guilds/$(guild_id)"; token)
@@ -132,7 +132,7 @@ Requires `VIEW_CHANNEL` for channels the bot can see.
 - HTTP 403 if the bot is not in the guild.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-channels)
+[Discord docs](https://docs.discord.com/developers/resources/guild#get-guild-channels)
 """
 function get_guild_channels(rl::RateLimiter, guild_id::Snowflake; token::String)
     resp = discord_get(rl, "/guilds/$(guild_id)/channels"; token)
@@ -163,7 +163,7 @@ Requires `MANAGE_CHANNELS`.
 - HTTP 403 if missing required permissions or channel limit reached.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#create-guild-channel)
+[Discord docs](https://docs.discord.com/developers/resources/guild#create-guild-channel)
 """
 function create_guild_channel(rl::RateLimiter, guild_id::Snowflake; token::String, body::Dict, reason=nothing)
     resp = discord_post(rl, "/guilds/$(guild_id)/channels"; token, body, reason=reason)
@@ -193,7 +193,7 @@ Requires `MANAGE_CHANNELS`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#modify-guild-channel-positions)
+[Discord docs](https://docs.discord.com/developers/resources/guild#modify-guild-channel-positions)
 """
 function modify_guild_channel_positions(rl::RateLimiter, guild_id::Snowflake; token::String, body::Vector)
     discord_patch(rl, "/guilds/$(guild_id)/channels"; token, body=body)
@@ -218,7 +218,7 @@ moderation, or archival purposes.
 - HTTP 403 if the bot is not in the guild.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#list-active-guild-threads)
+[Discord docs](https://docs.discord.com/developers/resources/guild#list-active-guild-threads)
 """
 function list_active_guild_threads(rl::RateLimiter, guild_id::Snowflake; token::String)
     resp = discord_get(rl, "/guilds/$(guild_id)/threads/active"; token)
@@ -245,7 +245,7 @@ roles, nickname, join date, or permissions.
 - HTTP 403 if the bot is not in the guild.
 - HTTP 404 if the member or guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-member)
+[Discord docs](https://docs.discord.com/developers/resources/guild#get-guild-member)
 """
 function get_guild_member(rl::RateLimiter, guild_id::Snowflake, user_id::Snowflake; token::String)
     resp = discord_get(rl, "/guilds/$(guild_id)/members/$(user_id)"; token)
@@ -273,7 +273,7 @@ searching, or batch processing operations.
 - HTTP 403 if the bot is not in the guild.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#list-guild-members)
+[Discord docs](https://docs.discord.com/developers/resources/guild#list-guild-members)
 """
 function list_guild_members(rl::RateLimiter, guild_id::Snowflake; token::String, limit::Int=1, after::Optional{Snowflake}=missing)
     query = ["limit" => string(limit)]
@@ -303,7 +303,7 @@ user lookup commands or autocomplete functionality.
 - HTTP 403 if the bot is not in the guild.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#search-guild-members)
+[Discord docs](https://docs.discord.com/developers/resources/guild#search-guild-members)
 """
 function search_guild_members(rl::RateLimiter, guild_id::Snowflake; token::String, query_str::String, limit::Int=1)
     resp = discord_get(rl, "/guilds/$(guild_id)/members/search"; token,
@@ -339,7 +339,7 @@ or voice channel status.
 - HTTP 403 if missing required permissions or role hierarchy violation.
 - HTTP 404 if the member or guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#modify-guild-member)
+[Discord docs](https://docs.discord.com/developers/resources/guild#modify-guild-member)
 """
 function modify_guild_member(rl::RateLimiter, guild_id::Snowflake, user_id::Snowflake; token::String, body::Dict, reason=nothing)
     resp = discord_patch(rl, "/guilds/$(guild_id)/members/$(user_id)"; token, body, reason)
@@ -369,7 +369,7 @@ Requires `CHANGE_NICKNAME` or `MANAGE_NICKNAMES`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#modify-current-member)
+[Discord docs](https://docs.discord.com/developers/resources/guild#modify-current-member)
 """
 function modify_current_member(rl::RateLimiter, guild_id::Snowflake; token::String, body::Dict, reason=nothing)
     resp = discord_patch(rl, "/guilds/$(guild_id)/members/@me"; token, body, reason)
@@ -401,7 +401,7 @@ Requires `MANAGE_ROLES` with the bot's top role higher than the target role.
 - HTTP 403 if missing required permissions or role hierarchy violation.
 - HTTP 404 if the member, role, or guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#add-guild-member-role)
+[Discord docs](https://docs.discord.com/developers/resources/guild#add-guild-member-role)
 """
 function add_guild_member_role(rl::RateLimiter, guild_id::Snowflake, user_id::Snowflake, role_id::Snowflake; token::String, reason=nothing)
     discord_put(rl, "/guilds/$(guild_id)/members/$(user_id)/roles/$(role_id)"; token, reason)
@@ -432,7 +432,7 @@ Requires `MANAGE_ROLES` with the bot's top role higher than the target role.
 - HTTP 403 if missing required permissions or role hierarchy violation.
 - HTTP 404 if the member, role, or guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#remove-guild-member-role)
+[Discord docs](https://docs.discord.com/developers/resources/guild#remove-guild-member-role)
 """
 function remove_guild_member_role(rl::RateLimiter, guild_id::Snowflake, user_id::Snowflake, role_id::Snowflake; token::String, reason=nothing)
     discord_delete(rl, "/guilds/$(guild_id)/members/$(user_id)/roles/$(role_id)"; token, reason)
@@ -462,7 +462,7 @@ Requires `KICK_MEMBERS`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the member or guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#remove-guild-member)
+[Discord docs](https://docs.discord.com/developers/resources/guild#remove-guild-member)
 """
 function remove_guild_member(rl::RateLimiter, guild_id::Snowflake, user_id::Snowflake; token::String, reason=nothing)
     discord_delete(rl, "/guilds/$(guild_id)/members/$(user_id)"; token, reason)
@@ -491,7 +491,7 @@ Requires `BAN_MEMBERS`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-bans)
+[Discord docs](https://docs.discord.com/developers/resources/guild#get-guild-bans)
 """
 function get_guild_bans(rl::RateLimiter, guild_id::Snowflake; token::String, limit::Int=1000)
     resp = discord_get(rl, "/guilds/$(guild_id)/bans"; token, query=["limit" => string(limit)])
@@ -521,7 +521,7 @@ Requires `BAN_MEMBERS`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the user is not banned or the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-ban)
+[Discord docs](https://docs.discord.com/developers/resources/guild#get-guild-ban)
 """
 function get_guild_ban(rl::RateLimiter, guild_id::Snowflake, user_id::Snowflake; token::String)
     resp = discord_get(rl, "/guilds/$(guild_id)/bans/$(user_id)"; token)
@@ -553,7 +553,7 @@ Requires `BAN_MEMBERS`.
 - HTTP 403 if missing required permissions or if the bot cannot ban the target.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#create-guild-ban)
+[Discord docs](https://docs.discord.com/developers/resources/guild#create-guild-ban)
 """
 function create_guild_ban(rl::RateLimiter, guild_id::Snowflake, user_id::Snowflake; token::String, body::Dict=Dict(), reason=nothing)
     discord_put(rl, "/guilds/$(guild_id)/bans/$(user_id)"; token, body, reason)
@@ -583,7 +583,7 @@ Requires `BAN_MEMBERS`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the user is not banned or the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#remove-guild-ban)
+[Discord docs](https://docs.discord.com/developers/resources/guild#remove-guild-ban)
 """
 function remove_guild_ban(rl::RateLimiter, guild_id::Snowflake, user_id::Snowflake; token::String, reason=nothing)
     discord_delete(rl, "/guilds/$(guild_id)/bans/$(user_id)"; token, reason)
@@ -613,7 +613,7 @@ Requires `BAN_MEMBERS`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#bulk-guild-ban)
+[Discord docs](https://docs.discord.com/developers/resources/guild#bulk-guild-ban)
 """
 function bulk_guild_ban(rl::RateLimiter, guild_id::Snowflake; token::String, body::Dict, reason=nothing)
     resp = discord_post(rl, "/guilds/$(guild_id)/bulk-ban"; token, body, reason=reason)
@@ -639,7 +639,7 @@ commands or permission checking.
 - HTTP 403 if the bot is not in the guild.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-roles)
+[Discord docs](https://docs.discord.com/developers/resources/guild#get-guild-roles)
 """
 function get_guild_roles(rl::RateLimiter, guild_id::Snowflake; token::String)
     resp = discord_get(rl, "/guilds/$(guild_id)/roles"; token)
@@ -651,7 +651,7 @@ end
 
 How many members have each role (the `@everyone` role is not included).
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-role-member-counts)
+[Discord docs](https://docs.discord.com/developers/resources/guild#get-guild-role-member-counts)
 """
 function get_guild_role_member_counts(rl::RateLimiter, guild_id::Snowflake; token::String)
     resp = discord_get(rl, "/guilds/$(guild_id)/roles/member-counts"; token)
@@ -707,7 +707,7 @@ Requires `MANAGE_ROLES`.
 - HTTP 403 if missing required permissions or role limit reached.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#create-guild-role)
+[Discord docs](https://docs.discord.com/developers/resources/guild#create-guild-role)
 """
 function create_guild_role(rl::RateLimiter, guild_id::Snowflake; token::String, body::Dict=Dict(), reason=nothing)
     resp = discord_post(rl, "/guilds/$(guild_id)/roles"; token, body, reason=reason)
@@ -738,7 +738,7 @@ Requires `MANAGE_ROLES`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#modify-guild-role-positions)
+[Discord docs](https://docs.discord.com/developers/resources/guild#modify-guild-role-positions)
 """
 function modify_guild_role_positions(rl::RateLimiter, guild_id::Snowflake; token::String, body::Vector, reason=nothing)
     resp = discord_patch(rl, "/guilds/$(guild_id)/roles"; token, body=body, reason)
@@ -770,7 +770,7 @@ Requires `MANAGE_ROLES` and the bot's top role must be higher than the target ro
 - HTTP 403 if missing required permissions or role hierarchy violation.
 - HTTP 404 if the role or guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#modify-guild-role)
+[Discord docs](https://docs.discord.com/developers/resources/guild#modify-guild-role)
 """
 function modify_guild_role(rl::RateLimiter, guild_id::Snowflake, role_id::Snowflake; token::String, body::Dict, reason=nothing)
     resp = discord_patch(rl, "/guilds/$(guild_id)/roles/$(role_id)"; token, body, reason)
@@ -801,7 +801,7 @@ Requires `MANAGE_ROLES` and the bot's top role must be higher than the target ro
 - HTTP 403 if missing required permissions or role hierarchy violation.
 - HTTP 404 if the role or guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#delete-guild-role)
+[Discord docs](https://docs.discord.com/developers/resources/guild#delete-guild-role)
 """
 function delete_guild_role(rl::RateLimiter, guild_id::Snowflake, role_id::Snowflake; token::String, reason=nothing)
     discord_delete(rl, "/guilds/$(guild_id)/roles/$(role_id)"; token, reason)
@@ -831,7 +831,7 @@ Requires `KICK_MEMBERS`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-prune-count)
+[Discord docs](https://docs.discord.com/developers/resources/guild#get-guild-prune-count)
 """
 function get_guild_prune_count(rl::RateLimiter, guild_id::Snowflake; token::String, days::Int=7, include_roles::String="")
     query = ["days" => string(days)]
@@ -864,7 +864,7 @@ Requires `KICK_MEMBERS`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#begin-guild-prune)
+[Discord docs](https://docs.discord.com/developers/resources/guild#begin-guild-prune)
 """
 function begin_guild_prune(rl::RateLimiter, guild_id::Snowflake; token::String, body::Dict, reason=nothing)
     resp = discord_post(rl, "/guilds/$(guild_id)/prune"; token, body, reason=reason)
@@ -890,7 +890,7 @@ which may differ from the global list due to VIP server status.
 - HTTP 403 if the bot is not in the guild.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-voice-regions)
+[Discord docs](https://docs.discord.com/developers/resources/guild#get-guild-voice-regions)
 """
 function get_guild_voice_regions(rl::RateLimiter, guild_id::Snowflake; token::String)
     resp = discord_get(rl, "/guilds/$(guild_id)/regions"; token)
@@ -919,7 +919,7 @@ Requires `MANAGE_GUILD`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-invites)
+[Discord docs](https://docs.discord.com/developers/resources/guild#get-guild-invites)
 """
 function get_guild_invites(rl::RateLimiter, guild_id::Snowflake; token::String)
     resp = discord_get(rl, "/guilds/$(guild_id)/invites"; token)
@@ -948,7 +948,7 @@ Requires `MANAGE_GUILD`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-integrations)
+[Discord docs](https://docs.discord.com/developers/resources/guild#get-guild-integrations)
 """
 function get_guild_integrations(rl::RateLimiter, guild_id::Snowflake; token::String)
     resp = discord_get(rl, "/guilds/$(guild_id)/integrations"; token)
@@ -978,7 +978,7 @@ Requires `MANAGE_GUILD`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the integration or guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#delete-guild-integration)
+[Discord docs](https://docs.discord.com/developers/resources/guild#delete-guild-integration)
 """
 function delete_guild_integration(rl::RateLimiter, guild_id::Snowflake, integration_id::Snowflake; token::String, reason=nothing)
     discord_delete(rl, "/guilds/$(guild_id)/integrations/$(integration_id)"; token, reason)
@@ -1006,7 +1006,7 @@ Requires `MANAGE_GUILD`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-widget-settings)
+[Discord docs](https://docs.discord.com/developers/resources/guild#get-guild-widget-settings)
 """
 function get_guild_widget_settings(rl::RateLimiter, guild_id::Snowflake; token::String)
     resp = discord_get(rl, "/guilds/$(guild_id)/widget"; token)
@@ -1037,7 +1037,7 @@ Requires `MANAGE_GUILD`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#modify-guild-widget)
+[Discord docs](https://docs.discord.com/developers/resources/guild#modify-guild-widget)
 """
 function modify_guild_widget(rl::RateLimiter, guild_id::Snowflake; token::String, body::Dict, reason=nothing)
     resp = discord_patch(rl, "/guilds/$(guild_id)/widget"; token, body, reason)
@@ -1062,7 +1062,7 @@ which can be used to display online members and invite links.
 # Errors
 - HTTP 404 if the guild widget is disabled or the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-widget)
+[Discord docs](https://docs.discord.com/developers/resources/guild#get-guild-widget)
 """
 function get_guild_widget(rl::RateLimiter, guild_id::Snowflake; token::String)
     resp = discord_get(rl, "/guilds/$(guild_id)/widget.json"; token)
@@ -1090,7 +1090,7 @@ Requires `MANAGE_GUILD`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the guild has no vanity URL.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-vanity-url)
+[Discord docs](https://docs.discord.com/developers/resources/guild#get-guild-vanity-url)
 """
 function get_guild_vanity_url(rl::RateLimiter, guild_id::Snowflake; token::String)
     resp = discord_get(rl, "/guilds/$(guild_id)/vanity-url"; token)
@@ -1115,7 +1115,7 @@ which shows description and recommended channels for new members.
 # Errors
 - HTTP 404 if the guild has no welcome screen enabled.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-welcome-screen)
+[Discord docs](https://docs.discord.com/developers/resources/guild#get-guild-welcome-screen)
 """
 function get_guild_welcome_screen(rl::RateLimiter, guild_id::Snowflake; token::String)
     resp = discord_get(rl, "/guilds/$(guild_id)/welcome-screen"; token)
@@ -1146,7 +1146,7 @@ Requires `MANAGE_GUILD`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#modify-guild-welcome-screen)
+[Discord docs](https://docs.discord.com/developers/resources/guild#modify-guild-welcome-screen)
 """
 function modify_guild_welcome_screen(rl::RateLimiter, guild_id::Snowflake; token::String, body::Dict, reason=nothing)
     resp = discord_patch(rl, "/guilds/$(guild_id)/welcome-screen"; token, body, reason)
@@ -1175,7 +1175,7 @@ Requires `MANAGE_GUILD`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-onboarding)
+[Discord docs](https://docs.discord.com/developers/resources/guild#get-guild-onboarding)
 """
 function get_guild_onboarding(rl::RateLimiter, guild_id::Snowflake; token::String)
     resp = discord_get(rl, "/guilds/$(guild_id)/onboarding"; token)
@@ -1206,7 +1206,7 @@ Requires `MANAGE_GUILD`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#modify-guild-onboarding)
+[Discord docs](https://docs.discord.com/developers/resources/guild#modify-guild-onboarding)
 """
 function modify_guild_onboarding(rl::RateLimiter, guild_id::Snowflake; token::String, body::Dict, reason=nothing)
     resp = discord_put(rl, "/guilds/$(guild_id)/onboarding"; token, body, reason)
@@ -1232,7 +1232,7 @@ role, such as for role management or permission checking.
 # Errors
 - HTTP 404 if the role or guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#get-guild-role)
+[Discord docs](https://docs.discord.com/developers/resources/guild#get-guild-role)
 """
 function get_guild_role(rl::RateLimiter, guild_id::Snowflake, role_id::Snowflake; token::String)
     resp = discord_get(rl, "/guilds/$(guild_id)/roles/$(role_id)"; token)
@@ -1263,7 +1263,7 @@ Requires `CREATE_INSTANT_INVITE`.
 - HTTP 403 if missing required permissions or the user is already in the guild.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#add-guild-member)
+[Discord docs](https://docs.discord.com/developers/resources/guild#add-guild-member)
 """
 function add_guild_member(rl::RateLimiter, guild_id::Snowflake, user_id::Snowflake; token::String, body::Dict)
     resp = discord_put(rl, "/guilds/$(guild_id)/members/$(user_id)"; token, body)

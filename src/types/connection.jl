@@ -14,7 +14,7 @@ Represents a third-party account (Steam, Twitch, etc.) connected to a Discord us
 - `visibility::Int`: Visibility (0=hidden, 1=everyone).
 
 # See Also
-- [Discord API: Connection Object](https://discord.com/developers/docs/resources/user#connection-object)
+- [Discord API: Connection Object](https://docs.discord.com/developers/resources/user#connection-object)
 """
 @discord_struct Connection begin
     id::String

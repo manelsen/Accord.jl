@@ -12,7 +12,7 @@ Contains metadata about a Discord thread, such as its archive status and lock st
 - `create_timestamp::Optional{String}`: ISO8601 timestamp when the thread was created.
 
 # See Also
-- [Discord API: Thread Metadata Object](https://discord.com/developers/docs/resources/channel#thread-metadata-object)
+- [Discord API: Thread Metadata Object](https://docs.discord.com/developers/resources/channel#thread-metadata-object)
 """
 @discord_struct ThreadMetadata begin
     archived::Bool
@@ -36,7 +36,7 @@ Represents a member of a thread.
 - `member::Optional{Member}`: Additional member information (if requested).
 
 # See Also
-- [Discord API: Thread Member Object](https://discord.com/developers/docs/resources/channel#thread-member-object)
+- [Discord API: Thread Member Object](https://docs.discord.com/developers/resources/channel#thread-member-object)
 """
 @discord_struct ThreadMember begin
     id::Optional{Snowflake}
@@ -59,7 +59,7 @@ Represents a tag that can be applied to threads in a forum or media channel.
 - `emoji_name::Nullable{String}`: Unicode character of the emoji.
 
 # See Also
-- [Discord API: Forum Tag Object](https://discord.com/developers/docs/resources/channel#forum-tag-object)
+- [Discord API: Forum Tag Object](https://docs.discord.com/developers/resources/channel#forum-tag-object)
 """
 @discord_struct ForumTag begin
     id::Snowflake
@@ -135,7 +135,7 @@ println("Channel name: \$(channel.name)")
 ```
 
 # See Also
-- [Discord API: Channel Object](https://discord.com/developers/docs/resources/channel#channel-object)
+- [Discord API: Channel Object](https://docs.discord.com/developers/resources/channel#channel-object)
 """
 @discord_struct DiscordChannel begin
     id::Snowflake

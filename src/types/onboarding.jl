@@ -11,7 +11,7 @@ An individual choice within an onboarding prompt.
 - `description::Nullable{String}`: Help text for the option.
 
 # See Also
-- [Discord API: Onboarding Prompt Option](https://discord.com/developers/docs/resources/guild#guild-onboarding-object-prompt-option-structure)
+- [Discord API: Onboarding Prompt Option](https://docs.discord.com/developers/resources/guild#guild-onboarding-object-prompt-option-structure)
 """
 @discord_struct OnboardingPromptOption begin
     id::Snowflake
@@ -31,7 +31,7 @@ end
 A question or choice shown to new members during guild onboarding.
 
 # See Also
-- [Discord API: Onboarding Prompt Object](https://discord.com/developers/docs/resources/guild#guild-onboarding-object-prompt-structure)
+- [Discord API: Onboarding Prompt Object](https://docs.discord.com/developers/resources/guild#guild-onboarding-object-onboarding-prompt-structure)
 """
 @discord_struct OnboardingPrompt begin
     id::Snowflake
@@ -56,7 +56,7 @@ The complete onboarding configuration for a guild.
 - `mode::Int`: Onboarding mode (see [`OnboardingModes`](@ref)).
 
 # See Also
-- [Discord API: Onboarding Object](https://discord.com/developers/docs/resources/guild#guild-onboarding-object)
+- [Discord API: Onboarding Object](https://docs.discord.com/developers/resources/guild#guild-onboarding-object)
 """
 @discord_struct Onboarding begin
     guild_id::Snowflake

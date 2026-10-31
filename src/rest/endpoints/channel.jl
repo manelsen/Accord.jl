@@ -19,7 +19,7 @@ processing a command that references a channel or caching channel data.
 - HTTP 403 if the bot lacks permission to view the channel.
 - HTTP 404 if the channel does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/channel#get-channel)
+[Discord docs](https://docs.discord.com/developers/resources/channel#get-channel)
 """
 function get_channel(rl::RateLimiter, channel_id::Snowflake; token::String)
     resp = discord_get(rl, "/channels/$(channel_id)"; token)
@@ -52,7 +52,7 @@ may require different permissions.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the channel does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/channel#modify-channel)
+[Discord docs](https://docs.discord.com/developers/resources/channel#modify-channel)
 """
 function modify_channel(rl::RateLimiter, channel_id::Snowflake; token::String, body::Dict, reason=nothing)
     resp = discord_patch(rl, "/channels/$(channel_id)"; token, body, reason)
@@ -84,7 +84,7 @@ after it has been created.
 - HTTP 403 if missing `MANAGE_THREADS` permission.
 - HTTP 404 if the thread does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/channel#modify-channel)
+[Discord docs](https://docs.discord.com/developers/resources/channel#modify-channel)
 """
 function modify_thread(rl::RateLimiter, channel_id::Snowflake;
     token::String,
@@ -131,7 +131,7 @@ Requires `MANAGE_CHANNELS` for guild channels.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the channel does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/channel#deleteclose-channel)
+[Discord docs](https://docs.discord.com/developers/resources/channel#delete%2Fclose-channel)
 """
 function delete_channel(rl::RateLimiter, channel_id::Snowflake; token::String, reason=nothing)
     resp = discord_delete(rl, "/channels/$(channel_id)"; token, reason)
@@ -164,7 +164,7 @@ Requires `MANAGE_ROLES` with the bot's top role higher than the target role
 - HTTP 403 if missing required permissions or if the bot's role is too low.
 - HTTP 404 if the channel does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/channel#edit-channel-permissions)
+[Discord docs](https://docs.discord.com/developers/resources/channel#edit-channel-permissions)
 """
 function edit_channel_permissions(rl::RateLimiter, channel_id::Snowflake, overwrite_id::Snowflake; token::String, body::Dict, reason=nothing)
     discord_put(rl, "/channels/$(channel_id)/permissions/$(overwrite_id)"; token, body, reason)
@@ -195,7 +195,7 @@ Requires `MANAGE_ROLES` with the bot's top role higher than the target role
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the channel or overwrite does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/channel#delete-channel-permission)
+[Discord docs](https://docs.discord.com/developers/resources/channel#delete-channel-permission)
 """
 function delete_channel_permission(rl::RateLimiter, channel_id::Snowflake, overwrite_id::Snowflake; token::String, reason=nothing)
     discord_delete(rl, "/channels/$(channel_id)/permissions/$(overwrite_id)"; token, reason)
@@ -261,7 +261,7 @@ Requires `MANAGE_CHANNELS`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the channel does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/channel#get-channel-invites)
+[Discord docs](https://docs.discord.com/developers/resources/channel#get-channel-invites)
 """
 function get_channel_invites(rl::RateLimiter, channel_id::Snowflake; token::String)
     resp = discord_get(rl, "/channels/$(channel_id)/invites"; token)
@@ -296,7 +296,7 @@ Requires `CREATE_INSTANT_INVITE`, and `MANAGE_ROLES` for `role_ids`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the channel does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/channel#create-channel-invite)
+[Discord docs](https://docs.discord.com/developers/resources/channel#create-channel-invite)
 """
 function create_channel_invite(rl::RateLimiter, channel_id::Snowflake; token::String, body::Dict=Dict(),
                                target_users_file=nothing, reason=nothing)
@@ -328,7 +328,7 @@ Requires `MANAGE_WEBHOOKS` in the target channel's guild.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the channel does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/channel#follow-announcement-channel)
+[Discord docs](https://docs.discord.com/developers/resources/channel#follow-announcement-channel)
 """
 function follow_announcement_channel(rl::RateLimiter, channel_id::Snowflake; token::String, body::Dict)
     resp = discord_post(rl, "/channels/$(channel_id)/followers"; token, body)
@@ -358,7 +358,7 @@ Requires `SEND_MESSAGES` in the channel.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the channel does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/channel#trigger-typing-indicator)
+[Discord docs](https://docs.discord.com/developers/resources/channel#trigger-typing-indicator)
 """
 function trigger_typing_indicator(rl::RateLimiter, channel_id::Snowflake; token::String)
     discord_post(rl, "/channels/$(channel_id)/typing"; token)
@@ -389,7 +389,7 @@ and `pinned_at`) and `has_more`.
 # Permissions
 Requires `VIEW_CHANNEL` and `READ_MESSAGE_HISTORY`.
 
-[Discord docs](https://discord.com/developers/docs/resources/message#get-channel-pins)
+[Discord docs](https://docs.discord.com/developers/resources/message#get-channel-pins)
 """
 function get_pinned_messages(rl::RateLimiter, channel_id::Snowflake; token::String,
                              before=nothing, limit::Integer=50)
@@ -410,7 +410,7 @@ pinning announcements or saving key information.
 # Permissions
 Requires `PIN_MESSAGES` (`MANAGE_MESSAGES` no longer grants it since February 2026).
 
-[Discord docs](https://discord.com/developers/docs/resources/message#pin-message)
+[Discord docs](https://docs.discord.com/developers/resources/message#pin-message)
 """
 function pin_message(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake; token::String, reason=nothing)
     discord_put(rl, "/channels/$(channel_id)/messages/pins/$(message_id)"; token, reason)
@@ -427,7 +427,7 @@ unpinning outdated announcements or managing a limited number of pins.
 # Permissions
 Requires `PIN_MESSAGES`.
 
-[Discord docs](https://discord.com/developers/docs/resources/message#unpin-message)
+[Discord docs](https://docs.discord.com/developers/resources/message#unpin-message)
 """
 function unpin_message(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake; token::String, reason=nothing)
     discord_delete(rl, "/channels/$(channel_id)/messages/pins/$(message_id)"; token, reason)
@@ -443,7 +443,7 @@ empty `status` clears it.
 Requires `SET_VOICE_CHANNEL_STATUS`, plus `MANAGE_CHANNELS` when the bot is not
 connected to that channel.
 
-[Discord docs](https://discord.com/developers/docs/resources/channel#set-voice-channel-status)
+[Discord docs](https://docs.discord.com/developers/resources/channel#set-voice-channel-status)
 """
 function set_voice_channel_status(rl::RateLimiter, channel_id::Snowflake; token::String,
                                   status::AbstractString="", reason=nothing)
@@ -478,7 +478,7 @@ Requires `CREATE_PUBLIC_THREADS` for public threads.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the channel or message does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/channel#start-thread-from-message)
+[Discord docs](https://docs.discord.com/developers/resources/channel#start-thread-from-message)
 """
 function start_thread_from_message(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake; token::String, body::Dict, reason=nothing)
     resp = discord_post(rl, "/channels/$(channel_id)/messages/$(message_id)/threads"; token, body, reason=reason)
@@ -510,7 +510,7 @@ for private threads.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the channel does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/channel#start-thread-without-message)
+[Discord docs](https://docs.discord.com/developers/resources/channel#start-thread-without-message)
 """
 function start_thread_without_message(rl::RateLimiter, channel_id::Snowflake; token::String, body::Dict, reason=nothing)
     resp = discord_post(rl, "/channels/$(channel_id)/threads"; token, body, reason=reason)
@@ -542,7 +542,7 @@ Requires `SEND_MESSAGES` in the forum channel.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the channel does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/channel#start-thread-in-forum-channel)
+[Discord docs](https://docs.discord.com/developers/resources/channel#start-thread-in-forum-or-media-channel)
 """
 function start_thread_in_forum(rl::RateLimiter, channel_id::Snowflake; token::String, body::Dict, files=nothing, reason=nothing)
     resp = discord_post(rl, "/channels/$(channel_id)/threads"; token, body, files, reason=reason)
@@ -568,7 +568,7 @@ events from it, such as when participating in a conversation.
 - HTTP 403 if the thread is private and the bot wasn't added.
 - HTTP 404 if the thread does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/channel#join-thread)
+[Discord docs](https://docs.discord.com/developers/resources/channel#join-thread)
 """
 function join_thread(rl::RateLimiter, channel_id::Snowflake; token::String)
     discord_put(rl, "/channels/$(channel_id)/thread-members/@me"; token)
@@ -597,7 +597,7 @@ Requires `MANAGE_THREADS` to add members to private threads.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the thread or user does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/channel#add-thread-member)
+[Discord docs](https://docs.discord.com/developers/resources/channel#add-thread-member)
 """
 function add_thread_member(rl::RateLimiter, channel_id::Snowflake, user_id::Snowflake; token::String)
     discord_put(rl, "/channels/$(channel_id)/thread-members/$(user_id)"; token)
@@ -621,7 +621,7 @@ cleaning up thread memberships.
 # Errors
 - HTTP 404 if the thread does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/channel#leave-thread)
+[Discord docs](https://docs.discord.com/developers/resources/channel#leave-thread)
 """
 function leave_thread(rl::RateLimiter, channel_id::Snowflake; token::String)
     discord_delete(rl, "/channels/$(channel_id)/thread-members/@me"; token)
@@ -650,7 +650,7 @@ Requires `MANAGE_THREADS` to remove members from private threads.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the thread or user does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/channel#remove-thread-member)
+[Discord docs](https://docs.discord.com/developers/resources/channel#remove-thread-member)
 """
 function remove_thread_member(rl::RateLimiter, channel_id::Snowflake, user_id::Snowflake; token::String)
     discord_delete(rl, "/channels/$(channel_id)/thread-members/$(user_id)"; token)
@@ -680,7 +680,7 @@ Requires `MANAGE_THREADS` for private threads.
 - HTTP 403 if missing required permissions (for private threads).
 - HTTP 404 if the thread or user does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/channel#get-thread-member)
+[Discord docs](https://docs.discord.com/developers/resources/channel#get-thread-member)
 """
 function get_thread_member(rl::RateLimiter, channel_id::Snowflake, user_id::Snowflake; token::String, with_member::Bool=false)
     query = with_member ? ["with_member" => "true"] : nothing
@@ -712,7 +712,7 @@ Requires `MANAGE_THREADS` for private threads.
 - HTTP 403 if missing required permissions (for private threads).
 - HTTP 404 if the thread does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/channel#list-thread-members)
+[Discord docs](https://docs.discord.com/developers/resources/channel#list-thread-members)
 """
 function list_thread_members(rl::RateLimiter, channel_id::Snowflake; token::String, with_member::Bool=false, limit::Int=100)
     query = ["limit" => string(limit)]
@@ -740,7 +740,7 @@ such as for thread discovery or archival features.
 # Errors
 - HTTP 404 if the channel does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/channel#list-public-archived-threads)
+[Discord docs](https://docs.discord.com/developers/resources/channel#list-public-archived-threads)
 """
 function list_public_archived_threads(rl::RateLimiter, channel_id::Snowflake; token::String, limit::Int=50)
     resp = discord_get(rl, "/channels/$(channel_id)/threads/archived/public"; token,
@@ -771,7 +771,7 @@ Requires `MANAGE_THREADS`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the channel does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/channel#list-private-archived-threads)
+[Discord docs](https://docs.discord.com/developers/resources/channel#list-private-archived-threads)
 """
 function list_private_archived_threads(rl::RateLimiter, channel_id::Snowflake; token::String, limit::Int=50)
     resp = discord_get(rl, "/channels/$(channel_id)/threads/archived/private"; token,
@@ -798,7 +798,7 @@ membership, such as for thread management or notification purposes.
 # Errors
 - HTTP 404 if the channel does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/channel#list-joined-private-archived-threads)
+[Discord docs](https://docs.discord.com/developers/resources/channel#list-joined-private-archived-threads)
 """
 function list_joined_private_archived_threads(rl::RateLimiter, channel_id::Snowflake; token::String, limit::Int=50)
     resp = discord_get(rl, "/channels/$(channel_id)/users/@me/threads/archived/private"; token,
@@ -847,7 +847,7 @@ a text name and optionally an emoji (standard unicode or custom guild emoji).
 - HTTP 403 if the bot lacks `MANAGE_CHANNELS` permission.
 - HTTP 404 if the channel does not exist or is not a forum.
 
-[Discord docs](https://discord.com/developers/docs/resources/channel#modify-channel)
+[Discord docs](https://docs.discord.com/developers/resources/channel#modify-channel)
 """
 function create_forum_tag(rl::RateLimiter, channel_id::Snowflake;
     token::String,
@@ -896,7 +896,7 @@ Update an existing tag on a forum channel.
 - HTTP 403 if missing `MANAGE_CHANNELS`.
 - HTTP 404 if the channel or tag does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/channel#modify-channel)
+[Discord docs](https://docs.discord.com/developers/resources/channel#modify-channel)
 """
 function modify_forum_tag(rl::RateLimiter, channel_id::Snowflake, tag_id::Snowflake;
     token::String,
@@ -954,7 +954,7 @@ Remove a tag from a forum channel.
 - HTTP 403 if missing `MANAGE_CHANNELS`.
 - HTTP 404 if the channel or tag does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/channel#modify-channel)
+[Discord docs](https://docs.discord.com/developers/resources/channel#modify-channel)
 """
 function delete_forum_tag(rl::RateLimiter, channel_id::Snowflake, tag_id::Snowflake;
     token::String,

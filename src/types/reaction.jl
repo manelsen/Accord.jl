@@ -4,7 +4,7 @@
 Breakdown of normal and super (burst) reaction counts.
 
 # See Also
-- [Discord API: Reaction Count Details](https://discord.com/developers/docs/resources/message#reaction-count-details-object)
+- [Discord API: Reaction Count Details](https://docs.discord.com/developers/resources/message#reaction-count-details-object)
 """
 @discord_struct ReactionCountDetails begin
     burst::Int
@@ -25,7 +25,7 @@ Represents an emoji reaction to a Discord message.
 - `burst_colors::Vector{String}`: HEX colors for the super-reaction animation.
 
 # See Also
-- [Discord API: Reaction Object](https://discord.com/developers/docs/resources/message#reaction-object)
+- [Discord API: Reaction Object](https://docs.discord.com/developers/resources/message#reaction-object)
 """
 @discord_struct Reaction begin
     count::Int

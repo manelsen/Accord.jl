@@ -4,7 +4,7 @@
 Additional metadata for a [`ScheduledEvent`](@ref) (e.g., location for external events).
 
 # See Also
-- [Discord API: Entity Metadata](https://discord.com/developers/docs/resources/guild-scheduled-event#guild-scheduled-event-object-guild-scheduled-event-entity-metadata)
+- [Discord API: Entity Metadata](https://docs.discord.com/developers/resources/guild-scheduled-event#guild-scheduled-event-object-guild-scheduled-event-entity-metadata)
 """
 @discord_struct EntityMetadata begin
     location::Optional{String}
@@ -16,7 +16,7 @@ end
 The nth weekday of a month for a recurring event.
 
 # See Also
-- [Discord API: Recurrence Rule N-Weekday](https://discord.com/developers/docs/resources/guild-scheduled-event#guild-scheduled-event-recurrence-rule-object-guild-scheduled-event-recurrence-rule-nweekday-structure)
+- [Discord API: Recurrence Rule N-Weekday](https://docs.discord.com/developers/resources/guild-scheduled-event#guild-scheduled-event-recurrence-rule-object-guild-scheduled-event-recurrence-rule-nweekday-structure)
 """
 @discord_struct RecurrenceRuleNWeekday begin
     n::Int
@@ -29,7 +29,7 @@ end
 Defines how a [`ScheduledEvent`](@ref) repeats over time.
 
 # See Also
-- [Discord API: Recurrence Rule Object](https://discord.com/developers/docs/resources/guild-scheduled-event#guild-scheduled-event-recurrence-rule-object)
+- [Discord API: Recurrence Rule Object](https://docs.discord.com/developers/resources/guild-scheduled-event#guild-scheduled-event-recurrence-rule-object)
 """
 @discord_struct RecurrenceRule begin
     start::String
@@ -70,7 +70,7 @@ Scheduled events allow servers to plan and publicize future gatherings.
 - `recurrence_rule::Nullable{RecurrenceRule}`: How the event repeats.
 
 # See Also
-- [Discord API: Scheduled Event Object](https://discord.com/developers/docs/resources/guild-scheduled-event#guild-scheduled-event-object)
+- [Discord API: Scheduled Event Object](https://docs.discord.com/developers/resources/guild-scheduled-event#guild-scheduled-event-object)
 """
 @discord_struct ScheduledEvent begin
     id::Snowflake

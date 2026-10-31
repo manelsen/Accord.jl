@@ -9,7 +9,7 @@ Metadata associated with an [`AutoModAction`](@ref).
 - `custom_message::Optional{String}`: Message shown to the user (for `BLOCK_MESSAGE`).
 
 # See Also
-- [Discord API: Auto Moderation Action Metadata](https://discord.com/developers/docs/resources/auto-moderation#auto-moderation-action-object-action-metadata)
+- [Discord API: Auto Moderation Action Metadata](https://docs.discord.com/developers/resources/auto-moderation#auto-moderation-action-object-action-metadata)
 """
 @discord_struct AutoModActionMetadata begin
     channel_id::Optional{Snowflake}
@@ -27,7 +27,7 @@ An action to take when an [`AutoModRule`](@ref) is triggered.
 - `metadata::Optional{AutoModActionMetadata}`: Additional data for the action.
 
 # See Also
-- [Discord API: Auto Moderation Action Object](https://discord.com/developers/docs/resources/auto-moderation#auto-moderation-action-object)
+- [Discord API: Auto Moderation Action Object](https://docs.discord.com/developers/resources/auto-moderation#auto-moderation-action-object)
 """
 @discord_struct AutoModAction begin
     type::Int
@@ -47,7 +47,7 @@ Configuration for what triggers an [`AutoModRule`](@ref).
 - `mention_total_limit::Optional{Int}`: Max unique mentions allowed.
 
 # See Also
-- [Discord API: Auto Moderation Trigger Metadata](https://discord.com/developers/docs/resources/auto-moderation#auto-moderation-rule-object-trigger-metadata)
+- [Discord API: Auto Moderation Trigger Metadata](https://docs.discord.com/developers/resources/auto-moderation#auto-moderation-rule-object-trigger-metadata)
 """
 @discord_struct AutoModTriggerMetadata begin
     keyword_filter::Optional{Vector{String}}
@@ -79,7 +79,7 @@ Rules define what content is filtered and what actions are taken automatically.
 - `exempt_channels::Vector{Snowflake}`: Channels exempt from this rule.
 
 # See Also
-- [Discord API: Auto Moderation Rule Object](https://discord.com/developers/docs/resources/auto-moderation#auto-moderation-rule-object)
+- [Discord API: Auto Moderation Rule Object](https://docs.discord.com/developers/resources/auto-moderation#auto-moderation-rule-object)
 """
 @discord_struct AutoModRule begin
     id::Snowflake

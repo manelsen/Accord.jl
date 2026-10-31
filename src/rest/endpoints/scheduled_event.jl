@@ -24,7 +24,7 @@ upcoming event notifications, or event management commands.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild-scheduled-event#list-scheduled-events-for-guild)
+[Discord docs](https://docs.discord.com/developers/resources/guild-scheduled-event#list-scheduled-events-for-guild)
 """
 function list_scheduled_events(rl::RateLimiter, guild_id::Snowflake; token::String, with_user_count::Bool=false)
     query = with_user_count ? ["with_user_count" => "true"] : nothing
@@ -63,7 +63,7 @@ Requires `MANAGE_EVENTS` or `ADMINISTRATOR`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild-scheduled-event#create-guild-scheduled-event)
+[Discord docs](https://docs.discord.com/developers/resources/guild-scheduled-event#create-guild-scheduled-event)
 """
 function create_guild_scheduled_event(rl::RateLimiter, guild_id::Snowflake; token::String, body::Dict, reason=nothing)
     resp = discord_post(rl, "/guilds/$(guild_id)/scheduled-events"; token, body, reason=reason)
@@ -93,7 +93,7 @@ event information or checking event status.
 # Errors
 - HTTP 404 if the event or guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild-scheduled-event#get-guild-scheduled-event)
+[Discord docs](https://docs.discord.com/developers/resources/guild-scheduled-event#get-guild-scheduled-event)
 """
 function get_guild_scheduled_event(rl::RateLimiter, guild_id::Snowflake, event_id::Snowflake; token::String, with_user_count::Bool=false)
     query = with_user_count ? ["with_user_count" => "true"] : nothing
@@ -127,7 +127,7 @@ Requires `MANAGE_EVENTS` or `ADMINISTRATOR`.
 - HTTP 403 if missing required permissions or not the event creator.
 - HTTP 404 if the event or guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild-scheduled-event#modify-guild-scheduled-event)
+[Discord docs](https://docs.discord.com/developers/resources/guild-scheduled-event#modify-guild-scheduled-event)
 """
 function modify_guild_scheduled_event(rl::RateLimiter, guild_id::Snowflake, event_id::Snowflake; token::String, body::Dict, reason=nothing)
     resp = discord_patch(rl, "/guilds/$(guild_id)/scheduled-events/$(event_id)"; token, body, reason)
@@ -157,7 +157,7 @@ Requires `MANAGE_EVENTS` or `ADMINISTRATOR`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the event or guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild-scheduled-event#delete-guild-scheduled-event)
+[Discord docs](https://docs.discord.com/developers/resources/guild-scheduled-event#delete-guild-scheduled-event)
 """
 function delete_guild_scheduled_event(rl::RateLimiter, guild_id::Snowflake, event_id::Snowflake; token::String)
     discord_delete(rl, "/guilds/$(guild_id)/scheduled-events/$(event_id)"; token)
@@ -188,7 +188,7 @@ Requires `MANAGE_EVENTS` or `ADMINISTRATOR`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the event or guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild-scheduled-event#get-guild-scheduled-event-users)
+[Discord docs](https://docs.discord.com/developers/resources/guild-scheduled-event#get-guild-scheduled-event-users)
 """
 function get_guild_scheduled_event_users(rl::RateLimiter, guild_id::Snowflake, event_id::Snowflake; token::String, limit::Int=100, with_member::Bool=false)
     query = ["limit" => string(limit)]

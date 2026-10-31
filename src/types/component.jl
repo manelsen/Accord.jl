@@ -11,7 +11,7 @@ An option within a select menu component.
 - `default::Optional{Bool}`: Whether this option is selected by default.
 
 # See Also
-- [Discord API: Select Option](https://discord.com/developers/docs/interactions/message-components#select-menu-object-select-option-structure)
+- [Discord API: Select Option](https://docs.discord.com/developers/components/reference#string-select-select-option-structure)
 """
 @discord_struct SelectOption begin
     label::String
@@ -126,7 +126,7 @@ row = Component(type=ComponentTypes.ACTION_ROW, components=[button])
 ```
 
 # See Also
-- [Discord API: Component Object](https://discord.com/developers/docs/interactions/message-components#component-object)
+- [Discord API: Component Object](https://docs.discord.com/developers/components/reference#component-object)
 """
 @discord_struct Component begin
     type::Int

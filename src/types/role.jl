@@ -12,7 +12,7 @@ Extra attributes describing a special role (e.g., bot role, booster role).
 - `guild_connections::Optional{Nothing}`: Present if the role is a guild's linked role.
 
 # See Also
-- [Discord API: Role Tags Object](https://discord.com/developers/docs/topics/permissions#role-object-role-tags-structure)
+- [Discord API: Role Tags Object](https://docs.discord.com/developers/topics/permissions#role-object-role-tags-structure)
 """
 @discord_struct RoleTags begin
     bot_id::Optional{Snowflake}
@@ -69,7 +69,7 @@ println("Moderator role ID: \$(mod_role.id)")
 ```
 
 # See Also
-- [Discord API: Role Object](https://discord.com/developers/docs/resources/guild#role-object)
+- [Discord API: Role Object](https://docs.discord.com/developers/topics/permissions#role-object)
 """
 @discord_struct Role begin
     id::Snowflake

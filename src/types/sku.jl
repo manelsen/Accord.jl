@@ -4,7 +4,7 @@
 Represents a Stock Keeping Unit (SKU) for application monetization.
 
 # See Also
-- [Discord API: SKU Object](https://discord.com/developers/docs/resources/sku#sku-object)
+- [Discord API: SKU Object](https://docs.discord.com/developers/resources/sku#sku-object)
 """
 @discord_struct SKU begin
     id::Snowflake
@@ -21,7 +21,7 @@ end
 Represents access to a premium offering (SKU) by a user or guild.
 
 # See Also
-- [Discord API: Entitlement Object](https://discord.com/developers/docs/resources/entitlement#entitlement-object)
+- [Discord API: Entitlement Object](https://docs.discord.com/developers/resources/entitlement#entitlement-object)
 """
 @discord_struct Entitlement begin
     id::Snowflake
@@ -42,7 +42,7 @@ end
 Represents a user's subscription to a premium SKU.
 
 # See Also
-- [Discord API: Subscription Object](https://discord.com/developers/docs/resources/subscription#subscription-object)
+- [Discord API: Subscription Object](https://docs.discord.com/developers/resources/subscription#subscription-object)
 """
 @discord_struct Subscription begin
     id::Snowflake

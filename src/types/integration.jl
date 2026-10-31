@@ -4,7 +4,7 @@
 Third-party account info for an [`Integration`](@ref).
 
 # See Also
-- [Discord API: Integration Account](https://discord.com/developers/docs/resources/guild#integration-account-object)
+- [Discord API: Integration Account](https://docs.discord.com/developers/resources/guild#integration-account-object)
 """
 @discord_struct IntegrationAccount begin
     id::String
@@ -17,7 +17,7 @@ end
 Application info for a Discord [`Integration`](@ref).
 
 # See Also
-- [Discord API: Integration Application](https://discord.com/developers/docs/resources/guild#integration-application-object)
+- [Discord API: Integration Application](https://docs.discord.com/developers/resources/guild#integration-application-object)
 """
 @discord_struct IntegrationApplication begin
     id::Snowflake
@@ -42,7 +42,7 @@ Represents a guild integration (Twitch, YouTube, Discord App, etc.).
 - `application::Optional{IntegrationApplication}`: For Discord App integrations.
 
 # See Also
-- [Discord API: Integration Object](https://discord.com/developers/docs/resources/guild#integration-object)
+- [Discord API: Integration Object](https://docs.discord.com/developers/resources/guild#integration-object)
 """
 @discord_struct Integration begin
     id::Snowflake

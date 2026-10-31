@@ -4,7 +4,7 @@
 Metadata for a channel on a guild's welcome screen.
 
 # See Also
-- [Discord API: Welcome Screen Channel Object](https://discord.com/developers/docs/resources/guild#welcome-screen-object-welcome-screen-channel-structure)
+- [Discord API: Welcome Screen Channel Object](https://docs.discord.com/developers/resources/guild#welcome-screen-object-welcome-screen-channel-structure)
 """
 @discord_struct WelcomeScreenChannel begin
     channel_id::Snowflake
@@ -19,7 +19,7 @@ end
 The welcome screen shown to new members in a guild.
 
 # See Also
-- [Discord API: Welcome Screen Object](https://discord.com/developers/docs/resources/guild#welcome-screen-object)
+- [Discord API: Welcome Screen Object](https://docs.discord.com/developers/resources/guild#welcome-screen-object)
 """
 @discord_struct WelcomeScreen begin
     description::Nullable{String}
@@ -32,7 +32,7 @@ end
 Represents a guild that is currently unavailable due to an outage.
 
 # See Also
-- [Discord API: Unavailable Guild Object](https://discord.com/developers/docs/resources/guild#unavailable-guild-object)
+- [Discord API: Unavailable Guild Object](https://docs.discord.com/developers/resources/guild#unavailable-guild-object)
 """
 @discord_struct UnavailableGuild begin
     id::Snowflake
@@ -81,7 +81,7 @@ println("Server name: \$(guild.name) (\$(guild.id))")
 ```
 
 # See Also
-- [Discord API: Guild Object](https://discord.com/developers/docs/resources/guild#guild-object)
+- [Discord API: Guild Object](https://docs.discord.com/developers/resources/guild#guild-object)
 """
 @discord_struct Guild begin
     id::Snowflake

@@ -9,7 +9,7 @@ A choice for a string, integer, or number application command option.
 - `value::Any`: The value of the choice (String, Int, or Float64).
 
 # See Also
-- [Discord API: Application Command Option Choice](https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-choice-structure)
+- [Discord API: Application Command Option Choice](https://docs.discord.com/developers/interactions/application-commands#application-command-object-application-command-option-choice-structure)
 """
 @discord_struct ApplicationCommandOptionChoice begin
     name::String
@@ -32,7 +32,7 @@ An option (parameter) for an application command.
 - `autocomplete::Optional{Bool}`: Whether this option supports autocomplete.
 
 # See Also
-- [Discord API: Application Command Option](https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure)
+- [Discord API: Application Command Option](https://docs.discord.com/developers/interactions/application-commands#application-command-object-application-command-option-structure)
 """
 @discord_struct ApplicationCommandOption begin
     type::Int
@@ -68,7 +68,7 @@ Represents a registered application command (Slash Command, User Command, or Mes
 - `nsfw::Optional{Bool}`: Whether the command is age-restricted.
 
 # See Also
-- [Discord API: Application Command](https://discord.com/developers/docs/interactions/application-commands#application-command-object)
+- [Discord API: Application Command](https://docs.discord.com/developers/interactions/application-commands#application-command-object)
 """
 @discord_struct ApplicationCommand begin
     id::Snowflake
@@ -94,7 +94,7 @@ end
 Contains the full objects for users, roles, channels, etc., mentioned in an interaction.
 
 # See Also
-- [Discord API: Resolved Data](https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-object-resolved-data-structure)
+- [Discord API: Resolved Data](https://docs.discord.com/developers/interactions/receiving-and-responding#interaction-object-resolved-data-structure)
 """
 @discord_struct ResolvedData begin
     users::Optional{Any}
@@ -111,7 +111,7 @@ end
 An option/value received from a user in an interaction.
 
 # See Also
-- [Discord API: Interaction Data Option](https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-object-application-command-interaction-data-option-structure)
+- [Discord API: Interaction Data Option](https://docs.discord.com/developers/interactions/receiving-and-responding#interaction-object-application-command-interaction-data-option-structure)
 """
 @discord_struct InteractionDataOption begin
     name::String
@@ -127,7 +127,7 @@ end
 The actual payload of an interaction. Fields vary depending on the interaction type.
 
 # See Also
-- [Discord API: Interaction Data](https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-object-interaction-data-structure)
+- [Discord API: Interaction Data](https://docs.discord.com/developers/interactions/receiving-and-responding#interaction-object-interaction-data)
 """
 @discord_struct InteractionData begin
     id::Optional{Snowflake}
@@ -173,7 +173,7 @@ end
 ```
 
 # See Also
-- [Discord API: Interaction Object](https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-object)
+- [Discord API: Interaction Object](https://docs.discord.com/developers/interactions/receiving-and-responding#interaction-object)
 """
 @discord_struct Interaction begin
     id::Snowflake

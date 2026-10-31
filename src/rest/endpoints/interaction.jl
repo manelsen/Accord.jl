@@ -22,7 +22,7 @@ commands are available in all guilds and take up to an hour to propagate.
 - HTTP 401 if the token is invalid.
 - HTTP 404 if the application does not exist.
 
-[Discord docs](https://discord.com/developers/docs/interactions/application-commands#get-global-application-commands)
+[Discord docs](https://docs.discord.com/developers/interactions/application-commands#get-global-application-commands)
 """
 function get_global_application_commands(rl::RateLimiter, application_id::Snowflake; token::String, with_localizations::Bool=false)
     query = with_localizations ? ["with_localizations" => "true"] : nothing
@@ -51,7 +51,7 @@ menu command, or autocomplete command.
 - HTTP 401 if the token is invalid.
 - HTTP 429 if too many commands created (limit is 100 global commands).
 
-[Discord docs](https://discord.com/developers/docs/interactions/application-commands#create-global-application-command)
+[Discord docs](https://docs.discord.com/developers/interactions/application-commands#create-global-application-command)
 """
 function create_global_application_command(rl::RateLimiter, application_id::Snowflake; token::String, body::Dict)
     resp = discord_post(rl, "/applications/$(application_id)/commands"; token, body)
@@ -77,7 +77,7 @@ such as for editing or inspection.
 # Errors
 - HTTP 404 if the command does not exist.
 
-[Discord docs](https://discord.com/developers/docs/interactions/application-commands#get-global-application-command)
+[Discord docs](https://docs.discord.com/developers/interactions/application-commands#get-global-application-command)
 """
 function get_global_application_command(rl::RateLimiter, application_id::Snowflake, command_id::Snowflake; token::String)
     resp = discord_get(rl, "/applications/$(application_id)/commands/$(command_id)"; token)
@@ -105,7 +105,7 @@ description, options, or other properties.
 - HTTP 400 if the updated data is invalid.
 - HTTP 404 if the command does not exist.
 
-[Discord docs](https://discord.com/developers/docs/interactions/application-commands#edit-global-application-command)
+[Discord docs](https://docs.discord.com/developers/interactions/application-commands#edit-global-application-command)
 """
 function edit_global_application_command(rl::RateLimiter, application_id::Snowflake, command_id::Snowflake; token::String, body::Dict)
     resp = discord_patch(rl, "/applications/$(application_id)/commands/$(command_id)"; token, body)
@@ -131,7 +131,7 @@ irreversible and will immediately remove the command from all guilds.
 # Errors
 - HTTP 404 if the command does not exist.
 
-[Discord docs](https://discord.com/developers/docs/interactions/application-commands#delete-global-application-command)
+[Discord docs](https://docs.discord.com/developers/interactions/application-commands#delete-global-application-command)
 """
 function delete_global_application_command(rl::RateLimiter, application_id::Snowflake, command_id::Snowflake; token::String)
     discord_delete(rl, "/applications/$(application_id)/commands/$(command_id)"; token)
@@ -158,7 +158,7 @@ creating commands individually.
 - HTTP 400 if any command data is invalid.
 - HTTP 401 if the token is invalid.
 
-[Discord docs](https://discord.com/developers/docs/interactions/application-commands#bulk-overwrite-global-application-commands)
+[Discord docs](https://docs.discord.com/developers/interactions/application-commands#bulk-overwrite-global-application-commands)
 """
 function bulk_overwrite_global_application_commands(rl::RateLimiter, application_id::Snowflake; token::String, body::Vector)
     resp = discord_put(rl, "/applications/$(application_id)/commands"; token, body=body)
@@ -191,7 +191,7 @@ Requires `VIEW_CHANNEL` in the guild.
 - HTTP 403 if the bot is not in the guild.
 - HTTP 404 if the guild or application does not exist.
 
-[Discord docs](https://discord.com/developers/docs/interactions/application-commands#get-guild-application-commands)
+[Discord docs](https://docs.discord.com/developers/interactions/application-commands#get-guild-application-commands)
 """
 function get_guild_application_commands(rl::RateLimiter, application_id::Snowflake, guild_id::Snowflake; token::String, with_localizations::Bool=false)
     query = with_localizations ? ["with_localizations" => "true"] : nothing
@@ -224,7 +224,7 @@ Requires `VIEW_CHANNEL` in the guild.
 - HTTP 403 if the bot is not in the guild.
 - HTTP 429 if too many commands created (limit is 100 guild commands).
 
-[Discord docs](https://discord.com/developers/docs/interactions/application-commands#create-guild-application-command)
+[Discord docs](https://docs.discord.com/developers/interactions/application-commands#create-guild-application-command)
 """
 function create_guild_application_command(rl::RateLimiter, application_id::Snowflake, guild_id::Snowflake; token::String, body::Dict)
     resp = discord_post(rl, "/applications/$(application_id)/guilds/$(guild_id)/commands"; token, body)
@@ -250,7 +250,7 @@ Use this when a bot needs to retrieve details of a guild-specific command.
 # Errors
 - HTTP 404 if the command does not exist.
 
-[Discord docs](https://discord.com/developers/docs/interactions/application-commands#get-guild-application-command)
+[Discord docs](https://docs.discord.com/developers/interactions/application-commands#get-guild-application-command)
 """
 function get_guild_application_command(rl::RateLimiter, application_id::Snowflake, guild_id::Snowflake, command_id::Snowflake; token::String)
     resp = discord_get(rl, "/applications/$(application_id)/guilds/$(guild_id)/commands/$(command_id)"; token)
@@ -278,7 +278,7 @@ Use this when a bot needs to update a guild command's properties.
 - HTTP 400 if the updated data is invalid.
 - HTTP 404 if the command does not exist.
 
-[Discord docs](https://discord.com/developers/docs/interactions/application-commands#edit-guild-application-command)
+[Discord docs](https://docs.discord.com/developers/interactions/application-commands#edit-guild-application-command)
 """
 function edit_guild_application_command(rl::RateLimiter, application_id::Snowflake, guild_id::Snowflake, command_id::Snowflake; token::String, body::Dict)
     resp = discord_patch(rl, "/applications/$(application_id)/guilds/$(guild_id)/commands/$(command_id)"; token, body)
@@ -304,7 +304,7 @@ Use this when a bot needs to remove a guild command. Changes are immediate.
 # Errors
 - HTTP 404 if the command does not exist.
 
-[Discord docs](https://discord.com/developers/docs/interactions/application-commands#delete-guild-application-command)
+[Discord docs](https://docs.discord.com/developers/interactions/application-commands#delete-guild-application-command)
 """
 function delete_guild_application_command(rl::RateLimiter, application_id::Snowflake, guild_id::Snowflake, command_id::Snowflake; token::String)
     discord_delete(rl, "/applications/$(application_id)/guilds/$(guild_id)/commands/$(command_id)"; token)
@@ -331,7 +331,7 @@ more efficient than updating commands individually and takes effect immediately.
 - HTTP 400 if any command data is invalid.
 - HTTP 403 if the bot is not in the guild.
 
-[Discord docs](https://discord.com/developers/docs/interactions/application-commands#bulk-overwrite-guild-application-commands)
+[Discord docs](https://docs.discord.com/developers/interactions/application-commands#bulk-overwrite-guild-application-commands)
 """
 function bulk_overwrite_guild_application_commands(rl::RateLimiter, application_id::Snowflake, guild_id::Snowflake; token::String, body::Vector)
     resp = discord_put(rl, "/applications/$(application_id)/guilds/$(guild_id)/commands"; token, body=body)
@@ -376,7 +376,7 @@ the interaction.
 - HTTP 401 if the interaction token is invalid.
 - HTTP 429 if responding too frequently to the same interaction.
 
-[Discord docs](https://discord.com/developers/docs/interactions/receiving-and-responding#create-interaction-response)
+[Discord docs](https://docs.discord.com/developers/interactions/receiving-and-responding#create-interaction-response)
 """
 function create_interaction_response(rl::RateLimiter, interaction_id::Snowflake, interaction_token::String; token::String, body::Dict, files=nothing)
     url = "$(API_BASE)/interactions/$(interaction_id)/$(interaction_token)/callback"
@@ -414,7 +414,7 @@ interaction response, such as for editing or reference.
 # Errors
 - HTTP 404 if no response message exists.
 
-[Discord docs](https://discord.com/developers/docs/interactions/receiving-and-responding#get-original-interaction-response)
+[Discord docs](https://docs.discord.com/developers/interactions/receiving-and-responding#get-original-interaction-response)
 """
 function get_original_interaction_response(rl::RateLimiter, application_id::Snowflake, interaction_token::String; token::String)
     resp = discord_get(rl, "/webhooks/$(application_id)/$(interaction_token)/messages/@original"; token)
@@ -443,7 +443,7 @@ response, such as to show updated information or results.
 - HTTP 400 if the message data is invalid.
 - HTTP 404 if the message does not exist.
 
-[Discord docs](https://discord.com/developers/docs/interactions/receiving-and-responding#edit-original-interaction-response)
+[Discord docs](https://docs.discord.com/developers/interactions/receiving-and-responding#edit-original-interaction-response)
 """
 function edit_original_interaction_response(rl::RateLimiter, application_id::Snowflake, interaction_token::String; token::String, body::Dict, files=nothing)
     resp = discord_patch(rl, "/webhooks/$(application_id)/$(interaction_token)/messages/@original"; token, body, files)
@@ -469,7 +469,7 @@ initial response.
 # Errors
 - HTTP 404 if the message does not exist.
 
-[Discord docs](https://discord.com/developers/docs/interactions/receiving-and-responding#delete-original-interaction-response)
+[Discord docs](https://docs.discord.com/developers/interactions/receiving-and-responding#delete-original-interaction-response)
 """
 function delete_original_interaction_response(rl::RateLimiter, application_id::Snowflake, interaction_token::String; token::String)
     discord_delete(rl, "/webhooks/$(application_id)/$(interaction_token)/messages/@original"; token)
@@ -496,7 +496,7 @@ response, such as for multi-step interactions or additional notifications.
 # Errors
 - HTTP 400 if the message data is invalid.
 
-[Discord docs](https://discord.com/developers/docs/interactions/receiving-and-responding#create-followup-message)
+[Discord docs](https://docs.discord.com/developers/interactions/receiving-and-responding#create-followup-message)
 """
 function create_followup_message(rl::RateLimiter, application_id::Snowflake, interaction_token::String; token::String, body::Dict, files=nothing)
     resp = discord_post(rl, "/webhooks/$(application_id)/$(interaction_token)"; token, body, files)
@@ -522,7 +522,7 @@ Use this when a bot needs to retrieve a previously sent followup message.
 # Errors
 - HTTP 404 if the message does not exist.
 
-[Discord docs](https://discord.com/developers/docs/interactions/receiving-and-responding#get-followup-message)
+[Discord docs](https://docs.discord.com/developers/interactions/receiving-and-responding#get-followup-message)
 """
 function get_followup_message(rl::RateLimiter, application_id::Snowflake, interaction_token::String, message_id::Snowflake; token::String)
     resp = discord_get(rl, "/webhooks/$(application_id)/$(interaction_token)/messages/$(message_id)"; token)
@@ -552,7 +552,7 @@ such as to correct information or show updated status.
 - HTTP 400 if the message data is invalid.
 - HTTP 404 if the message does not exist.
 
-[Discord docs](https://discord.com/developers/docs/interactions/receiving-and-responding#edit-followup-message)
+[Discord docs](https://docs.discord.com/developers/interactions/receiving-and-responding#edit-followup-message)
 """
 function edit_followup_message(rl::RateLimiter, application_id::Snowflake, interaction_token::String, message_id::Snowflake; token::String, body::Dict, files=nothing)
     resp = discord_patch(rl, "/webhooks/$(application_id)/$(interaction_token)/messages/$(message_id)"; token, body, files)
@@ -578,7 +578,7 @@ Use this when a bot needs to remove a previously sent followup message.
 # Errors
 - HTTP 404 if the message does not exist.
 
-[Discord docs](https://discord.com/developers/docs/interactions/receiving-and-responding#delete-followup-message)
+[Discord docs](https://docs.discord.com/developers/interactions/receiving-and-responding#delete-followup-message)
 """
 function delete_followup_message(rl::RateLimiter, application_id::Snowflake, interaction_token::String, message_id::Snowflake; token::String)
     discord_delete(rl, "/webhooks/$(application_id)/$(interaction_token)/messages/$(message_id)"; token)
@@ -609,7 +609,7 @@ Requires `ADMINISTRATOR` or application ownership.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the guild or application does not exist.
 
-[Discord docs](https://discord.com/developers/docs/interactions/application-commands#get-application-command-permissions)
+[Discord docs](https://docs.discord.com/developers/interactions/application-commands#get-application-command-permissions)
 """
 function get_guild_application_command_permissions(rl::RateLimiter, application_id::Snowflake, guild_id::Snowflake; token::String)
     resp = discord_get(rl, "/applications/$(application_id)/guilds/$(guild_id)/commands/permissions"; token)
@@ -640,7 +640,7 @@ Requires `ADMINISTRATOR` or application ownership.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the command or guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/interactions/application-commands#get-application-command-permissions)
+[Discord docs](https://docs.discord.com/developers/interactions/application-commands#get-application-command-permissions)
 """
 function get_application_command_permissions(rl::RateLimiter, application_id::Snowflake, guild_id::Snowflake, command_id::Snowflake; token::String)
     resp = discord_get(rl, "/applications/$(application_id)/guilds/$(guild_id)/commands/$(command_id)/permissions"; token)
@@ -672,7 +672,7 @@ Requires `ADMINISTRATOR`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the command or guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/interactions/application-commands#edit-application-command-permissions)
+[Discord docs](https://docs.discord.com/developers/interactions/application-commands#edit-application-command-permissions)
 """
 function edit_application_command_permissions(rl::RateLimiter, application_id::Snowflake, guild_id::Snowflake, command_id::Snowflake; token::String, body::Dict)
     resp = discord_put(rl, "/applications/$(application_id)/guilds/$(guild_id)/commands/$(command_id)/permissions"; token, body)

@@ -13,7 +13,7 @@ overriding the default guild permissions for specific entities.
 - `deny::String`: Bitset of denied permissions (string).
 
 # See Also
-- [Discord API: Overwrite Object](https://discord.com/developers/docs/resources/channel#overwrite-object)
+- [Discord API: Overwrite Object](https://docs.discord.com/developers/resources/channel#overwrite-object)
 """
 @discord_struct Overwrite begin
     id::Snowflake

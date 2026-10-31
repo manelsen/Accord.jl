@@ -15,7 +15,7 @@ custom guild emoji.
 - `available::Optional{Bool}`: Whether the emoji can be used.
 
 # See Also
-- [Discord API: Emoji Object](https://discord.com/developers/docs/resources/emoji#emoji-object)
+- [Discord API: Emoji Object](https://docs.discord.com/developers/resources/emoji#emoji-object)
 """
 @discord_struct Emoji begin
     id::Nullable{Snowflake}

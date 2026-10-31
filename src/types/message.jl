@@ -116,7 +116,7 @@ end
 ```
 
 # See Also
-- [Discord API: Message Object](https://discord.com/developers/docs/resources/channel#message-object)
+- [Discord API: Message Object](https://docs.discord.com/developers/resources/message#message-object)
 """
 @discord_struct Message begin
     id::Snowflake

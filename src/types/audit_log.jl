@@ -9,7 +9,7 @@ Represents a change to a guild resource recorded in the audit log.
 - `key::String`: The name of the property that was changed (e.g., "name", "permissions").
 
 # See Also
-- [Discord API: Audit Log Change Object](https://discord.com/developers/docs/resources/audit-log#audit-log-change-object)
+- [Discord API: Audit Log Change Object](https://docs.discord.com/developers/resources/audit-log#audit-log-change-object)
 """
 @discord_struct AuditLogChange begin
     new_value::Optional{Any}
@@ -24,7 +24,7 @@ Extra information for specific audit log events (e.g., prune details,
 overwrite types).
 
 # See Also
-- [Discord API: Audit Log Entry Info](https://discord.com/developers/docs/resources/audit-log#audit-log-entry-object-optional-audit-entry-info)
+- [Discord API: Audit Log Entry Info](https://docs.discord.com/developers/resources/audit-log#audit-log-entry-object-optional-audit-entry-info)
 """
 @discord_struct AuditLogEntryInfo begin
     application_id::Optional{Snowflake}
@@ -56,7 +56,7 @@ An individual entry in the guild audit log.
 - `reason::Optional{String}`: Reason provided by the user (max 512 characters).
 
 # See Also
-- [Discord API: Audit Log Entry Object](https://discord.com/developers/docs/resources/audit-log#audit-log-entry-object)
+- [Discord API: Audit Log Entry Object](https://docs.discord.com/developers/resources/audit-log#audit-log-entry-object)
 """
 @discord_struct AuditLogEntry begin
     target_id::Nullable{String}
@@ -81,7 +81,7 @@ referenced objects (users, webhooks, etc.).
 - `application_commands::Vector{ApplicationCommand}`: Commands referenced.
 
 # See Also
-- [Discord API: Audit Log Object](https://discord.com/developers/docs/resources/audit-log#audit-log-object)
+- [Discord API: Audit Log Object](https://docs.discord.com/developers/resources/audit-log#audit-log-object)
 """
 @discord_struct AuditLog begin
     application_commands::Vector{ApplicationCommand}

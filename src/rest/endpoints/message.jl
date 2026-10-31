@@ -25,7 +25,7 @@ Requires `VIEW_CHANNEL` and `READ_MESSAGE_HISTORY`.
 - HTTP 403 if missing permissions.
 - HTTP 404 if the channel does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/message#get-channel-messages)
+[Discord docs](https://docs.discord.com/developers/resources/message#get-channel-messages)
 """
 function get_channel_messages(rl::RateLimiter, channel_id::Snowflake; token::String, limit::Int=50, around=nothing, before=nothing, after=nothing)
     query = ["limit" => string(limit)]
@@ -58,7 +58,7 @@ Requires `READ_MESSAGE_HISTORY`.
 - HTTP 403 if missing permissions.
 - HTTP 404 if the channel or message does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/message#get-channel-message)
+[Discord docs](https://docs.discord.com/developers/resources/message#get-channel-message)
 """
 function get_channel_message(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake; token::String)
     resp = discord_get(rl, "/channels/$(channel_id)/messages/$(message_id)"; token)
@@ -162,7 +162,7 @@ Requires `SEND_TTS_MESSAGES` if `tts` is true.
 - HTTP 404 if the channel does not exist.
 - HTTP 400 if the message is empty or invalid.
 
-[Discord docs](https://discord.com/developers/docs/resources/message#create-message)
+[Discord docs](https://docs.discord.com/developers/resources/message#create-message)
 """
 function create_message(rl::RateLimiter, channel_id::Snowflake; token::String, body::Dict=Dict(), files=nothing)
     resp = discord_post(rl, "/channels/$(channel_id)/messages"; token, body, files)
@@ -192,7 +192,7 @@ Actually, for crossposting, it requires `SEND_MESSAGES` in the channel.
 - HTTP 403 if missing permissions.
 - HTTP 404 if the message does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/message#crosspost-message)
+[Discord docs](https://docs.discord.com/developers/resources/message#crosspost-message)
 """
 function crosspost_message(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake; token::String)
     resp = discord_post(rl, "/channels/$(channel_id)/messages/$(message_id)/crosspost"; token)
@@ -224,7 +224,7 @@ You can always edit your own messages.
 - HTTP 403 if you try to edit someone else's message.
 - HTTP 404 if the message does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/message#edit-message)
+[Discord docs](https://docs.discord.com/developers/resources/message#edit-message)
 """
 function edit_message(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake; token::String, body::Dict, files=nothing)
     resp = discord_patch(rl, "/channels/$(channel_id)/messages/$(message_id)"; token, body, files)
@@ -255,7 +255,7 @@ You can always delete your own messages.
 - HTTP 403 if missing permissions.
 - HTTP 404 if the message does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/message#delete-message)
+[Discord docs](https://docs.discord.com/developers/resources/message#delete-message)
 """
 function delete_message(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake; token::String, reason=nothing)
     discord_delete(rl, "/channels/$(channel_id)/messages/$(message_id)"; token, reason)
@@ -285,7 +285,7 @@ Requires `MANAGE_MESSAGES`.
 - HTTP 403 if missing permissions.
 - HTTP 400 if deleting < 2 or > 100 messages, or if messages are too old.
 
-[Discord docs](https://discord.com/developers/docs/resources/message#bulk-delete-messages)
+[Discord docs](https://docs.discord.com/developers/resources/message#bulk-delete-messages)
 """
 function bulk_delete_messages(rl::RateLimiter, channel_id::Snowflake; token::String, message_ids::Vector{Snowflake}, reason=nothing)
     body = Dict("messages" => [string(id) for id in message_ids])
@@ -317,7 +317,7 @@ Requires `READ_MESSAGE_HISTORY` and `ADD_REACTIONS`.
 - HTTP 403 if missing permissions.
 - HTTP 404 if the message does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/message#create-reaction)
+[Discord docs](https://docs.discord.com/developers/resources/message#create-reaction)
 """
 function create_reaction(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake, emoji::String; token::String)
     discord_put(rl, "/channels/$(channel_id)/messages/$(message_id)/reactions/$(HTTP.URIs.escapeuri(emoji))/@me"; token)
@@ -342,7 +342,7 @@ Use this to undo a reaction added by the bot.
 # Errors
 - HTTP 404 if the message does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/message#delete-own-reaction)
+[Discord docs](https://docs.discord.com/developers/resources/message#delete-own-reaction)
 """
 function delete_own_reaction(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake, emoji::String; token::String)
     discord_delete(rl, "/channels/$(channel_id)/messages/$(message_id)/reactions/$(HTTP.URIs.escapeuri(emoji))/@me"; token)
@@ -372,7 +372,7 @@ Requires `MANAGE_MESSAGES`.
 - HTTP 403 if missing permissions.
 - HTTP 404 if the message or user does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/message#delete-user-reaction)
+[Discord docs](https://docs.discord.com/developers/resources/message#delete-user-reaction)
 """
 function delete_user_reaction(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake, emoji::String, user_id::Snowflake; token::String)
     discord_delete(rl, "/channels/$(channel_id)/messages/$(message_id)/reactions/$(HTTP.URIs.escapeuri(emoji))/$(user_id)"; token)
@@ -399,7 +399,7 @@ Use this to see who voted or reacted.
 # Errors
 - HTTP 404 if the message does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/message#get-reactions)
+[Discord docs](https://docs.discord.com/developers/resources/message#get-reactions)
 """
 function get_reactions(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake, emoji::String; token::String, limit::Int=25, type::Int=0)
     query = ["limit" => string(limit)]
@@ -430,7 +430,7 @@ Requires `MANAGE_MESSAGES`.
 - HTTP 403 if missing permissions.
 - HTTP 404 if the message does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/message#delete-all-reactions)
+[Discord docs](https://docs.discord.com/developers/resources/message#delete-all-reactions)
 """
 function delete_all_reactions(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake; token::String)
     discord_delete(rl, "/channels/$(channel_id)/messages/$(message_id)/reactions"; token)
@@ -459,7 +459,7 @@ Requires `MANAGE_MESSAGES`.
 - HTTP 403 if missing permissions.
 - HTTP 404 if the message does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/message#delete-all-reactions-for-emoji)
+[Discord docs](https://docs.discord.com/developers/resources/message#delete-all-reactions-for-emoji)
 """
 function delete_all_reactions_for_emoji(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake, emoji::String; token::String)
     discord_delete(rl, "/channels/$(channel_id)/messages/$(message_id)/reactions/$(HTTP.URIs.escapeuri(emoji))"; token)
@@ -491,7 +491,7 @@ a regular message and managed by Discord's native poll system.
 - HTTP 403 if the bot lacks `SEND_MESSAGES` permission.
 - HTTP 404 if the channel does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/poll#poll-object)
+[Discord docs](https://docs.discord.com/developers/resources/poll#poll-object)
 """
 function create_poll(rl::RateLimiter, channel_id::Snowflake;
     token::String,
@@ -537,7 +537,7 @@ Use this to retrieve poll results.
 # Errors
 - HTTP 404 if the message or answer does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/poll#get-answer-voters)
+[Discord docs](https://docs.discord.com/developers/resources/poll#get-answer-voters)
 """
 function get_answer_voters(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake, answer_id::Int; token::String, limit::Int=25)
     resp = discord_get(rl, "/channels/$(channel_id)/polls/$(message_id)/answers/$(answer_id)"; token,
@@ -568,7 +568,7 @@ Always allowed if you are the author.
 - HTTP 403 if missing permissions.
 - HTTP 404 if the message does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/poll#end-poll)
+[Discord docs](https://docs.discord.com/developers/resources/poll#end-poll)
 """
 function end_poll(rl::RateLimiter, channel_id::Snowflake, message_id::Snowflake; token::String)
     resp = discord_post(rl, "/channels/$(channel_id)/polls/$(message_id)/expire"; token)

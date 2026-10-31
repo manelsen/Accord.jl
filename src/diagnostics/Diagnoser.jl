@@ -156,7 +156,7 @@ function diagnose(e, stack)
             "The Gateway refused your token. It might be invalid or expired.",
             "Client(\"Bot ...\")",
             "Check that your token is correct and lacks extra spaces.",
-            "https://discord.com/developers/docs/topics/gateway#close-codes"
+            "https://docs.discord.com/developers/topics/opcodes-and-status-codes#gateway-gateway-close-event-codes"
         )
     end
 
@@ -166,7 +166,7 @@ function diagnose(e, stack)
             "The Gateway refused connection because you are requesting Privileged Intents that are not enabled in the Developer Portal.",
             "Client(token; intents=IntentMessageContent ...)",
             "Go to Dev Portal -> Bot -> Privileged Gateway Intents and enable 'Message Content', 'Server Members', etc.",
-            "https://discord.com/developers/docs/topics/gateway#privileged-intents"
+            "https://docs.discord.com/developers/events/gateway#privileged-intents"
         )
     end
 
@@ -178,7 +178,7 @@ function diagnose(e, stack)
             "The number of shards specified does not match the Gateway recommendation, or is invalid.",
             "ShardInfo(0, 1, ...)",
             "Use `get_gateway_bot()` to dynamically fetch the recommended shard count.",
-            "https://discord.com/developers/docs/topics/gateway#sharding"
+            "https://docs.discord.com/developers/events/gateway#sharding"
         )
     end
     
@@ -204,7 +204,7 @@ function diagnose(e, stack)
             "The bot tried to perform an action but lacks the necessary permissions in the guild/channel.",
             nothing,
             "Check the bot's role hierarchy and channel overrides. It needs 'Administrator' or specific override.",
-            "https://discord.com/developers/docs/topics/permissions"
+            "https://docs.discord.com/developers/topics/permissions"
         )
     end
 
@@ -233,7 +233,7 @@ function diagnose(e, stack)
             "The interaction token has expired or is invalid.",
             "respond(ctx; ...)",
             "You must respond to an interaction within 3 seconds. Use `defer(ctx)` to extend this window.",
-            "https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-response-time-limits"
+            "https://docs.discord.com/developers/interactions/receiving-and-responding#responding-to-an-interaction"
         )
     end
 
@@ -245,7 +245,7 @@ function diagnose(e, stack)
             "You are sending too many requests too quickly. The library usually handles this, but you may have hit a global limit.",
             "Retry-After: $retry_after",
             "Slow down your requests or check if you are being spammy.",
-            "https://discord.com/developers/docs/topics/rate-limits"
+            "https://docs.discord.com/developers/topics/rate-limits"
         )
     end
 
@@ -265,7 +265,7 @@ function diagnose(e, stack)
             explanation,
             nothing,
             "Check constraints: Embeds < 6000 chars, Select Menus < 25 options, etc.",
-            "https://discord.com/developers/docs/reference#error-messages"
+            "https://docs.discord.com/developers/reference#error-messages"
         )
     end
 

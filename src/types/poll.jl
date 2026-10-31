@@ -4,7 +4,7 @@
 Media content (text and/or emoji) for a poll question or answer.
 
 # See Also
-- [Discord API: Poll Media Object](https://discord.com/developers/docs/resources/poll#poll-media-object)
+- [Discord API: Poll Media Object](https://docs.discord.com/developers/resources/poll#poll-media-object)
 """
 @discord_struct PollMedia begin
     text::Optional{String}
@@ -17,7 +17,7 @@ end
 Represents an individual answer option in a [`Poll`](@ref).
 
 # See Also
-- [Discord API: Poll Answer Object](https://discord.com/developers/docs/resources/poll#poll-answer-object)
+- [Discord API: Poll Answer Object](https://docs.discord.com/developers/resources/poll#poll-answer-object)
 """
 @discord_struct PollAnswer begin
     answer_id::Int
@@ -30,7 +30,7 @@ end
 The vote count for a specific poll answer.
 
 # See Also
-- [Discord API: Poll Answer Count Object](https://discord.com/developers/docs/resources/poll#poll-results-object-poll-answer-count-object)
+- [Discord API: Poll Answer Count Object](https://docs.discord.com/developers/resources/poll#poll-results-object-poll-answer-count-object-structure)
 """
 @discord_struct PollAnswerCount begin
     id::Int
@@ -44,7 +44,7 @@ end
 The results of a poll, containing vote counts for each answer.
 
 # See Also
-- [Discord API: Poll Results Object](https://discord.com/developers/docs/resources/poll#poll-results-object)
+- [Discord API: Poll Results Object](https://docs.discord.com/developers/resources/poll#poll-results-object)
 """
 @discord_struct PollResults begin
     is_finalized::Bool
@@ -67,7 +67,7 @@ Polls allow users to vote on predefined answers and see real-time results.
 - `results::Optional{PollResults}`: The current vote counts.
 
 # See Also
-- [Discord API: Poll Object](https://discord.com/developers/docs/resources/poll#poll-object)
+- [Discord API: Poll Object](https://docs.discord.com/developers/resources/poll#poll-object)
 """
 @discord_struct Poll begin
     question::Optional{PollMedia}

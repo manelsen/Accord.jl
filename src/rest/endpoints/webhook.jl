@@ -25,7 +25,7 @@ Requires `MANAGE_WEBHOOKS`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the channel does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/webhook#create-webhook)
+[Discord docs](https://docs.discord.com/developers/resources/webhook#create-webhook)
 """
 function create_webhook(rl::RateLimiter, channel_id::Snowflake; token::String, body::Dict, reason=nothing)
     resp = discord_post(rl, "/channels/$(channel_id)/webhooks"; token, body, reason=reason)
@@ -54,7 +54,7 @@ Requires `MANAGE_WEBHOOKS`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the channel does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/webhook#get-channel-webhooks)
+[Discord docs](https://docs.discord.com/developers/resources/webhook#get-channel-webhooks)
 """
 function get_channel_webhooks(rl::RateLimiter, channel_id::Snowflake; token::String)
     resp = discord_get(rl, "/channels/$(channel_id)/webhooks"; token)
@@ -83,7 +83,7 @@ Requires `MANAGE_WEBHOOKS`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/webhook#get-guild-webhooks)
+[Discord docs](https://docs.discord.com/developers/resources/webhook#get-guild-webhooks)
 """
 function get_guild_webhooks(rl::RateLimiter, guild_id::Snowflake; token::String)
     resp = discord_get(rl, "/guilds/$(guild_id)/webhooks"; token)
@@ -112,7 +112,7 @@ Requires `MANAGE_WEBHOOKS` in the webhook's channel.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the webhook does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/webhook#get-webhook)
+[Discord docs](https://docs.discord.com/developers/resources/webhook#get-webhook)
 """
 function get_webhook(rl::RateLimiter, webhook_id::Snowflake; token::String)
     resp = discord_get(rl, "/webhooks/$(webhook_id)"; token)
@@ -139,7 +139,7 @@ the webhook URL components (ID and token), without needing bot authentication.
 - HTTP 401 if the webhook token is invalid.
 - HTTP 404 if the webhook does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/webhook#get-webhook-with-token)
+[Discord docs](https://docs.discord.com/developers/resources/webhook#get-webhook-with-token)
 """
 function get_webhook_with_token(rl::RateLimiter, webhook_id::Snowflake, webhook_token::String; token::String)
     resp = discord_get(rl, "/webhooks/$(webhook_id)/$(webhook_token)"; token)
@@ -171,7 +171,7 @@ Requires `MANAGE_WEBHOOKS` in the webhook's channel.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the webhook does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/webhook#modify-webhook)
+[Discord docs](https://docs.discord.com/developers/resources/webhook#modify-webhook)
 """
 function modify_webhook(rl::RateLimiter, webhook_id::Snowflake; token::String, body::Dict, reason=nothing)
     resp = discord_patch(rl, "/webhooks/$(webhook_id)"; token, body, reason)
@@ -201,7 +201,7 @@ Requires `MANAGE_WEBHOOKS` in the webhook's channel.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the webhook does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/webhook#delete-webhook)
+[Discord docs](https://docs.discord.com/developers/resources/webhook#delete-webhook)
 """
 function delete_webhook(rl::RateLimiter, webhook_id::Snowflake; token::String, reason=nothing)
     discord_delete(rl, "/webhooks/$(webhook_id)"; token, reason)
@@ -233,7 +233,7 @@ such as for cross-platform notifications or automated announcements.
 - HTTP 404 if the webhook does not exist.
 - HTTP 429 if rate limited (webhooks have their own rate limits).
 
-[Discord docs](https://discord.com/developers/docs/resources/webhook#execute-webhook)
+[Discord docs](https://docs.discord.com/developers/resources/webhook#execute-webhook)
 """
 function execute_webhook(rl::RateLimiter, webhook_id::Snowflake, webhook_token::String; token::String, body::Dict, files=nothing, wait::Bool=false, thread_id=nothing)
     query = []
@@ -264,7 +264,7 @@ via webhook, such as for editing or reference.
 - HTTP 401 if the webhook token is invalid.
 - HTTP 404 if the message or webhook does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/webhook#get-webhook-message)
+[Discord docs](https://docs.discord.com/developers/resources/webhook#get-webhook-message)
 """
 function get_webhook_message(rl::RateLimiter, webhook_id::Snowflake, webhook_token::String, message_id::Snowflake; token::String)
     resp = discord_get(rl, "/webhooks/$(webhook_id)/$(webhook_token)/messages/$(message_id)"; token)
@@ -295,7 +295,7 @@ webhook message, such as to correct information or show progress.
 - HTTP 401 if the webhook token is invalid.
 - HTTP 404 if the message or webhook does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/webhook#edit-webhook-message)
+[Discord docs](https://docs.discord.com/developers/resources/webhook#edit-webhook-message)
 """
 function edit_webhook_message(rl::RateLimiter, webhook_id::Snowflake, webhook_token::String, message_id::Snowflake; token::String, body::Dict, files=nothing)
     resp = discord_patch(rl, "/webhooks/$(webhook_id)/$(webhook_token)/messages/$(message_id)"; token, body, files)
@@ -322,7 +322,7 @@ Use this when a bot needs to remove a previously sent webhook message.
 - HTTP 401 if the webhook token is invalid.
 - HTTP 404 if the message or webhook does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/webhook#delete-webhook-message)
+[Discord docs](https://docs.discord.com/developers/resources/webhook#delete-webhook-message)
 """
 function delete_webhook_message(rl::RateLimiter, webhook_id::Snowflake, webhook_token::String, message_id::Snowflake; token::String)
     discord_delete(rl, "/webhooks/$(webhook_id)/$(webhook_token)/messages/$(message_id)"; token)
@@ -350,7 +350,7 @@ requiring bot authentication, using only the webhook credentials.
 - HTTP 401 if the webhook token is invalid.
 - HTTP 404 if the webhook does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/webhook#modify-webhook-with-token)
+[Discord docs](https://docs.discord.com/developers/resources/webhook#modify-webhook-with-token)
 """
 function modify_webhook_with_token(rl::RateLimiter, webhook_id::Snowflake, webhook_token::String; body::Dict, reason=nothing)
     resp = discord_patch(rl, "/webhooks/$(webhook_id)/$(webhook_token)"; body, reason)
@@ -377,7 +377,7 @@ bot authentication, using only the webhook credentials.
 - HTTP 401 if the webhook token is invalid.
 - HTTP 404 if the webhook does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/webhook#delete-webhook-with-token)
+[Discord docs](https://docs.discord.com/developers/resources/webhook#delete-webhook-with-token)
 """
 function delete_webhook_with_token(rl::RateLimiter, webhook_id::Snowflake, webhook_token::String; reason=nothing)
     discord_delete(rl, "/webhooks/$(webhook_id)/$(webhook_token)"; reason)

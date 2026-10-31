@@ -4,7 +4,7 @@
 Start and end times for a user's [`Activity`](@ref).
 
 # See Also
-- [Discord API: Activity Timestamps](https://discord.com/developers/docs/topics/gateway-events#activity-object-activity-timestamps-structure)
+- [Discord API: Activity Timestamps](https://docs.discord.com/developers/events/gateway-events#activity-object-activity-timestamps)
 """
 @discord_struct ActivityTimestamps begin
     start::Optional{Int}
@@ -17,7 +17,7 @@ end
 The emoji displayed in a user's status.
 
 # See Also
-- [Discord API: Activity Emoji](https://discord.com/developers/docs/topics/gateway-events#activity-object-activity-emoji-structure)
+- [Discord API: Activity Emoji](https://docs.discord.com/developers/events/gateway-events#activity-object-activity-emoji)
 """
 @discord_struct ActivityEmoji begin
     name::String
@@ -31,7 +31,7 @@ end
 Information about the party/group a user is currently in.
 
 # See Also
-- [Discord API: Activity Party](https://discord.com/developers/docs/topics/gateway-events#activity-object-activity-party-structure)
+- [Discord API: Activity Party](https://docs.discord.com/developers/events/gateway-events#activity-object-activity-party)
 """
 @discord_struct ActivityParty begin
     id::Optional{String}
@@ -44,7 +44,7 @@ end
 Images and hover text for a user's Rich Presence.
 
 # See Also
-- [Discord API: Activity Assets](https://discord.com/developers/docs/topics/gateway-events#activity-object-activity-assets-structure)
+- [Discord API: Activity Assets](https://docs.discord.com/developers/events/gateway-events#activity-object-activity-assets)
 """
 @discord_struct ActivityAssets begin
     large_image::Optional{String}
@@ -59,7 +59,7 @@ end
 Secrets for joining or spectating a user's game.
 
 # See Also
-- [Discord API: Activity Secrets](https://discord.com/developers/docs/topics/gateway-events#activity-object-activity-secrets-structure)
+- [Discord API: Activity Secrets](https://docs.discord.com/developers/events/gateway-events#activity-object-activity-secrets)
 """
 @discord_struct ActivitySecrets begin
     join::Optional{String}
@@ -73,7 +73,7 @@ end
 A custom button displayed in a user's Rich Presence.
 
 # See Also
-- [Discord API: Activity Buttons](https://discord.com/developers/docs/topics/gateway-events#activity-object-activity-buttons-structure)
+- [Discord API: Activity Buttons](https://docs.discord.com/developers/events/gateway-events#activity-object-activity-buttons)
 """
 @discord_struct ActivityButton begin
     label::String
@@ -97,7 +97,7 @@ Represents what a user is currently doing (playing a game, streaming, etc.).
 - `buttons::Optional{Vector{ActivityButton}}`: Custom Rich Presence buttons.
 
 # See Also
-- [Discord API: Activity Object](https://discord.com/developers/docs/topics/gateway-events#activity-object)
+- [Discord API: Activity Object](https://docs.discord.com/developers/events/gateway-events#activity-object)
 """
 @discord_struct Activity begin
     name::String
@@ -123,7 +123,7 @@ end
 Active session statuses for each platform (desktop, mobile, web).
 
 # See Also
-- [Discord API: Client Status Object](https://discord.com/developers/docs/topics/gateway-events#client-status-object)
+- [Discord API: Client Status Object](https://docs.discord.com/developers/events/gateway-events#client-status-object)
 """
 @discord_struct ClientStatus begin
     desktop::Optional{String}
@@ -144,7 +144,7 @@ Represents a user's current status and activities.
 - `client_status::Optional{ClientStatus}`: Status per platform.
 
 # See Also
-- [Discord API: Presence Update Event](https://discord.com/developers/docs/topics/gateway-events#presence-update)
+- [Discord API: Presence Update Event](https://docs.discord.com/developers/events/gateway-events#presence-update)
 """
 @discord_struct Presence begin
     user::Any  # partial User object

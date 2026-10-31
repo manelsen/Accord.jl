@@ -27,7 +27,7 @@ plans offered by the application, such as for store displays or upgrade flows.
 - HTTP 401 if the token is invalid.
 - HTTP 404 if the application does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/sku#list-skus)
+[Discord docs](https://docs.discord.com/developers/resources/sku#list-skus)
 """
 function list_skus(rl::RateLimiter, application_id::Snowflake; token::String)
     resp = discord_get(rl, "/applications/$(application_id)/skus"; token)
@@ -69,7 +69,7 @@ for checking premium status, managing subscriptions, or customer support.
 # Errors
 - HTTP 401 if the token is invalid.
 
-[Discord docs](https://discord.com/developers/docs/resources/entitlement#list-entitlements)
+[Discord docs](https://docs.discord.com/developers/resources/entitlement#list-entitlements)
 """
 function list_entitlements(rl::RateLimiter, application_id::Snowflake; token::String,
         user_id=nothing, sku_ids=nothing, before=nothing, after=nothing, limit::Int=100,
@@ -110,7 +110,7 @@ in production or billing systems.
 - HTTP 400 if the request data is invalid.
 - HTTP 401 if the token is invalid.
 
-[Discord docs](https://discord.com/developers/docs/resources/entitlement#create-test-entitlement)
+[Discord docs](https://docs.discord.com/developers/resources/entitlement#create-test-entitlement)
 """
 function create_test_entitlement(rl::RateLimiter, application_id::Snowflake; token::String, body::Dict)
     resp = discord_post(rl, "/applications/$(application_id)/entitlements"; token, body)
@@ -137,7 +137,7 @@ development.
 - HTTP 401 if the token is invalid.
 - HTTP 404 if the entitlement does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/entitlement#delete-test-entitlement)
+[Discord docs](https://docs.discord.com/developers/resources/entitlement#delete-test-entitlement)
 """
 function delete_test_entitlement(rl::RateLimiter, application_id::Snowflake, entitlement_id::Snowflake; token::String)
     discord_delete(rl, "/applications/$(application_id)/entitlements/$(entitlement_id)"; token)
@@ -163,7 +163,7 @@ consumable purchases or one-time use premium features.
 - HTTP 401 if the token is invalid.
 - HTTP 404 if the entitlement does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/entitlement#consume-entitlement)
+[Discord docs](https://docs.discord.com/developers/resources/entitlement#consume-an-entitlement)
 """
 function consume_entitlement(rl::RateLimiter, application_id::Snowflake, entitlement_id::Snowflake; token::String)
     discord_post(rl, "/applications/$(application_id)/entitlements/$(entitlement_id)/consume"; token)
@@ -189,7 +189,7 @@ such as for verification or customer support purposes.
 - HTTP 401 if the token is invalid.
 - HTTP 404 if the entitlement does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/entitlement#get-entitlement)
+[Discord docs](https://docs.discord.com/developers/resources/entitlement#get-entitlement)
 """
 function get_entitlement(rl::RateLimiter, application_id::Snowflake, entitlement_id::Snowflake; token::String)
     resp = discord_get(rl, "/applications/$(application_id)/entitlements/$(entitlement_id)"; token)
@@ -221,7 +221,7 @@ as for billing management, subscriber analytics, or customer support.
 - HTTP 401 if the token is invalid.
 - HTTP 404 if the SKU does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/subscription#list-sku-subscriptions)
+[Discord docs](https://docs.discord.com/developers/resources/subscription#list-sku-subscriptions)
 """
 function list_sku_subscriptions(rl::RateLimiter, sku_id::Snowflake; token::String, before=nothing, after=nothing, limit::Int=100, user_id=nothing)
     query = ["limit" => string(limit)]
@@ -252,7 +252,7 @@ such as for billing verification or subscription status checks.
 - HTTP 401 if the token is invalid.
 - HTTP 404 if the subscription or SKU does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/subscription#get-sku-subscription)
+[Discord docs](https://docs.discord.com/developers/resources/subscription#get-sku-subscription)
 """
 function get_sku_subscription(rl::RateLimiter, sku_id::Snowflake, subscription_id::Snowflake; token::String)
     resp = discord_get(rl, "/skus/$(sku_id)/subscriptions/$(subscription_id)"; token)

@@ -50,7 +50,7 @@ println("Hello, \$(user.username)!")
 ```
 
 # See Also
-- [Discord API: User Object](https://discord.com/developers/docs/resources/user#user-object)
+- [Discord API: User Object](https://docs.discord.com/developers/resources/user#user-object)
 """
 @discord_struct User begin
     id::Snowflake

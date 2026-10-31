@@ -16,7 +16,7 @@ post messages to a channel without requiring a full bot user or authentication.
 - `url::Optional{String}`: The full execution URL.
 
 # See Also
-- [Discord API: Webhook Object](https://discord.com/developers/docs/resources/webhook#webhook-object)
+- [Discord API: Webhook Object](https://docs.discord.com/developers/resources/webhook#webhook-object)
 """
 @discord_struct Webhook begin
     id::Snowflake

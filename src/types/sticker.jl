@@ -4,7 +4,7 @@
 A partial representation of a [`Sticker`](@ref), used for rendering.
 
 # See Also
-- [Discord API: Sticker Item Object](https://discord.com/developers/docs/resources/sticker#sticker-item-object)
+- [Discord API: Sticker Item Object](https://docs.discord.com/developers/resources/sticker#sticker-item-object)
 """
 @discord_struct StickerItem begin
     id::Snowflake
@@ -31,7 +31,7 @@ Represents a sticker that can be sent in messages.
 - `sort_value::Optional{Int}`: Sort order within a pack.
 
 # See Also
-- [Discord API: Sticker Object](https://discord.com/developers/docs/resources/sticker#sticker-object)
+- [Discord API: Sticker Object](https://docs.discord.com/developers/resources/sticker#sticker-object)
 """
 @discord_struct Sticker begin
     id::Snowflake
@@ -53,7 +53,7 @@ end
 Represents a collection of standard Discord stickers.
 
 # See Also
-- [Discord API: Sticker Pack Object](https://discord.com/developers/docs/resources/sticker#sticker-pack-object)
+- [Discord API: Sticker Pack Object](https://docs.discord.com/developers/resources/sticker#sticker-pack-object)
 """
 @discord_struct StickerPack begin
     id::Snowflake

@@ -113,7 +113,7 @@ end
 Gateway intents allow you to subscribe to specific buckets of events sent by Discord.
 Privileged intents (Members, Presences, MessageContent) must be enabled in the Developer Portal.
 
-[Discord docs](https://discord.com/developers/docs/topics/gateway#gateway-intents)
+[Discord docs](https://docs.discord.com/developers/events/gateway#gateway-intents)
 
 # Example
 ```julia
@@ -215,7 +215,7 @@ end
 Discord permissions are stored as a bitmask. Accord.jl provides constant values for each permission.
 Use [`has_flag`](@ref) to check if a set of permissions contains a specific one.
 
-[Discord docs](https://discord.com/developers/docs/topics/permissions#permissions-bitwise-value-flags)
+[Discord docs](https://docs.discord.com/developers/topics/permissions#permissions-bitwise-permission-flags)
 
 # Example
 ```julia
@@ -259,7 +259,7 @@ end
 
 Bitfield representing extra attributes of a message, such as whether it is ephemeral or crossposted.
 
-[Discord docs](https://discord.com/developers/docs/resources/message#message-object-message-flags)
+[Discord docs](https://docs.discord.com/developers/resources/message#message-object-message-flags)
 """
 MessageFlags
 
@@ -289,7 +289,7 @@ end
 
 Bitfield representing public flags on a user's account, such as whether they are a Discord employee or a partner.
 
-[Discord docs](https://discord.com/developers/docs/resources/user#user-object-user-flags)
+[Discord docs](https://docs.discord.com/developers/resources/user#user-object-user-flags)
 """
 UserFlags
 
@@ -310,7 +310,7 @@ end
 
 Bitfield representing which standard system notifications are disabled in a guild's system channel.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#guild-object-system-channel-flags)
+[Discord docs](https://docs.discord.com/developers/resources/guild#guild-object-system-channel-flags)
 """
 SystemChannelFlags
 
@@ -328,7 +328,7 @@ end
 
 Bitfield representing extra attributes of a channel, such as whether it is pinned in a forum.
 
-[Discord docs](https://discord.com/developers/docs/resources/channel#channel-object-channel-flags)
+[Discord docs](https://docs.discord.com/developers/resources/channel#channel-object-channel-flags)
 """
 ChannelFlags
 
@@ -352,7 +352,7 @@ end
 
 Bitfield representing attributes of a guild member, such as whether they have completed onboarding.
 
-[Discord docs](https://discord.com/developers/docs/resources/guild#guild-member-object-guild-member-flags)
+[Discord docs](https://docs.discord.com/developers/resources/guild#guild-member-object-guild-member-flags)
 """
 GuildMemberFlags
 
@@ -368,7 +368,7 @@ end
 
 Bitfield representing attributes of a role, such as whether it is displayed in an onboarding prompt.
 
-[Discord docs](https://discord.com/developers/docs/topics/permissions#role-object-role-flags)
+[Discord docs](https://docs.discord.com/developers/topics/permissions#role-object-role-flags)
 """
 RoleFlags
 
@@ -391,7 +391,7 @@ end
 
 Bitfield representing attributes of an attachment, such as whether it is a remix.
 
-[Discord docs](https://discord.com/developers/docs/resources/message#attachment-object-attachment-flags)
+[Discord docs](https://docs.discord.com/developers/resources/message#attachment-object-attachment-flags)
 """
 AttachmentFlags
 
@@ -409,7 +409,7 @@ end
 
 Bitfield representing attributes of a SKU, such as whether it is a user or guild subscription.
 
-[Discord docs](https://discord.com/developers/docs/resources/sku#sku-object-sku-flags)
+[Discord docs](https://docs.discord.com/developers/resources/sku#sku-object-sku-flags)
 """
 SKUFlags
 

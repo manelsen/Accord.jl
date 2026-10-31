@@ -19,7 +19,7 @@ emoji management commands or reaction role systems.
 - HTTP 403 if the bot is not in the guild.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/emoji#list-guild-emojis)
+[Discord docs](https://docs.discord.com/developers/resources/emoji#list-guild-emojis)
 """
 function list_guild_emojis(rl::RateLimiter, guild_id::Snowflake; token::String)
     resp = discord_get(rl, "/guilds/$(guild_id)/emojis"; token)
@@ -46,7 +46,7 @@ such as its name, roles, or creator.
 - HTTP 403 if the bot is not in the guild.
 - HTTP 404 if the emoji or guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/emoji#get-guild-emoji)
+[Discord docs](https://docs.discord.com/developers/resources/emoji#get-guild-emoji)
 """
 function get_guild_emoji(rl::RateLimiter, guild_id::Snowflake, emoji_id::Snowflake; token::String)
     resp = discord_get(rl, "/guilds/$(guild_id)/emojis/$(emoji_id)"; token)
@@ -83,7 +83,7 @@ Requires `MANAGE_GUILD_EXPRESSIONS`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/emoji#create-guild-emoji)
+[Discord docs](https://docs.discord.com/developers/resources/emoji#create-guild-emoji)
 """
 function create_guild_emoji(rl::RateLimiter, guild_id::Snowflake; token::String, body::Dict, reason=nothing)
     resp = discord_post(rl, "/guilds/$(guild_id)/emojis"; token, body, reason=reason)
@@ -116,7 +116,7 @@ Requires `MANAGE_GUILD_EXPRESSIONS`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the emoji or guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/emoji#modify-guild-emoji)
+[Discord docs](https://docs.discord.com/developers/resources/emoji#modify-guild-emoji)
 """
 function modify_guild_emoji(rl::RateLimiter, guild_id::Snowflake, emoji_id::Snowflake; token::String, body::Dict, reason=nothing)
     resp = discord_patch(rl, "/guilds/$(guild_id)/emojis/$(emoji_id)"; token, body, reason)
@@ -147,7 +147,7 @@ Requires `MANAGE_GUILD_EXPRESSIONS`.
 - HTTP 403 if missing required permissions.
 - HTTP 404 if the emoji or guild does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/emoji#delete-guild-emoji)
+[Discord docs](https://docs.discord.com/developers/resources/emoji#delete-guild-emoji)
 """
 function delete_guild_emoji(rl::RateLimiter, guild_id::Snowflake, emoji_id::Snowflake; token::String, reason=nothing)
     discord_delete(rl, "/guilds/$(guild_id)/emojis/$(emoji_id)"; token, reason)
@@ -172,7 +172,7 @@ used across all guilds the bot is in, such as for premium feature emojis.
 - HTTP 401 if the token is invalid.
 - HTTP 404 if the application does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/emoji#list-application-emojis)
+[Discord docs](https://docs.discord.com/developers/resources/emoji#list-application-emojis)
 """
 function list_application_emojis(rl::RateLimiter, application_id::Snowflake; token::String)
     resp = discord_get(rl, "/applications/$(application_id)/emojis"; token)
@@ -199,7 +199,7 @@ such as for management or configuration purposes.
 - HTTP 401 if the token is invalid.
 - HTTP 404 if the emoji or application does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/emoji#get-application-emoji)
+[Discord docs](https://docs.discord.com/developers/resources/emoji#get-application-emoji)
 """
 function get_application_emoji(rl::RateLimiter, application_id::Snowflake, emoji_id::Snowflake; token::String)
     resp = discord_get(rl, "/applications/$(application_id)/emojis/$(emoji_id)"; token)
@@ -231,7 +231,7 @@ guilds the bot is in, useful for premium features or consistent branding.
 - HTTP 400 if the image is too large or invalid format.
 - HTTP 401 if the token is invalid.
 
-[Discord docs](https://discord.com/developers/docs/resources/emoji#create-application-emoji)
+[Discord docs](https://docs.discord.com/developers/resources/emoji#create-application-emoji)
 """
 function create_application_emoji(rl::RateLimiter, application_id::Snowflake; token::String, body::Dict)
     resp = discord_post(rl, "/applications/$(application_id)/emojis"; token, body)
@@ -259,7 +259,7 @@ Use this when a bot needs to update application emoji properties such as name.
 - HTTP 401 if the token is invalid.
 - HTTP 404 if the emoji does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/emoji#modify-application-emoji)
+[Discord docs](https://docs.discord.com/developers/resources/emoji#modify-application-emoji)
 """
 function modify_application_emoji(rl::RateLimiter, application_id::Snowflake, emoji_id::Snowflake; token::String, body::Dict)
     resp = discord_patch(rl, "/applications/$(application_id)/emojis/$(emoji_id)"; token, body)
@@ -286,7 +286,7 @@ cleanup or emoji management.
 - HTTP 401 if the token is invalid.
 - HTTP 404 if the emoji does not exist.
 
-[Discord docs](https://discord.com/developers/docs/resources/emoji#delete-application-emoji)
+[Discord docs](https://docs.discord.com/developers/resources/emoji#delete-application-emoji)
 """
 function delete_application_emoji(rl::RateLimiter, application_id::Snowflake, emoji_id::Snowflake; token::String)
     discord_delete(rl, "/applications/$(application_id)/emojis/$(emoji_id)"; token)
