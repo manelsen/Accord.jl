@@ -59,31 +59,26 @@ Accord.respond(ctx; content=&quot;Pick a channel:&quot;, components=[Accord.acti
         title=&quot;Feedback Form&quot;,
         custom_id=&quot;feedback_modal&quot;,
         components=[
-            Accord.action_row([
+            Accord.label(&quot;Subject&quot;,
                 Accord.text_input(
                     custom_id=&quot;fb_subject&quot;,
-                    label=&quot;Subject&quot;,
                     style=TextInputStyles.SHORT,
                     placeholder=&quot;Brief summary...&quot;,
-                    required=true,
                     max_length=100,
-                ),
-            ]),
-            Accord.action_row([
+                )),
+            Accord.label(&quot;Details&quot;,
                 Accord.text_input(
                     custom_id=&quot;fb_body&quot;,
-                    label=&quot;Details&quot;,
                     style=TextInputStyles.PARAGRAPH,
                     placeholder=&quot;Tell us more...&quot;,
-                    required=true,
                     min_length=10,
                     max_length=2000,
-                ),
-            ]),
+                );
+                description=&quot;What happened, and what you expected&quot;),
         ]
     )
 end</code></pre><h3 id="Handling-Modal-Submissions"><a class="docs-heading-anchor" href="#Handling-Modal-Submissions">Handling Modal Submissions</a><a id="Handling-Modal-Submissions-1"></a><a class="docs-heading-anchor-permalink" href="#Handling-Modal-Submissions" title="Permalink"></a></h3><pre><code class="language-julia hljs">@modal_handler client &quot;feedback_modal&quot; function(ctx)
-    values = Accord.modal_values(ctx)  # Dict{String, String}
+    values = Accord.modal_values(ctx)  # Dict{String, Any}: custom_id =&gt; value
     subject = values[&quot;fb_subject&quot;]
     body = values[&quot;fb_body&quot;]
 
@@ -96,6 +91,35 @@ end</code></pre><h3 id="Handling-Modal-Submissions"><a class="docs-heading-ancho
         ]
     )
     Accord.respond(ctx; embeds=[e], ephemeral=true)
+end</code></pre><div class="admonition is-info" id="Labels-23a453474bd47b57"><header class="admonition-header">Labels<a class="admonition-anchor" href="#Labels-23a453474bd47b57" title="Permalink"></a></header><div class="admonition-body"><p>Discord now wants every modal input wrapped in a <a href="@ref"><code>label</code></a>, which holds the question and an optional description. The older layout, a <code>text_input</code> with its own <code>label=</code> inside an <code>action_row</code>, still works but is deprecated.</p></div></div><h3 id="Choices,-Checkboxes-and-File-Uploads"><a class="docs-heading-anchor" href="#Choices,-Checkboxes-and-File-Uploads">Choices, Checkboxes and File Uploads</a><a id="Choices,-Checkboxes-and-File-Uploads-1"></a><a class="docs-heading-anchor-permalink" href="#Choices,-Checkboxes-and-File-Uploads" title="Permalink"></a></h3><p>Besides text and select menus, a modal can hold radio buttons, checkboxes and file pickers. <a href="@ref"><code>modal_values</code></a> returns each in its natural type.</p><pre><code class="language-julia hljs">@slash_command client &quot;signup&quot; &quot;Sign up for the event&quot; function(ctx)
+    show_modal(ctx;
+        title=&quot;Event Signup&quot;,
+        custom_id=&quot;signup_modal&quot;,
+        components=[
+            Accord.label(&quot;Which day?&quot;, Accord.radio_group(custom_id=&quot;day&quot;, options=[
+                Accord.select_option(label=&quot;Saturday&quot;, value=&quot;sat&quot;),
+                Accord.select_option(label=&quot;Sunday&quot;, value=&quot;sun&quot;),
+            ])),
+            Accord.label(&quot;Sessions&quot;, Accord.checkbox_group(custom_id=&quot;sessions&quot;, options=[
+                Accord.select_option(label=&quot;Workshop&quot;, value=&quot;workshop&quot;),
+                Accord.select_option(label=&quot;Talks&quot;, value=&quot;talks&quot;),
+                Accord.select_option(label=&quot;Dinner&quot;, value=&quot;dinner&quot;),
+            ]; min_values=0)),
+            Accord.label(&quot;Send me reminders&quot;, Accord.checkbox(custom_id=&quot;remind&quot;, default=true)),
+            Accord.label(&quot;Photo for your badge&quot;,
+                Accord.file_upload(custom_id=&quot;photo&quot;, required=false, file_types=[&quot;image&quot;])),
+        ]
+    )
+end
+
+@modal_handler client &quot;signup_modal&quot; function(ctx)
+    v = Accord.modal_values(ctx)
+    day      = v[&quot;day&quot;]          # &quot;sat&quot;, &quot;sun&quot; (or nothing if the group is optional)
+    sessions = v[&quot;sessions&quot;]     # Vector{String}, possibly empty
+    remind   = v[&quot;remind&quot;]       # Bool
+    photos   = Accord.modal_files(ctx, &quot;photo&quot;)   # Vector{Attachment}
+    Accord.respond(ctx; content=&quot;Signed up for $(day): $(join(sessions, &quot;, &quot;)); &quot; *
+        &quot;reminders $(remind ? &quot;on&quot; : &quot;off&quot;); $(length(photos)) photo(s)&quot;, ephemeral=true)
 end</code></pre><h2 id="5.-Button-Modal-Flow"><a class="docs-heading-anchor" href="#5.-Button-Modal-Flow">5. Button → Modal Flow</a><a id="5.-Button-Modal-Flow-1"></a><a class="docs-heading-anchor-permalink" href="#5.-Button-Modal-Flow" title="Permalink"></a></h2><p>A button click can open a modal:</p><pre><code class="language-julia hljs">@slash_command client &quot;report&quot; &quot;Report an issue&quot; function(ctx)
     components = [
         Accord.action_row([
@@ -110,8 +134,8 @@ end
         title=&quot;Bug Report&quot;,
         custom_id=&quot;bug_report_modal&quot;,
         components=[
-            Accord.action_row([Accord.text_input(custom_id=&quot;bug_title&quot;, label=&quot;Bug Title&quot;, style=TextInputStyles.SHORT, required=true)]),
-            Accord.action_row([Accord.text_input(custom_id=&quot;bug_desc&quot;, label=&quot;Description&quot;, style=TextInputStyles.PARAGRAPH, required=true)]),
+            Accord.label(&quot;Bug Title&quot;, Accord.text_input(custom_id=&quot;bug_title&quot;, style=TextInputStyles.SHORT)),
+            Accord.label(&quot;Description&quot;, Accord.text_input(custom_id=&quot;bug_desc&quot;, style=TextInputStyles.PARAGRAPH)),
         ]
     )
 end
@@ -173,12 +197,8 @@ end
         title=&quot;Create Support Ticket&quot;,
         custom_id=&quot;ticket_modal&quot;,
         components=[
-            Accord.action_row([
-                Accord.text_input(custom_id=&quot;ticket_subject&quot;, label=&quot;Subject&quot;, style=TextInputStyles.SHORT, required=true, placeholder=&quot;Brief description&quot;),
-            ]),
-            Accord.action_row([
-                Accord.text_input(custom_id=&quot;ticket_details&quot;, label=&quot;Details&quot;, style=TextInputStyles.PARAGRAPH, required=true, placeholder=&quot;Describe your issue...&quot;),
-            ]),
+            Accord.label(&quot;Subject&quot;, Accord.text_input(custom_id=&quot;ticket_subject&quot;, style=TextInputStyles.SHORT, placeholder=&quot;Brief description&quot;)),
+            Accord.label(&quot;Details&quot;, Accord.text_input(custom_id=&quot;ticket_details&quot;, style=TextInputStyles.PARAGRAPH, placeholder=&quot;Describe your issue...&quot;)),
         ]
     )
 end
@@ -217,4 +237,4 @@ Accord.on(client, [`ReadyEvent`](@ref)) do c, event
     @info &quot;Ticket bot ready!&quot;
 end
 
-Accord.start(client)</code></pre><hr/><p><strong>Next steps:</strong> <a href="../05-voice/">Recipe 05 — Voice</a> for audio playback and recording, or <a href="../10-polls/">Recipe 10 — Polls</a> for Discord&#39;s native poll system.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../03-slash-commands/">« Slash Commands</a><a class="docs-footer-nextpage" href="../05-voice/">Voice »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Saturday 31 October 2026 11:45">Saturday 31 October 2026</span>. Using Julia version 1.13.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+Accord.start(client)</code></pre><hr/><p><strong>Next steps:</strong> <a href="../05-voice/">Recipe 05 — Voice</a> for audio playback and recording, or <a href="../10-polls/">Recipe 10 — Polls</a> for Discord&#39;s native poll system.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../03-slash-commands/">« Slash Commands</a><a class="docs-footer-nextpage" href="../05-voice/">Voice »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Saturday 31 October 2026 18:01">Saturday 31 October 2026</span>. Using Julia version 1.13.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
