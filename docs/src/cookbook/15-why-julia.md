@@ -20,7 +20,7 @@ Python's Global Interpreter Lock (GIL) means your bot is single-threaded, no mat
 
 ```julia
 # Julia: true parallel execution
-on(client, [`MessageCreate`](@ref)) do c, event
+Accord.on(client, [`MessageCreate`](@ref)) do c, event
     Threads.@spawn begin
         # This runs on a separate thread — truly parallel
         result = heavy_computation(event.message.content)
@@ -56,11 +56,11 @@ Accord.jl uses Julia's type system for event dispatch — no string matching or 
 
 ```julia
 # Julia: the type system IS the routing
-on(client, [`MessageCreate`](@ref)) do c, event
+Accord.on(client, [`MessageCreate`](@ref)) do c, event
     # Only called for MessageCreate events
 end
 
-on(client, [`GuildMemberAdd`](@ref)) do c, event
+Accord.on(client, [`GuildMemberAdd`](@ref)) do c, event
     # Only called for GuildMemberAdd events
 end
 
@@ -96,7 +96,7 @@ channel_id = [`Snowflake`](@ref)(123456789012345678)
 perms = [`PermSendMessages`](@ref) | [`PermEmbedLinks`](@ref)
 [`has_flag`](@ref)(perms, [`PermAdministrator`](@ref))  # false — type-safe check
 
-# Optional{T}: explicit handling of missing fields
+# Accord.Optional{T}: explicit handling of missing fields
 if !ismissing(msg.content)
     # content is guaranteed to be String here
     process(msg.content)
@@ -177,7 +177,7 @@ In Python, you'd need subprocess calls to Julia/R/MATLAB or complex FFI bindings
 Non-blocking mode gives you a live REPL connected to Discord:
 
 ```julia
-start(client; blocking=false)
+Accord.start(client; blocking=false)
 [`wait_until_ready`](@ref)(client)
 
 # Test things live:
@@ -188,7 +188,7 @@ client.state.me.username
 length(client.state.guilds)
 
 # Hot-reload handlers (just redefine):
-on(client, [`MessageCreate`](@ref)) do c, event
+Accord.on(client, [`MessageCreate`](@ref)) do c, event
     # This replaces the previous handler
     @info "New handler!" content=event.message.content
 end
@@ -268,7 +268,7 @@ async def on_message(message):
 
 ```julia
 # Accord.jl
-on(client, [`MessageCreate`](@ref)) do c, event
+Accord.on(client, [`MessageCreate`](@ref)) do c, event
     msg = event.message
     ismissing(msg.content) && return
     msg.content == "!ping" && [`create_message`](@ref)(c, msg.channel_id; content="Pong!")

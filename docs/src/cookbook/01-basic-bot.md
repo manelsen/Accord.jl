@@ -66,12 +66,12 @@ client = Client(token;
     Gateway intents control which events your bot receives. You must declare both [`IntentGuildMessages`](@ref) (for message events) and [`IntentMessageContent`](@ref) (to read actual message text). Without these, your bot won't see message content!
 
 # Log when connected
-on(client, [`ReadyEvent`](@ref)) do c, event
+Accord.on(client, [`ReadyEvent`](@ref)) do c, event
     @info "Bot online!" user=event.user.username guilds=length(event.guilds)
 end
 
 # Respond to messages
-on(client, [`MessageCreate`](@ref)) do c, event
+Accord.on(client, [`MessageCreate`](@ref)) do c, event
     msg = event.message
     ismissing(msg.author) && return
     ismissing(msg.content) && return
@@ -82,7 +82,7 @@ on(client, [`MessageCreate`](@ref)) do c, event
     end
 end
 
-start(client)
+Accord.start(client)
 ```
 
 Run it:
@@ -94,7 +94,7 @@ julia --project=. bot.jl
 ## 4. Ping/Pong with Latency
 
 ```julia
-on(client, MessageCreate) do c, event
+Accord.on(client, MessageCreate) do c, event
     msg = event.message
     ismissing(msg.author) && return
     ismissing(msg.content) && return
@@ -105,7 +105,7 @@ on(client, MessageCreate) do c, event
         sent = create_message(c, msg.channel_id; content="Pong!")
         latency_ms = round(Int, (time() - t_start) * 1000)
 
-        e = embed(
+        e = Accord.embed(
             title="Pong!",
             description="Round-trip latency: **$(latency_ms) ms**",
             color=0x57F287  # green
@@ -170,7 +170,7 @@ IntentAll               # all intents including privileged
 Start the bot without blocking your REPL:
 
 ```julia
-start(client; blocking=false)
+Accord.start(client; blocking=false)
 
 # Now you can interact with the client live:
 wait_until_ready(client)
@@ -189,7 +189,7 @@ This is extremely useful during development — you get a live REPL connected to
 
 ```julia
 # Stop the client cleanly
-stop(client)
+Accord.stop(client)
 ```
 
 In blocking mode, pressing `Ctrl+C` triggers a graceful shutdown automatically.
@@ -200,19 +200,19 @@ You can register multiple handlers for the same event:
 
 ```julia
 # Analytics handler
-on(client, [`MessageCreate`](@ref)) do c, event
+Accord.on(client, [`MessageCreate`](@ref)) do c, event
     @debug "Message received" channel=event.message.channel_id
 end
 
 # Command handler (both run independently)
-on(client, [`MessageCreate`](@ref)) do c, event
+Accord.on(client, [`MessageCreate`](@ref)) do c, event
     msg = event.message
     ismissing(msg.content) && return
     msg.content == "!ping" && create_message(c, msg.channel_id; content="Pong!")
 end
 
 # Catch-all: log every event type
-on(client, [`AbstractEvent`](@ref)) do c, event
+Accord.on(client, [`AbstractEvent`](@ref)) do c, event
     @debug "Event" type=typeof(event)
 end
 ```
@@ -220,11 +220,11 @@ end
 ## 9. Logging Guild Activity
 
 ```julia
-on(client, [`GuildCreate`](@ref)) do c, event
+Accord.on(client, [`GuildCreate`](@ref)) do c, event
     @info "Guild available" name=event.guild.name id=event.guild.id
 end
 
-on(client, [`GuildMemberAdd`](@ref)) do c, event
+Accord.on(client, [`GuildMemberAdd`](@ref)) do c, event
     @info "Member joined" guild_id=event.guild_id
     # Note: requires IntentGuildMembers (privileged)
 end
@@ -245,11 +245,11 @@ client = Client(token;
     intents = IntentGuilds | IntentGuildMessages | IntentMessageContent
 )
 
-on(client, ReadyEvent) do c, event
+Accord.on(client, ReadyEvent) do c, event
     @info "Bot online!" user=event.user.username guilds=length(event.guilds)
 end
 
-on(client, MessageCreate) do c, event
+Accord.on(client, MessageCreate) do c, event
     msg = event.message
     ismissing(msg.author) && return
     ismissing(msg.content) && return
@@ -262,7 +262,7 @@ on(client, MessageCreate) do c, event
         edit_message(c, msg.channel_id, sent.id;
             content="Pong! Latency: **$(ms) ms**")
     elseif msg.content == "!info"
-        e = embed(
+        e = Accord.embed(
             title="Bot Info",
             color=0x5865F2,
             fields=[
@@ -274,12 +274,12 @@ on(client, MessageCreate) do c, event
     end
 end
 
-on(client, GuildCreate) do c, event
+Accord.on(client, GuildCreate) do c, event
     @info "Guild available" name=event.guild.name id=event.guild.id
 end
 
 @info "Starting bot..."
-start(client)
+Accord.start(client)
 ```
 
 ---

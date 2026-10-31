@@ -57,15 +57,15 @@ Accord.jl defines permissions as a [`Permissions`](@ref) bitfield type:
 
 ```julia
 perms = [`Permissions`](@ref)(0x00000800)  # PermSendMessages
-has_flag(perms, PermSendMessages)  # true
-has_flag(perms, PermBanMembers)    # false
+Accord.has_flag(perms, PermSendMessages)  # true
+Accord.has_flag(perms, PermBanMembers)    # false
 ```
 
 ### Combining Flags
 
 ```julia
 required = PermSendMessages | PermEmbedLinks | PermAttachFiles
-has_flag(user_perms, required)  # true only if ALL are set
+Accord.has_flag(user_perms, required)  # true only if ALL are set
 ```
 
 ## 3. Computing Base Permissions
@@ -120,15 +120,15 @@ The cleanest way to protect commands — stack [`@check`](@ref) macros before [`
 
 ```julia
 # Only users with BAN_MEMBERS permission can use this
-@check has_permissions(:BAN_MEMBERS)
+@check Accord.has_permissions(:BAN_MEMBERS)
 @slash_command client "ban" "Ban a user" options_ban function(ctx)
-    target_id = Snowflake(get_option(ctx, "user", ""))
-    reason = get_option(ctx, "reason", "No reason provided")
+    target_id = Snowflake(Accord.get_option(ctx, "user", ""))
+    reason = Accord.get_option(ctx, "reason", "No reason provided")
 
-    create_guild_ban(ctx.client.ratelimiter, ctx.interaction.guild_id, target_id;
-        token=ctx.client.token, body=Dict("delete_message_seconds" => 86400), reason=reason)
+    Accord.create_guild_ban(ctx.client, ctx.interaction.guild_id, target_id;
+        body=Dict("delete_message_seconds" => 86400), reason=reason)
 
-    respond(ctx; content="Banned <@$(target_id)>. Reason: $reason")
+    Accord.respond(ctx; content="Banned <@$(target_id)>. Reason: $reason")
 end
 ```
 
@@ -138,11 +138,11 @@ message is sent automatically — no boilerplate needed.
 #### Stacking Multiple Checks
 
 ```julia
-@check is_in_guild()
-@check has_permissions(:MANAGE_GUILD)
-@check is_owner()
+@check Accord.is_in_guild()
+@check Accord.has_permissions(:MANAGE_GUILD)
+@check Accord.is_owner()
 @slash_command client "nuke" "Extreme action — owner only" function(ctx)
-    respond(ctx; content="💥 Done!")
+    Accord.respond(ctx; content="💥 Done!")
 end
 ```
 
@@ -160,8 +160,8 @@ All checks must pass. If any fails, subsequent checks and the handler are skippe
 
 ```julia
 # These are equivalent:
-@check has_permissions(PermManageGuild | PermBanMembers)
-@check has_permissions(:MANAGE_GUILD, :BAN_MEMBERS)
+@check Accord.has_permissions(PermManageGuild | PermBanMembers)
+@check Accord.has_permissions(:MANAGE_GUILD, :BAN_MEMBERS)
 ```
 
 ### Manual Approach (Legacy)
@@ -174,8 +174,8 @@ function require_permissions(ctx, required::Permissions)
     user_id = ctx.interaction.member.user.id
 
     perms = get_member_permissions(ctx.client, guild_id, user_id)
-    if !has_flag(perms, required)
-        respond(ctx; content="You don't have permission to use this command.", ephemeral=true)
+    if !Accord.has_flag(perms, required)
+        Accord.respond(ctx; content="You don't have permission to use this command.", ephemeral=true)
         return false
     end
     return true
@@ -183,20 +183,20 @@ end
 
 # Usage in a command
 options_ban = [
-    command_option(type=ApplicationCommandOptionTypes.USER, name="user", description="User to ban", required=true),
-    command_option(type=ApplicationCommandOptionTypes.STRING, name="reason", description="Ban reason"),
+    Accord.command_option(type=ApplicationCommandOptionTypes.USER, name="user", description="User to ban", required=true),
+    Accord.command_option(type=ApplicationCommandOptionTypes.STRING, name="reason", description="Ban reason"),
 ]
 
 @slash_command client "ban" "Ban a user" options_ban function(ctx)
     require_permissions(ctx, PermBanMembers) || return
 
-    target_id = Snowflake(get_option(ctx, "user", ""))
-    reason = get_option(ctx, "reason", "No reason provided")
+    target_id = Snowflake(Accord.get_option(ctx, "user", ""))
+    reason = Accord.get_option(ctx, "reason", "No reason provided")
 
-    create_guild_ban(ctx.client.ratelimiter, ctx.interaction.guild_id, target_id;
-        token=ctx.client.token, body=Dict("delete_message_seconds" => 86400), reason=reason)
+    Accord.create_guild_ban(ctx.client, ctx.interaction.guild_id, target_id;
+        body=Dict("delete_message_seconds" => 86400), reason=reason)
 
-    respond(ctx; content="Banned <@$(target_id)>. Reason: $reason")
+    Accord.respond(ctx; content="Banned <@$(target_id)>. Reason: $reason")
 end
 ```
 
@@ -206,37 +206,37 @@ end
 
 ```julia
 # Using @check — clean and declarative
-@check has_permissions(:KICK_MEMBERS)
+@check Accord.has_permissions(:KICK_MEMBERS)
 @slash_command client "warn" "Warn a user" options_warn function(ctx)
-    respond(ctx; content="User warned.")
+    Accord.respond(ctx; content="User warned.")
 end
 ```
 
 ### Admin-Only Command
 
 ```julia
-@check has_permissions(:ADMINISTRATOR)
+@check Accord.has_permissions(:ADMINISTRATOR)
 @slash_command client "config" "Configure the bot" function(ctx)
-    respond(ctx; content="Config panel:", ephemeral=true)
+    Accord.respond(ctx; content="Config panel:", ephemeral=true)
 end
 ```
 
 ### Owner-Only Command
 
 ```julia
-@check is_owner()
+@check Accord.is_owner()
 @slash_command client "shutdown" "Shut down the bot" function(ctx)
-    respond(ctx; content="Shutting down...")
-    stop(ctx.client)
+    Accord.respond(ctx; content="Shutting down...")
+    Accord.stop(ctx.client)
 end
 ```
 
 ### Guild-Only (No DMs)
 
 ```julia
-@check is_in_guild()
+@check Accord.is_in_guild()
 @slash_command client "server-info" "Show server info" function(ctx)
-    respond(ctx; content="Guild: $(ctx.guild_id)")
+    Accord.respond(ctx; content="Guild: $(ctx.guild_id)")
 end
 ```
 
@@ -266,7 +266,7 @@ function create_private_channel(client, guild_id, name, user_id)
         "permission_overwrites" => overwrites,
     )
 
-    create_guild_channel(client.ratelimiter, guild_id; token=client.token, body)
+    Accord.create_guild_channel(client, guild_id; body)
 end
 
 # Usage
@@ -279,18 +279,18 @@ create_message(client, channel.id; content="This channel is private to <@$(user_
 Ensure the bot has the permissions it needs:
 
 ```julia
-on(client, [`GuildCreate`](@ref)) do c, event
+Accord.on(client, [`GuildCreate`](@ref)) do c, event
     guild = event.guild
     me_id = c.state.me.id
 
     perms = get_member_permissions(c, guild.id, me_id)
 
     required = PermSendMessages | PermEmbedLinks | PermManageMessages
-    if !has_flag(perms, required)
+    if !Accord.has_flag(perms, required)
         missing_perms = String[]
-        has_flag(perms, PermSendMessages) || push!(missing_perms, "Send Messages")
-        has_flag(perms, PermEmbedLinks) || push!(missing_perms, "Embed Links")
-        has_flag(perms, PermManageMessages) || push!(missing_perms, "Manage Messages")
+        Accord.has_flag(perms, PermSendMessages) || push!(missing_perms, "Send Messages")
+        Accord.has_flag(perms, PermEmbedLinks) || push!(missing_perms, "Embed Links")
+        Accord.has_flag(perms, PermManageMessages) || push!(missing_perms, "Manage Messages")
         @warn "Missing permissions in guild" guild=guild.name missing=missing_perms
     end
 end

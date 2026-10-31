@@ -42,13 +42,13 @@ function main()
     Moderation.install(client)
 
     # 4. Global Events
-    on(client, ReadyEvent) do c, event
+    Accord.on(client, ReadyEvent) do c, event
         @info "Accord-Omni online as $(event.user.username)"
         sync_commands!(c) # Register commands from all installed features
     end
 
     # 5. Start
-    start(client)
+    Accord.start(client)
 end
 
 main()

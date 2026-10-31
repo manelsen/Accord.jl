@@ -30,7 +30,7 @@ client = [`Client`](@ref)(ENV["DISCORD_TOKEN"];
     intents = [`IntentGuilds`](@ref) | [`IntentGuildMessages`](@ref) | [`IntentMessageContent`](@ref)
 )
 
-on(client, [`ReadyEvent`](@ref)) do c, event
+Accord.on(client, [`ReadyEvent`](@ref)) do c, event
     @info "Bot is online as $(event.user.username)!"
 end
 
@@ -38,11 +38,11 @@ end
     [`respond`](@ref)(ctx; content="Pong!")
 end
 
-on(client, [`ReadyEvent`](@ref)) do c, event
+Accord.on(client, [`ReadyEvent`](@ref)) do c, event
     [`sync_commands!`](@ref)(c, c.command_tree)
 end
 
-start(client)
+Accord.start(client)
 ```
 
 ## Next Steps

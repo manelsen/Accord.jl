@@ -61,7 +61,7 @@ logger = SimpleLogger(io, Logging.Debug)
 global_logger(logger)
 
 # Log all events
-on(client, AbstractEvent) do c, event
+Accord.on(client, AbstractEvent) do c, event
     @debug "Event received" type=typeof(event) time=time()
 end
 ```
@@ -105,11 +105,11 @@ end
 Accord.jl handles reconnection automatically. If you see frequent reconnects:
 
 ```julia
-on(client, ResumedEvent) do c, event
+Accord.on(client, ResumedEvent) do c, event
     @info "Gateway connection resumed"
 end
 
-on(client, ReadyEvent) do c, event
+Accord.on(client, ReadyEvent) do c, event
     @info "New gateway session established" guilds=length(event.guilds)
 end
 ```
@@ -126,14 +126,14 @@ Discord requires an initial response within 3 seconds. If your handler is slow:
 # BAD: will fail if database is slow
 @slash_command client "lookup" "Look up data" function(ctx)
     result = slow_database_query()  # might take 5 seconds
-    respond(ctx; content=result)     # TOO LATE — interaction expired
+    Accord.respond(ctx; content=result)     # TOO LATE — interaction expired
 end
 
 # GOOD: defer first
 @slash_command client "lookup" "Look up data" function(ctx)
-    defer(ctx)                       # immediate acknowledgment
+    Accord.defer(ctx)                       # immediate acknowledgment
     result = slow_database_query()   # take as long as needed (up to 15 min)
-    respond(ctx; content=result)     # edits the deferred response
+    Accord.respond(ctx; content=result)     # edits the deferred response
 end
 ```
 
@@ -142,14 +142,14 @@ end
 ```julia
 # BAD: responding twice
 @slash_command client "test" "Test" function(ctx)
-    respond(ctx; content="First")
-    respond(ctx; content="Second")   # ERROR: already responded
+    Accord.respond(ctx; content="First")
+    Accord.respond(ctx; content="Second")   # ERROR: already responded
 end
 
 # GOOD: use followup for additional messages
 @slash_command client "test" "Test" function(ctx)
-    respond(ctx; content="First")
-    followup(ctx; content="Second")  # followup works after initial response
+    Accord.respond(ctx; content="First")
+    Accord.followup(ctx; content="Second")  # followup works after initial response
 end
 ```
 
@@ -161,11 +161,11 @@ When handling button/select interactions, [`respond`](@ref) auto-selects `UPDATE
 ```julia
 register_component!(tree, "my_btn", function(ctx)
     # This updates the message the button is on:
-    respond(ctx; content="Updated!")
+    Accord.respond(ctx; content="Updated!")
 
     # For a separate ephemeral reply, use followup:
-    # defer(ctx)  # acknowledge first
-    # followup(ctx; content="Separate reply!", ephemeral=true)
+    # Accord.defer(ctx)  # acknowledge first
+    # Accord.followup(ctx; content="Separate reply!", ephemeral=true)
 end)
 ```
 
@@ -228,7 +228,7 @@ end
 Use non-blocking mode to inspect live state:
 
 ```julia
-start(client; blocking=false)
+Accord.start(client; blocking=false)
 wait_until_ready(client)
 
 # Inspect client state
@@ -251,7 +251,7 @@ end
 create_message(client, Snowflake(123456789); content="Test from REPL")
 
 # Test an embed
-e = embed(title="Debug", description="Testing", color=0xFEE75C)
+e = Accord.embed(title="Debug", description="Testing", color=0xFEE75C)
 create_message(client, Snowflake(123456789); embeds=[e])
 ```
 

@@ -13,13 +13,13 @@ function setup_ai(client::Client)
     @slash_command client "ask" "Ask the AI assistant anything" [
         @option String "prompt" "Your question" required=true
     ] do ctx
-        prompt = get_option(ctx, "prompt")
+        prompt = Accord.get_option(ctx, "prompt")
         
         if isempty(API_KEY)
-            return respond(ctx, content="❌ OpenAI API key not configured. Set `OPENAI_API_KEY`.", flags=MsgFlagEphemeral)
+            return Accord.respond(ctx, content="❌ OpenAI API key not configured. Set `OPENAI_API_KEY`.", flags=MsgFlagEphemeral)
         end
 
-        defer(ctx)
+        Accord.defer(ctx)
 
         try
             body = Dict(
@@ -35,9 +35,9 @@ function setup_ai(client::Client)
             data = JSON3.read(resp.body)
             answer = data.choices[1].message.content
             
-            followup(ctx, content="**Prompt:** $prompt\n\n**AI:** $answer")
+            Accord.followup(ctx, content="**Prompt:** $prompt\n\n**AI:** $answer")
         catch e
-            followup(ctx, content="❌ Failed to get a response from the AI.")
+            Accord.followup(ctx, content="❌ Failed to get a response from the AI.")
         end
     end
 

@@ -31,14 +31,14 @@ function setup_economy(client::Client)
     @slash_command client "balance" "Check your current bank balance" do ctx
         user_id = string(ctx.interaction.member.user.id)
         bal = get_balance(user_id)
-        respond(ctx, content="💰 Your current balance is: **$bal coins**.")
+        Accord.respond(ctx, content="💰 Your current balance is: **$bal coins**.")
     end
 
     @slash_command client "daily" "Claim your daily reward" do ctx
         user_id = string(ctx.interaction.member.user.id)
         add_balance(user_id, 100)
         bal = get_balance(user_id)
-        respond(ctx, content="🎁 You claimed 100 daily coins! New balance: **$bal coins**.")
+        Accord.respond(ctx, content="🎁 You claimed 100 daily coins! New balance: **$bal coins**.")
     end
 
     println("💸 Economy module loaded.")

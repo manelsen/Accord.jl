@@ -1,6 +1,6 @@
 @testitem "Macros" tags=[:unit] begin
     using Accord, JSON3, StructTypes, Dates
-    using Accord: has_flag, @discord_flags, @discord_struct, @_flags_structtypes_int,
+    using Accord: has_flag, Optional, Nullable, Maybe, @discord_flags, @discord_struct, @_flags_structtypes_int,
         drain_pending_checks!, pending_checks, push_pending_check!, CommandTree,
         dispatch_interaction!
 
@@ -278,24 +278,24 @@
         @testset "bitwise OR" begin
             combined = TFO_A | TFO_B
             @test combined.value == 3
-            @test has_flag(combined, TFO_A)
-            @test has_flag(combined, TFO_B)
+            @test Accord.has_flag(combined, TFO_A)
+            @test Accord.has_flag(combined, TFO_B)
         end
 
         @testset "bitwise AND" begin
             ab = TFA_A | TFA_B
             bc = TFA_B | TFA_C
             result = ab & bc
-            @test has_flag(result, TFA_B)
-            @test !has_flag(result, TFA_A)
-            @test !has_flag(result, TFA_C)
+            @test Accord.has_flag(result, TFA_B)
+            @test !Accord.has_flag(result, TFA_A)
+            @test !Accord.has_flag(result, TFA_C)
         end
 
         @testset "bitwise XOR" begin
             ab = TFX_A | TFX_B
             result = xor(ab, TFX_A)
-            @test !has_flag(result, TFX_A)
-            @test has_flag(result, TFX_B)
+            @test !Accord.has_flag(result, TFX_A)
+            @test Accord.has_flag(result, TFX_B)
         end
 
         @testset "bitwise NOT" begin
@@ -328,13 +328,13 @@
 
         @testset "single flag" begin
             @test SINGLE.value == 1
-            @test has_flag(SINGLE, SINGLE)
+            @test Accord.has_flag(SINGLE, SINGLE)
         end
 
         @testset "has_flag with zero" begin
             z = zero(TestFlagsHasZero)
-            @test has_flag(TFHZ_A, z)   # every flag has the zero flag
-            @test !has_flag(z, TFHZ_A)  # zero does not have any flag
+            @test Accord.has_flag(TFHZ_A, z)   # every flag has the zero flag
+            @test !Accord.has_flag(z, TFHZ_A)  # zero does not have any flag
         end
     end
 
@@ -587,14 +587,14 @@
     end
 
     @testset "@on" begin
-        expr = @macroexpand @on client ReadyEvent (c, e) -> nothing
+        expr = @macroexpand Accord.@on client ReadyEvent (c, e) -> nothing
         @test expr isa Expr
         expr_str = string(expr)
         @test occursin("ReadyEvent", expr_str)
     end
 
     @testset "@embed" begin
-        e = @embed begin
+        e = Accord.@embed begin
             title("Test Title")
             description("Test Desc")
             color(:green)

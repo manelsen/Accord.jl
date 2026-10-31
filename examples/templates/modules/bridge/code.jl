@@ -9,19 +9,19 @@ function setup_bridge(client::Client)
         ch_id = ctx.interaction.channel_id
         
         try
-            wh = create_webhook(ctx.client.ratelimiter, ch_id; 
-                token=ctx.client.token, name="Accord Bridge")
+            wh = Accord.create_webhook(ctx.client, ch_id; 
+                name="Accord Bridge")
             
-            e = embed(
+            e = Accord.embed(
                 title="Bridge Configured",
                 description="Use the following URL to send data from external apps:",
                 color=0x57F287
             )
-            push!(e.fields, embed_field(name="Webhook URL", value="`$(wh.url)`"))
+            push!(e.fields, Accord.embed_field(name="Webhook URL", value="`$(wh.url)`"))
             
-            respond(ctx, embeds=[e], flags=MsgFlagEphemeral)
+            Accord.respond(ctx, embeds=[e], flags=MsgFlagEphemeral)
         catch e
-            respond(ctx, content="❌ Failed to create webhook.", flags=MsgFlagEphemeral)
+            Accord.respond(ctx, content="❌ Failed to create webhook.", flags=MsgFlagEphemeral)
         end
     end
 

@@ -293,7 +293,7 @@ end
 
 const start_time = time()
 
-on(client, [`ReadyEvent`](@ref)) do c, event
+Accord.on(client, [`ReadyEvent`](@ref)) do c, event
     start_health_server(c)
     @info "Health endpoint running on :8080/health"
 end

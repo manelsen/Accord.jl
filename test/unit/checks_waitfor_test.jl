@@ -25,28 +25,28 @@
     end
 
     @testset "Check factories return functions" begin
-        check_fn = has_permissions(PermManageGuild)
+        check_fn = Accord.has_permissions(PermManageGuild)
         @test check_fn isa Function
 
-        check_fn2 = has_permissions(:MANAGE_GUILD, :BAN_MEMBERS)
+        check_fn2 = Accord.has_permissions(:MANAGE_GUILD, :BAN_MEMBERS)
         @test check_fn2 isa Function
 
-        check_fn3 = is_owner()
+        check_fn3 = Accord.is_owner()
         @test check_fn3 isa Function
 
-        check_fn4 = is_in_guild()
+        check_fn4 = Accord.is_in_guild()
         @test check_fn4 isa Function
 
-        check_fn5 = cooldown(5)
+        check_fn5 = Accord.cooldown(5)
         @test check_fn5 isa Function
 
-        check_fn6 = cooldown(30; per=:guild)
+        check_fn6 = Accord.cooldown(30; per=:guild)
         @test check_fn6 isa Function
 
-        check_fn7 = cooldown(10; per=:channel)
+        check_fn7 = Accord.cooldown(10; per=:channel)
         @test check_fn7 isa Function
 
-        check_fn8 = cooldown(60; per=:global)
+        check_fn8 = Accord.cooldown(60; per=:global)
         @test check_fn8 isa Function
     end
 
@@ -64,8 +64,8 @@
         @test isempty(pending_checks())
 
         # Push some checks
-        push_pending_check!(is_owner())
-        push_pending_check!(is_in_guild())
+        push_pending_check!(Accord.is_owner())
+        push_pending_check!(Accord.is_in_guild())
         @test length(pending_checks()) == 2
 
         # Drain should return all and empty the accumulator

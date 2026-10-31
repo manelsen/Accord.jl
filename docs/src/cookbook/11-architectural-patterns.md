@@ -86,7 +86,7 @@ function create_bot(config)
     register_member_handlers!(client, config)
 
     # Sync commands on ready
-    on(client, [`ReadyEvent`](@ref)) do c, event
+    Accord.on(client, [`ReadyEvent`](@ref)) do c, event
         sync_commands!(c, c.command_tree; guild_id=get(config, "dev_guild_id", nothing))
         @info "Bot ready!" user=event.user.username
     end
@@ -108,15 +108,15 @@ function register_general_commands!(client, config)
 
     @slash_command client "ping" "Check bot latency" function(ctx)
         t = time()
-        defer(ctx)
+        Accord.defer(ctx)
         ms = round(Int, (time() - t) * 1000)
-        e = embed(title="Pong!", description="Latency: **$(ms) ms**", color=0x57F287)
-        respond(ctx; embeds=[e])
+        e = Accord.embed(title="Pong!", description="Latency: **$(ms) ms**", color=0x57F287)
+        Accord.respond(ctx; embeds=[e])
     end
 
     @slash_command client "info" "Bot information" function(ctx)
         guilds = length(ctx.client.state.guilds)
-        e = embed(
+        e = Accord.embed(
             title="Bot Info",
             color=0x5865F2,
             fields=[
@@ -125,7 +125,7 @@ function register_general_commands!(client, config)
                 Dict("name" => "Accord.jl", "value" => string(Accord.ACCORD_VERSION), "inline" => true),
             ]
         )
-        respond(ctx; embeds=[e])
+        Accord.respond(ctx; embeds=[e])
     end
 
 end
@@ -137,20 +137,20 @@ end
 function register_moderation_commands!(client, config)
 
     options = [
-        command_option(type=ApplicationCommandOptionTypes.USER, name="user", description="User to kick", required=true),
-        command_option(type=ApplicationCommandOptionTypes.STRING, name="reason", description="Reason for kick"),
+        Accord.command_option(type=ApplicationCommandOptionTypes.USER, name="user", description="User to kick", required=true),
+        Accord.command_option(type=ApplicationCommandOptionTypes.STRING, name="reason", description="Reason for kick"),
     ]
 
     # Clean: guards are declared outside the handler
-    @check has_permissions(:KICK_MEMBERS)
+    @check Accord.has_permissions(:KICK_MEMBERS)
     @slash_command client "kick" "Kick a member" options function(ctx)
-        target = Snowflake(get_option(ctx, "user", ""))
-        reason = get_option(ctx, "reason", "No reason")
+        target = Snowflake(Accord.get_option(ctx, "user", ""))
+        reason = Accord.get_option(ctx, "reason", "No reason")
 
-        remove_guild_member(ctx.client.ratelimiter, ctx.interaction.guild_id, target;
-            token=ctx.client.token, reason=reason)
+        Accord.remove_guild_member(ctx.client, ctx.interaction.guild_id, target;
+            reason=reason)
 
-        respond(ctx; content="Kicked <@$(target)>. Reason: $reason")
+        Accord.respond(ctx; content="Kicked <@$(target)>. Reason: $reason")
     end
 
 end
@@ -164,14 +164,14 @@ end
     Never perform blocking operations (like `sleep()`, file I/O without async, or long computations) directly in event handlers. This blocks the entire event loop and prevents the bot from receiving new events. Always wrap slow operations in `@async` or `Threads.@spawn`.
 
 ```julia
-on_error(client) do c, event, error
+Accord.on_error(client) do c, event, error
     # Log the error with full context
     @error "Handler error" event_type=typeof(event) exception=(error, catch_backtrace())
 
     # Optionally notify a channel
     ERROR_CHANNEL = [`Snowflake`](@ref)(config["error_channel_id"])
     try
-        e = embed(
+        e = Accord.embed(
             title="Bot Error",
             description="```\n$(sprint(showerror, error))\n```",
             color=0xED4245,
@@ -193,10 +193,10 @@ end
 @slash_command client "risky" "A command that might fail" function(ctx)
     try
         result = some_external_api_call()
-        respond(ctx; content="Result: $result")
+        Accord.respond(ctx; content="Result: $result")
     catch e
         @error "Command failed" exception=e
-        respond(ctx; content="Something went wrong. Please try again later.", ephemeral=true)
+        Accord.respond(ctx; content="Something went wrong. Please try again later.", ephemeral=true)
     end
 end
 ```
@@ -309,7 +309,7 @@ config = MyBot.load_config()
 client = MyBot.create_bot(config)
 
 @info "Starting bot..."
-start(client)
+Accord.start(client)
 ```
 
 ## 8. Database Integration Pattern
@@ -373,9 +373,9 @@ end
 ```julia
 # Annotate types when extracting options
 function handle_greet(ctx)
-    name = get_option(ctx, "name", "World")::String
-    times = get_option(ctx, "times", 1)::Int
-    respond(ctx; content=join(fill("Hello, $name!", times), "\n"))
+    name = Accord.get_option(ctx, "name", "World")::String
+    times = Accord.get_option(ctx, "times", 1)::Int
+    Accord.respond(ctx; content=join(fill("Hello, $name!", times), "\n"))
 end
 ```
 
@@ -398,13 +398,13 @@ function register_commands!(client)
         # ctx.state is the BotState struct — no globals!
         warns = get!(ctx.state.warnings, ctx.interaction.guild_id, String[])
         push!(warns, "warning")
-        respond(ctx; content="Warning recorded ($(length(warns)) total)")
+        Accord.respond(ctx; content="Warning recorded ($(length(warns)) total)")
     end
 
     # Access database cleanly
     @slash_command client "stats" "Show stats" function(ctx)
         count = query_count(ctx.state.db, ctx.guild_id)
-        respond(ctx; content="Total: $count")
+        Accord.respond(ctx; content="Total: $count")
     end
 end
 ```

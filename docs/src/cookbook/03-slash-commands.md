@@ -26,16 +26,16 @@ client = Client(token; intents=IntentGuilds)
 
 # Register a simple command using the macro
 @slash_command client "hello" "Say hello!" function(ctx)
-    respond(ctx; content="Hello, <@$(ctx.interaction.member.user.id)>!")
+    Accord.respond(ctx; content="Hello, <@$(ctx.interaction.member.user.id)>!")
 end
 
 # Sync commands when ready
-on(client, ReadyEvent) do c, event
+Accord.on(client, ReadyEvent) do c, event
     @info "Bot ready, syncing commands..."
     sync_commands!(c, c.command_tree)
 end
 
-start(client)
+Accord.start(client)
 ```
 
 Note that [`Client`](@ref) automatically handles interaction dispatch to its internal `command_tree`.
@@ -46,13 +46,13 @@ Use [`command_option`](@ref)`()` to define typed parameters:
 
 ```julia
 options = [
-    command_option(
+    Accord.command_option(
         type=ApplicationCommandOptionTypes.STRING,
         name="name",
         description="Who to greet",
         required=true,
     ),
-    command_option(
+    Accord.command_option(
         type=ApplicationCommandOptionTypes.INTEGER,
         name="times",
         description="How many times to greet",
@@ -63,10 +63,10 @@ options = [
 ]
 
 @slash_command client "greet" "Greet someone" options function(ctx)
-    name = get_option(ctx, "name", "World")
-    times = get_option(ctx, "times", 1)
+    name = Accord.get_option(ctx, "name", "World")
+    times = Accord.get_option(ctx, "times", 1)
     greeting = join(fill("Hello, $name!", times), "\n")
-    respond(ctx; content=greeting)
+    Accord.respond(ctx; content=greeting)
 end
 ```
 
@@ -88,7 +88,7 @@ end
 
 ```julia
 options = [
-    command_option(
+    Accord.command_option(
         type=ApplicationCommandOptionTypes.STRING,
         name="color",
         description="Pick a color",
@@ -102,10 +102,10 @@ options = [
 ]
 
 @slash_command client "color" "Pick a color" options function(ctx)
-    color = get_option(ctx, "color", "red")
+    color = Accord.get_option(ctx, "color", "red")
     hex = Dict("red" => 0xED4245, "green" => 0x57F287, "blue" => 0x5865F2)[color]
-    e = embed(title="You picked $color!", color=hex)
-    respond(ctx; embeds=[e])
+    e = Accord.embed(title="You picked $color!", color=hex)
+    Accord.respond(ctx; embeds=[e])
 end
 ```
 
@@ -120,7 +120,7 @@ const FRUITS = ["apple", "apricot", "avocado", "banana", "blueberry",
                 "peach", "pear", "pineapple", "raspberry", "strawberry"]
 
 options = [
-    command_option(
+    Accord.command_option(
         type=ApplicationCommandOptionTypes.STRING,
         name="fruit",
         description="Pick a fruit",
@@ -130,12 +130,12 @@ options = [
 ]
 
 @slash_command client "fruit" "Search for a fruit" options function(ctx)
-    fruit = get_option(ctx, "fruit", "")
-    respond(ctx; content="You picked: **$fruit**")
+    fruit = Accord.get_option(ctx, "fruit", "")
+    Accord.respond(ctx; content="You picked: **$fruit**")
 end
 
 @autocomplete client "fruit" function(ctx)
-    query = lowercase(get_option(ctx, "fruit", ""))
+    query = lowercase(Accord.get_option(ctx, "fruit", ""))
     matches = filter(f -> startswith(f, query), FRUITS)
     choices = [Dict("name" => f, "value" => f) for f in first(matches, 25)]
 
@@ -143,8 +143,8 @@ end
         "type" => InteractionCallbackTypes.APPLICATION_COMMAND_AUTOCOMPLETE_RESULT,
         "data" => Dict("choices" => choices)
     )
-    create_interaction_response(ctx.client.ratelimiter, ctx.interaction.id, ctx.interaction.token;
-        token=ctx.client.token, body)
+    Accord.create_interaction_response(ctx.client, ctx.interaction.id, ctx.interaction.token;
+        body)
 end
 ```
 
@@ -154,21 +154,21 @@ Subcommands are options of type `SUB_COMMAND`:
 
 ```julia
 options = [
-    command_option(
+    Accord.command_option(
         type=ApplicationCommandOptionTypes.SUB_COMMAND,
         name="add",
         description="Add a tag",
         options=[
-            command_option(type=ApplicationCommandOptionTypes.STRING, name="name", description="Tag name", required=true),
-            command_option(type=ApplicationCommandOptionTypes.STRING, name="content", description="Tag content", required=true),
+            Accord.command_option(type=ApplicationCommandOptionTypes.STRING, name="name", description="Tag name", required=true),
+            Accord.command_option(type=ApplicationCommandOptionTypes.STRING, name="content", description="Tag content", required=true),
         ]
     ),
-    command_option(
+    Accord.command_option(
         type=ApplicationCommandOptionTypes.SUB_COMMAND,
         name="get",
         description="Get a tag",
         options=[
-            command_option(type=ApplicationCommandOptionTypes.STRING, name="name", description="Tag name", required=true),
+            Accord.command_option(type=ApplicationCommandOptionTypes.STRING, name="name", description="Tag name", required=true),
         ]
     ),
 ]
@@ -191,14 +191,14 @@ const tags = Dict{String, String}()
 
     if sub.name == "add"
         tags[sub_opts["name"]] = sub_opts["content"]
-        respond(ctx; content="Tag **$(sub_opts["name"])** created!", ephemeral=true)
+        Accord.respond(ctx; content="Tag **$(sub_opts["name"])** created!", ephemeral=true)
     elseif sub.name == "get"
         name = sub_opts["name"]
         content = get(tags, name, nothing)
         if isnothing(content)
-            respond(ctx; content="Tag **$name** not found.", ephemeral=true)
+            Accord.respond(ctx; content="Tag **$name** not found.", ephemeral=true)
         else
-            respond(ctx; content=content)
+            Accord.respond(ctx; content=content)
         end
     end
 end
@@ -212,7 +212,7 @@ end
 ```julia
 # Global commands — available everywhere, up to 1 hour to propagate
 @slash_command client "ping" "Check latency" function(ctx)
-    respond(ctx; content="Pong!")
+    Accord.respond(ctx; content="Pong!")
 end
 ```
 
@@ -223,11 +223,11 @@ end
 # Guild command — instant, only in one server
 GUILD_ID = 123456789012345678
 @slash_command client GUILD_ID "debug" "Debug info" function(ctx)
-    respond(ctx; content="Debug mode active", ephemeral=true)
+    Accord.respond(ctx; content="Debug mode active", ephemeral=true)
 end
 
 # Or sync everything to a specific guild for development
-on(client, [`ReadyEvent`](@ref)) do c, event
+Accord.on(client, [`ReadyEvent`](@ref)) do c, event
     sync_commands!(c, c.command_tree; guild_id=[`Snowflake`](@ref)(GUILD_ID))  # instant during dev
 end
 ```
@@ -238,14 +238,14 @@ If your command takes more than 3 seconds, defer first:
 
 ```julia
 @slash_command client "slow" "A slow operation" function(ctx)
-    defer(ctx)  # shows "Bot is thinking..."
+    Accord.defer(ctx)  # shows "Bot is thinking..."
 
     # Do expensive work
     sleep(5)
     result = "Done after 5 seconds!"
 
     # Edit the deferred response
-    respond(ctx; content=result)
+    Accord.respond(ctx; content=result)
 end
 ```
 
@@ -253,10 +253,10 @@ end
 
 ```julia
 @slash_command client "secret" "Private slow operation" function(ctx)
-    defer(ctx; ephemeral=true)  # only visible to the user
+    Accord.defer(ctx; ephemeral=true)  # only visible to the user
 
     sleep(3)
-    respond(ctx; content="Secret result!")
+    Accord.respond(ctx; content="Secret result!")
 end
 ```
 
@@ -266,13 +266,13 @@ Send additional messages after the initial response:
 
 ```julia
 @slash_command client "multi" "Multiple responses" function(ctx)
-    respond(ctx; content="First response!")
+    Accord.respond(ctx; content="First response!")
 
     sleep(1)
-    followup(ctx; content="Here's a followup!")
+    Accord.followup(ctx; content="Here's a followup!")
 
     sleep(1)
-    followup(ctx; content="And another one!", ephemeral=true)
+    Accord.followup(ctx; content="And another one!", ephemeral=true)
 end
 ```
 
@@ -280,7 +280,7 @@ end
 
 ```julia
 @slash_command client "countdown" "Countdown timer" function(ctx)
-    defer(ctx)
+    Accord.defer(ctx)
 
     for i in 3:-1:1
         edit_response(ctx; content="**$i**...")
@@ -304,30 +304,30 @@ client = Client(token; intents=IntentGuilds)
 # Simple command
 @slash_command client "ping" "Check bot latency" function(ctx)
     t = time()
-    defer(ctx)
+    Accord.defer(ctx)
     ms = round(Int, (time() - t) * 1000)
-    respond(ctx; content="Pong! API latency: **$(ms) ms**")
+    Accord.respond(ctx; content="Pong! API latency: **$(ms) ms**")
 end
 
 # Command with options
 options = [
-    command_option(type=ApplicationCommandOptionTypes.STRING, name="text", description="Text to echo", required=true),
-    command_option(type=ApplicationCommandOptionTypes.BOOLEAN, name="ephemeral", description="Only visible to you?"),
+    Accord.command_option(type=ApplicationCommandOptionTypes.STRING, name="text", description="Text to echo", required=true),
+    Accord.command_option(type=ApplicationCommandOptionTypes.BOOLEAN, name="ephemeral", description="Only visible to you?"),
 ]
 
 @slash_command client "echo" "Echo a message" options function(ctx)
-    text = get_option(ctx, "text", "")
-    eph = get_option(ctx, "ephemeral", false)
-    respond(ctx; content=text, ephemeral=eph)
+    text = Accord.get_option(ctx, "text", "")
+    eph = Accord.get_option(ctx, "ephemeral", false)
+    Accord.respond(ctx; content=text, ephemeral=eph)
 end
 
-on(client, ReadyEvent) do c, event
+Accord.on(client, ReadyEvent) do c, event
     @info "Syncing commands..."
     sync_commands!(c, c.command_tree)
     @info "Bot ready!"
 end
 
-start(client)
+Accord.start(client)
 ```
 
 ---

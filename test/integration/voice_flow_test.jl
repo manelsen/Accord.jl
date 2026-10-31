@@ -137,7 +137,7 @@
 
         # Simulate stopping
         player.playing = false
-        close_source(source)
+        Accord.close_source(source)
 
         @test player.playing == false
     end
@@ -151,7 +151,7 @@
 
         # Encode to Opus
         encoder = OpusEncoder()
-        opus_data = opus_encode(encoder, pcm_data)
+        opus_data = Accord.opus_encode(encoder, pcm_data)
 
         # Encrypt: ciphertext + 16-byte tag + 4-byte nonce counter
         encrypted = encrypt_rtpsize("aead_xchacha20_poly1305_rtpsize", key, UInt32(1), header, opus_data)
@@ -184,13 +184,13 @@
 
         # 1. Read frame from source
         source = SilenceSource(20)  # One frame
-        pcm = read_frame(source)
+        pcm = Accord.read_frame(source)
 
         @test length(pcm) == OPUS_FRAME_SIZE * 2
 
         # 2. Encode to Opus
         encoder = OpusEncoder()
-        opus_data = opus_encode(encoder, pcm)
+        opus_data = Accord.opus_encode(encoder, pcm)
 
         @test !isempty(opus_data)
 
@@ -240,7 +240,7 @@
 
         # Stop and switch sources
         player.playing = false
-        close_source(source1)
+        Accord.close_source(source1)
 
         player.playing = true
         player.source = source2
@@ -248,7 +248,7 @@
         @test player.playing == true
 
         player.playing = false
-        close_source(source2)
+        Accord.close_source(source2)
     end
 
     @testset "VoiceClient event setup" begin
@@ -342,7 +342,7 @@
 
         frames = []
         while true
-            frame = read_frame(source)
+            frame = Accord.read_frame(source)
             if frame === nothing
                 break
             end
@@ -374,8 +374,8 @@
         # 1. Source exhaustion
         source = SilenceSource(20)  # 1 frame
 
-        frame1 = read_frame(source)
-        frame2 = read_frame(source)
+        frame1 = Accord.read_frame(source)
+        frame2 = Accord.read_frame(source)
 
         @test frame1 !== nothing
         @test frame2 === nothing
@@ -388,7 +388,7 @@
         player.source = source
 
         player.playing = false
-        close_source(source)
+        Accord.close_source(source)
 
         @test player.playing == false
     end

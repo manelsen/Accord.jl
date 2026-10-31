@@ -157,7 +157,7 @@ function main()
     end
 
     # Hook into raw InteractionCreate to record event arrival time
-    on(client, InteractionCreate) do c, event
+    Accord.on(client, InteractionCreate) do c, event
         lock(interaction_times_lock) do
             interaction_times[string(event.interaction.id)] = time()
         end
@@ -197,7 +197,7 @@ function main()
 
         # Edit the deferred response
         edit_start = time()
-        respond(ctx; content="Deferred pong! (after 1s of work)")
+        Accord.respond(ctx; content="Deferred pong! (after 1s of work)")
         edit_end = time()
         @info "  /pingdefer edit" edit_ms=round((edit_end - edit_start) * 1000; digits=1)
     end
@@ -253,7 +253,7 @@ function main()
     end
 
     # ── Start ─────────────────────────────────────────────────────────────
-    start(client; blocking=false)
+    Accord.start(client; blocking=false)
     wait_until_ready(client)
 
     @info "Syncing commands to guild..."
@@ -314,7 +314,7 @@ function main()
         @warn "Failed to remove commands" exception=e
     end
 
-    stop(client)
+    Accord.stop(client)
 end
 
 main()

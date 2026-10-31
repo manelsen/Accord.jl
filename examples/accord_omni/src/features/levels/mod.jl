@@ -13,7 +13,7 @@ function install(client::Client)
     Repository.init_tables(db)
     
     # Event: XP
-    on(client, MessageCreate) do c, event
+    Accord.on(client, MessageCreate) do c, event
         if event.message.author.bot return end
         if isnothing(event.message.guild_id) return end
         
@@ -26,7 +26,7 @@ function install(client::Client)
 
     # Command: Rank
     @slash_command client "rank" "View your level and XP" function(ctx)
-        target_id = get_option(ctx, "user")
+        target_id = Accord.get_option(ctx, "user")
         target = if isnothing(target_id)
             ctx.user
         else
@@ -37,16 +37,16 @@ function install(client::Client)
         
         xp, rank_pos = Service.get_user_rank(ctx.client.state.db, Int(target.id), Int(ctx.guild_id))
         
-        embed_data = embed(
+        embed_data = Accord.embed(
             title = "Rank for $(target.username)",
             color = 0xFFD700,
             fields = [
-                embed_field("Total XP", "$xp", true),
-                embed_field("Position", "#$rank_pos", true),
-                embed_field("Level", "$(div(xp, 100))", true)
+                Accord.embed_field("Total XP", "$xp", true),
+                Accord.embed_field("Position", "#$rank_pos", true),
+                Accord.embed_field("Level", "$(div(xp, 100))", true)
             ]
         )
-        respond(ctx; embeds=[embed_data])
+        Accord.respond(ctx; embeds=[embed_data])
     end
     
     @info "Feature [Levels] loaded (v2 - Layered Architecture)."

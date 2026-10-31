@@ -4,8 +4,21 @@ CurrentModule = Accord
 
 # [Accord.jl — API Reference](@id api-reference)
 
-> Discord API v10 library for Julia.
-> Version: 0.1.0 | API Base: `https://discord.com/api/v10`
+> Discord API v10 library for Julia. API Base: `https://discord.com/api/v10`
+
+!!! note "Calling REST endpoints"
+    The REST functions below are documented with their low-level signature,
+    `f(rl::RateLimiter, args...; token, kwargs...)`. Every one of them also
+    accepts a [`Client`](@ref) in place of the rate limiter and token:
+    `Accord.get_guild_member(client, guild_id, user_id)`. That is the form to
+    use in bots; the `RateLimiter` form is the internal layer.
+
+!!! note "Exported vs public names"
+    `using Accord` exports types, events, the command macros and
+    Discord-specific functions. Generic names (`start`, `on`, `respond`,
+    `defer`, `button`, `embed`, …) and the REST endpoints are public but not
+    exported: call them as `Accord.respond(...)` or import them with
+    `using Accord: respond`.
 
 ---
 

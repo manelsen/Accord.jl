@@ -20,33 +20,33 @@ function setup_music(client::Client)
         end
         
         if isnothing(vs) || ismissing(vs.channel_id) || isnothing(vs.channel_id)
-            return respond(ctx, content="❌ You must be in a voice channel first!", flags=MsgFlagEphemeral)
+            return Accord.respond(ctx, content="❌ You must be in a voice channel first!", flags=MsgFlagEphemeral)
         end
 
-        vc = connect!(ctx.client, guild_id, vs.channel_id)
+        vc = Accord.connect!(ctx.client, guild_id, vs.channel_id)
         voice_clients[guild_id] = vc
         
-        respond(ctx, content="Joined <#$(vs.channel_id)>! 🎶")
+        Accord.respond(ctx, content="Joined <#$(vs.channel_id)>! 🎶")
     end
 
     @slash_command client "play" "Plays a stream (URL) in the voice channel" [
         @option String "url" "The URL to play" required=true
     ] do ctx
         guild_id = ctx.interaction.guild_id
-        url = get_option(ctx, "url")
+        url = Accord.get_option(ctx, "url")
         
         if !haskey(voice_clients, guild_id)
-            return respond(ctx, content="❌ I am not in a voice channel. Use `/join` first.", flags=MsgFlagEphemeral)
+            return Accord.respond(ctx, content="❌ I am not in a voice channel. Use `/join` first.", flags=MsgFlagEphemeral)
         end
 
         vc = voice_clients[guild_id]
         
         try
             source = FFmpegSource(url)
-            play!(vc, source)
-            respond(ctx, content="Now playing: $(url) 🔊")
+            Accord.play!(vc, source)
+            Accord.respond(ctx, content="Now playing: $(url) 🔊")
         catch e
-            respond(ctx, content="❌ Failed to play audio.", flags=MsgFlagEphemeral)
+            Accord.respond(ctx, content="❌ Failed to play audio.", flags=MsgFlagEphemeral)
         end
     end
 
@@ -55,11 +55,11 @@ function setup_music(client::Client)
         
         if haskey(voice_clients, guild_id)
             vc = voice_clients[guild_id]
-            disconnect!(vc)
+            Accord.disconnect!(vc)
             delete!(voice_clients, guild_id)
-            respond(ctx, content="Stopped and disconnected. 👋")
+            Accord.respond(ctx, content="Stopped and disconnected. 👋")
         else
-            respond(ctx, content="❌ I am not in a voice channel.", flags=MsgFlagEphemeral)
+            Accord.respond(ctx, content="❌ I am not in a voice channel.", flags=MsgFlagEphemeral)
         end
     end
 

@@ -59,11 +59,11 @@ client = Client(ENV["DISCORD_TOKEN"];
     intents = IntentGuilds | IntentGuildMessages | IntentMessageContent
 )
 
-on(client, ReadyEvent) do c, event
+Accord.on(client, ReadyEvent) do c, event
     @info "Online!" user=event.user.username
 end
 
-on(client, MessageCreate) do c, event
+Accord.on(client, MessageCreate) do c, event
     msg = event.message
     ismissing(msg.content) && return
     if msg.content == "!ping"
@@ -71,7 +71,7 @@ on(client, MessageCreate) do c, event
     end
 end
 
-start(client)
+Accord.start(client)
 ```
 
 !!! note "Optional vs Nullable"
@@ -85,8 +85,8 @@ start(client)
 ### Type Aliases
 
 ```julia
-const Optional{T} = Union{T, Missing}   # Field may be absent in JSON (default: missing)
-const Nullable{T} = Union{T, Nothing}   # Field may be JSON null  (default: nothing)
+const Accord.Optional{T} = Union{T, Missing}   # Field may be absent in JSON (default: missing)
+const Accord.Nullable{T} = Union{T, Nothing}   # Field may be JSON null  (default: nothing)
 ```
 
 ### Snowflake
@@ -96,7 +96,7 @@ Snowflake(value::UInt64)
 Snowflake(s::AbstractString)      # parse from string
 Snowflake(n::Integer)
 
-timestamp(s::Snowflake) -> DateTime   # creation time
+Accord.timestamp(s::Snowflake) -> DateTime   # creation time
 string(s::Snowflake) -> String        # "123456789"
 ```
 
@@ -129,8 +129,8 @@ automatically available in command handlers via `ctx.state`.
 ### Lifecycle
 
 ```julia
-start(client; blocking::Bool=true)    # Connect & run event loop
-stop(client)                           # Disconnect gracefully
+Accord.start(client; blocking::Bool=true)    # Connect & run event loop
+Accord.stop(client)                           # Disconnect gracefully
 wait_until_ready(client)               # Block until READY received
 ```
 
@@ -147,7 +147,7 @@ event, or `nothing` on timeout.
 ```julia
 # Example: quiz flow
 @slash_command client "quiz" "Start a quiz" function(ctx)
-    respond(ctx; content="What color is the sky?")
+    Accord.respond(ctx; content="What color is the sky?")
 
     event = wait_for(client, MessageCreate; timeout=30) do evt
         evt.message.author.id == ctx.user.id &&
@@ -155,11 +155,11 @@ event, or `nothing` on timeout.
     end
 
     if isnothing(event)
-        followup(ctx; content="⏰ Time's up!")
+        Accord.followup(ctx; content="⏰ Time's up!")
     elseif event.message.content == "blue"
-        followup(ctx; content="✅ Correct!")
+        Accord.followup(ctx; content="✅ Correct!")
     else
-        followup(ctx; content="❌ Wrong!")
+        Accord.followup(ctx; content="❌ Wrong!")
     end
 end
 ```
@@ -167,8 +167,8 @@ end
 ### Event Registration
 
 ```julia
-on(handler::Function, client, EventType)
-on_error(handler::Function, client)     # (client, event, error) -> nothing
+Accord.on(handler::Function, client, EventType)
+Accord.on_error(handler::Function, client)     # (client, event, error) -> nothing
 ```
 
 Handlers receive `(client, event)`. Multiple handlers per event type are supported; all run independently.
@@ -410,7 +410,7 @@ state.roles         :: Dict{Snowflake, Store{Role}}                    # guild_i
 state.emojis        :: Dict{Snowflake, Store{Emoji}}                   # guild_id → (emoji_id → Emoji)
 state.presences     :: Store{Presence}                                 # user_id → Presence
 state.voice_states  :: Dict{Snowflake, Dict{Snowflake, VoiceState}}    # guild_id → (user_id → VoiceState)
-state.me            :: Nullable{User}                                  # The bot's own User
+state.me            :: Accord.Nullable{User}                                  # The bot's own User
 ```
 
 ### Store API
@@ -724,7 +724,7 @@ The client's `command_tree` is available as `client.command_tree`. Handlers regi
 ### Command Options
 
 ```julia
-command_option(;
+Accord.command_option(;
     type::Int,           # ApplicationCommandOptionTypes.*
     name::String,
     description::String,
@@ -744,14 +744,14 @@ command_option(;
 
 ```julia
 options = [
-    command_option(
+    Accord.command_option(
         type = ApplicationCommandOptionTypes.STRING,
         name = "query",
         description = "Search query",
         required = true,
         autocomplete = true,
     ),
-    command_option(
+    Accord.command_option(
         type = ApplicationCommandOptionTypes.INTEGER,
         name = "limit",
         description = "Max results",
@@ -762,11 +762,11 @@ options = [
 ]
 
 register_command!(client.command_tree, "search", "Search something", function(ctx)
-    defer(ctx)
-    query = get_option(ctx, "query", "")
-    limit = get_option(ctx, "limit", 10)
+    Accord.defer(ctx)
+    query = Accord.get_option(ctx, "query", "")
+    limit = Accord.get_option(ctx, "limit", 10)
     # ...
-    respond(ctx; content="Found results for: $query")
+    Accord.respond(ctx; content="Found results for: $query")
 end; options)
 ```
 
@@ -788,11 +788,11 @@ end
 ### Reading Data
 
 ```julia
-get_options(ctx) -> Dict{String, Any}       # All options
-get_option(ctx, name, default=nothing)       # Single option value
-custom_id(ctx) -> String                     # For components
-selected_values(ctx) -> Vector{String}       # For select menus
-modal_values(ctx) -> Dict{String, String}    # For modals
+Accord.get_options(ctx) -> Dict{String, Any}       # All options
+Accord.get_option(ctx, name, default=nothing)       # Single option value
+Accord.custom_id(ctx) -> String                     # For components
+Accord.selected_values(ctx) -> Vector{String}       # For select menus
+Accord.modal_values(ctx) -> Dict{String, String}    # For modals
 ```
 
 ### Property Accessors
@@ -808,10 +808,10 @@ ctx.state     # User-injected state from Client(; state=...)
 ### Responding
 
 ```julia
-respond(ctx; content="", embeds=[], components=[], ephemeral=false, tts=false, files=nothing)
-defer(ctx; ephemeral=false)                  # "Thinking..." indicator
+Accord.respond(ctx; content="", embeds=[], components=[], ephemeral=false, tts=false, files=nothing)
+Accord.defer(ctx; ephemeral=false)                  # "Thinking..." indicator
 edit_response(ctx; content=nothing, embeds=nothing, components=nothing, files=nothing)
-followup(ctx; content="", embeds=[], components=[], ephemeral=false, files=nothing)
+Accord.followup(ctx; content="", embeds=[], components=[], ephemeral=false, files=nothing)
 show_modal(ctx; title::String, custom_id::String, components::Vector)
 ```
 
@@ -829,13 +829,13 @@ show_modal(ctx; title::String, custom_id::String, components::Vector)
 ### Layout
 
 ```julia
-action_row(components::Vector) -> Dict   # Container for buttons / selects
+Accord.action_row(components::Vector) -> Dict   # Container for buttons / selects
 ```
 
 ### Buttons
 
 ```julia
-button(;
+Accord.button(;
     label = "",
     custom_id = "",
     style = ButtonStyles.PRIMARY,   # PRIMARY | SECONDARY | SUCCESS | DANGER | LINK | PREMIUM
@@ -849,8 +849,8 @@ button(;
 ### Select Menus
 
 ```julia
-string_select(; custom_id, options::Vector, placeholder="", min_values=1, max_values=1, disabled=false) -> Dict
-select_option(; label, value, description="", emoji=nothing, default=false) -> Dict
+Accord.string_select(; custom_id, options::Vector, placeholder="", min_values=1, max_values=1, disabled=false) -> Dict
+Accord.select_option(; label, value, description="", emoji=nothing, default=false) -> Dict
 
 user_select(; custom_id, placeholder="", min_values=1, max_values=1, disabled=false) -> Dict
 role_select(; custom_id, placeholder="", min_values=1, max_values=1, disabled=false) -> Dict
@@ -861,7 +861,7 @@ channel_select(; custom_id, channel_types=Int[], placeholder="", min_values=1, m
 ### Text Input (for Modals)
 
 ```julia
-text_input(;
+Accord.text_input(;
     custom_id,
     label,
     style = TextInputStyles.SHORT,   # SHORT | PARAGRAPH
@@ -876,7 +876,7 @@ text_input(;
 ### Embeds
 
 ```julia
-embed(;
+Accord.embed(;
     title = "",
     description = "",
     url = "",
@@ -895,16 +895,16 @@ embed(;
 ```julia
 # Buttons
 components = [
-    action_row([
-        button(label="Confirm", custom_id="confirm", style=ButtonStyles.SUCCESS),
-        button(label="Cancel",  custom_id="cancel",  style=ButtonStyles.DANGER),
+    Accord.action_row([
+        Accord.button(label="Confirm", custom_id="confirm", style=ButtonStyles.SUCCESS),
+        Accord.button(label="Cancel",  custom_id="cancel",  style=ButtonStyles.DANGER),
     ])
 ]
-respond(ctx; content="Choose:", components)
+Accord.respond(ctx; content="Choose:", components)
 
 # Handle button click
 register_component!(client.command_tree, "confirm", function(ctx)
-    respond(ctx; content="Confirmed!", ephemeral=true)
+    Accord.respond(ctx; content="Confirmed!", ephemeral=true)
 end)
 
 # Modal
@@ -912,13 +912,13 @@ show_modal(ctx;
     title = "Feedback",
     custom_id = "feedback_modal",
     components = [
-        action_row([text_input(custom_id="msg", label="Your message", style=TextInputStyles.PARAGRAPH)])
+        Accord.action_row([Accord.text_input(custom_id="msg", label="Your message", style=TextInputStyles.PARAGRAPH)])
     ]
 )
 
 register_modal!(client.command_tree, "feedback_modal", function(ctx)
-    vals = modal_values(ctx)
-    respond(ctx; content="Thanks! You said: $(vals["msg"])")
+    vals = Accord.modal_values(ctx)
+    Accord.respond(ctx; content="Thanks! You said: $(vals["msg"])")
 end)
 ```
 
@@ -930,8 +930,8 @@ Convenience macros that register handlers on `client.command_tree`:
 
 ```julia
 # Pre-execution checks (guards) — stack before @slash_command
-@check has_permissions(PermManageGuild)
-@check is_owner()
+@check Accord.has_permissions(PermManageGuild)
+@check Accord.is_owner()
 
 # Slash command (global)
 @slash_command client "name" "description" handler
@@ -965,10 +965,10 @@ responded directly).
 
 ```julia
 # Example: Admin + guild-only command
-@check is_in_guild()
-@check has_permissions(:ADMINISTRATOR)
+@check Accord.is_in_guild()
+@check Accord.has_permissions(:ADMINISTRATOR)
 @slash_command client "config" "Server configuration" function(ctx)
-    respond(ctx; content="Config panel", ephemeral=true)
+    Accord.respond(ctx; content="Config panel", ephemeral=true)
 end
 ```
 
@@ -1027,10 +1027,10 @@ end
 
 ```julia
 vc = VoiceClient(client, guild_id, channel_id)
-connect!(vc)       # Full handshake: gateway → voice WS → UDP → ready
-disconnect!(vc)    # Close everything and leave channel
-play!(vc, source)  # Play an AbstractAudioSource -> AudioPlayer
-stop!(vc)          # Stop playback + send not-speaking
+Accord.connect!(vc)       # Full handshake: gateway → voice WS → UDP → ready
+Accord.disconnect!(vc)    # Close everything and leave channel
+Accord.play!(vc, source)  # Play an AbstractAudioSource -> AudioPlayer
+Accord.stop!(vc)          # Stop playback + send not-speaking
 ```
 
 ### Connection Flow
@@ -1078,8 +1078,8 @@ send_select_protocol(session, our_ip, our_port, mode)
 ```julia
 abstract type AbstractAudioSource end
 
-read_frame(source) -> Union{Vector{Int16}, Nothing}   # 960 × channels Int16 samples, or nothing when done
-close_source(source)                                    # Cleanup
+Accord.read_frame(source) -> Union{Vector{Int16}, Nothing}   # 960 × channels Int16 samples, or nothing when done
+Accord.close_source(source)                                    # Cleanup
 ```
 
 ### Built-in Sources
@@ -1110,11 +1110,11 @@ mutable struct AudioPlayer
     task::Nullable{Task}
 end
 
-play!(player, source, send_fn)   # send_fn(opus_data::Vector{UInt8})
-stop!(player)
-pause!(player)
-resume!(player)
-is_playing(player) -> Bool
+Accord.play!(player, source, send_fn)   # send_fn(opus_data::Vector{UInt8})
+Accord.stop!(player)
+Accord.pause!(player)
+Accord.resume!(player)
+Accord.is_playing(player) -> Bool
 ```
 
 Volume is applied to PCM before Opus encoding. The playback loop maintains a 20ms cadence per frame.
@@ -1150,11 +1150,11 @@ OPUS_MAX_PACKET_SIZE   = 4000
 OpusEncoder(sample_rate=48000, channels=2, application=OPUS_APPLICATION_AUDIO)
 OpusDecoder(sample_rate=48000, channels=2)
 
-opus_encode(encoder, pcm::Vector{Int16}) -> Vector{UInt8}
-opus_decode(decoder, data::Vector{UInt8}, frame_size=960) -> Vector{Int16}
+Accord.opus_encode(encoder, pcm::Vector{Int16}) -> Vector{UInt8}
+Accord.opus_decode(decoder, data::Vector{UInt8}, frame_size=960) -> Vector{Int16}
 
-set_bitrate!(encoder, bitrate::Int)
-set_signal!(encoder, signal::Int)   # OPUS_SIGNAL_MUSIC=3002 or OPUS_SIGNAL_VOICE=3001
+Accord.set_bitrate!(encoder, bitrate::Int)
+Accord.set_signal!(encoder, signal::Int)   # OPUS_SIGNAL_MUSIC=3002 or OPUS_SIGNAL_VOICE=3001
 ```
 
 Application modes: `OPUS_APPLICATION_AUDIO=2049`, `OPUS_APPLICATION_VOIP=2048`, `OPUS_APPLICATION_LOWDELAY=2051`.
@@ -1251,7 +1251,7 @@ struct Snowflake
     value::UInt64
 end
 # Constructors: Snowflake(::UInt64), Snowflake(::AbstractString), Snowflake(::Integer)
-# Methods: timestamp(s), string(s), ==, <, hash
+# Methods: Accord.timestamp(s), string(s), ==, <, hash
 ```
 
 ### User
@@ -2016,7 +2016,7 @@ compute_channel_permissions(
 perms = compute_base_permissions(member.roles, guild_roles, guild.owner_id, user.id)
 channel_perms = compute_channel_permissions(perms, member.roles, channel.permission_overwrites, guild.id, user.id)
 
-if has_flag(channel_perms, PermSendMessages)
+if Accord.has_flag(channel_perms, PermSendMessages)
     # User can send messages
 end
 ```

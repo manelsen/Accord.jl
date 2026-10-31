@@ -18,7 +18,7 @@ function run(token::String)
     )
 
     # 2. Setup core event handlers
-    on(client, ReadyEvent) do c, event
+    Accord.on(client, ReadyEvent) do c, event
         println("Bot is ready! Logged in as: \$(event.user.username)")
         # Synchronize application commands with Discord
         sync_commands!(c, c.command_tree)
@@ -29,7 +29,7 @@ function run(token::String)
 
     # 3. Start the gateway connection
     println("Starting Accord.jl client...")
-    start(client)
+    Accord.start(client)
     
     # Wait indefinitely (to keep the main thread alive)
     wait(client.ready)
