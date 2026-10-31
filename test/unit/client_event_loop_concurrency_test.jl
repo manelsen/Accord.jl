@@ -101,6 +101,6 @@
         dt = time() - t0
 
         @test isnothing(result)
-        @test dt < 1.0
+        @test dt < 5.0   # well under the 10s timeout; slack for compilation
     end
 end

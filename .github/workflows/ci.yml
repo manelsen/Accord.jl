@@ -49,8 +49,7 @@ jobs:
         env:
           JULIA_PKG_SERVER: ""
           ACCORD_TEST_WORKERS: ${{ matrix.os == 'windows-latest' && '0' || '6' }}
-        shell: bash
-        run: .github/scripts/annotate_failure.sh julia --project -e 'using Pkg; Pkg.test(test_args=["default"])'
+        run: julia --project -e 'using Pkg; Pkg.test(test_args=["default"])'
       
       - uses: julia-actions/julia-processcoverage@v1
         if: matrix.os == 'ubuntu-latest'
@@ -118,5 +117,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
-        shell: bash
-        run: .github/scripts/annotate_failure.sh julia --project=docs/ docs/make.jl
+        run: julia --project=docs/ docs/make.jl
