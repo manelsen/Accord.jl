@@ -89,7 +89,7 @@ jobs:
         run: |
           cd "$RUNNER_TEMP/libdave/cpp"
           ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
-          "$GITHUB_WORKSPACE/.github/scripts/annotate_failure.sh" make shared
+          make shared
           mkdir -p "$RUNNER_TEMP/libdave-dist"
           find build -name 'libdave.so*' -exec cp -a {} "$RUNNER_TEMP/libdave-dist/" \;
           ls -la "$RUNNER_TEMP/libdave-dist"
@@ -109,8 +109,7 @@ jobs:
           ACCORD_REQUIRE_LIBDAVE: "1"
           ACCORD_TEST_WORKERS: "0"
           JULIA_NUM_THREADS: "4,1"
-        shell: bash
-        run: .github/scripts/annotate_failure.sh julia --project -e 'using Pkg; Pkg.test(test_args=["dave"])'
+        run: julia --project -e 'using Pkg; Pkg.test(test_args=["dave"])'
 
   cli:
     name: AccordCLI
@@ -145,8 +144,7 @@ jobs:
       - name: Run Aqua + JET analysis
         env:
           JULIA_PKG_SERVER: ""
-        shell: bash
-        run: .github/scripts/annotate_failure.sh julia --project -e 'using Pkg; Pkg.test(test_args=["quality"])'
+        run: julia --project -e 'using Pkg; Pkg.test(test_args=["quality"])'
 
   docs:
     name: Documentation
