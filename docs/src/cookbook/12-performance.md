@@ -17,16 +17,16 @@ Julia's JIT compiler generates fast code when types are predictable. The [`get_o
 ```julia
 # Slow: compiler doesn't know the type
 @slash_command client "compute" "Do math" function(ctx)
-    x = get_option(ctx, "x", 0)      # returns Any
-    y = get_option(ctx, "y", 0)      # returns Any
-    respond(ctx; content="Result: $(x + y)")  # dynamic dispatch
+    x = Accord.get_option(ctx, "x", 0)      # returns Any
+    y = Accord.get_option(ctx, "y", 0)      # returns Any
+    Accord.respond(ctx; content="Result: $(x + y)")  # dynamic dispatch
 end
 
 # Fast: annotate types
 @slash_command client "compute" "Do math" function(ctx)
-    x = get_option(ctx, "x", 0)::Number
-    y = get_option(ctx, "y", 0)::Number
-    respond(ctx; content="Result: $(x + y)")  # static dispatch
+    x = Accord.get_option(ctx, "x", 0)::Number
+    y = Accord.get_option(ctx, "y", 0)::Number
+    Accord.respond(ctx; content="Result: $(x + y)")  # static dispatch
 end
 ```
 
@@ -34,8 +34,8 @@ end
 
 ```julia
 function handle_compute(ctx)
-    x = get_option(ctx, "x", 0)::Number
-    y = get_option(ctx, "y", 0)::Number
+    x = Accord.get_option(ctx, "x", 0)::Number
+    y = Accord.get_option(ctx, "y", 0)::Number
     return x + y
 end
 
@@ -58,10 +58,10 @@ tinf = @snoopi_deep begin
     # Simulate typical operations
     client = Client("Bot fake_token"; intents=IntentGuilds)
     tree = CommandTree()
-    embed(title="Test", color=0x5865F2)
-    button(label="Test", custom_id="test")
-    action_row([button(label="X", custom_id="x")])
-    command_option(type=3, name="test", description="test")
+    Accord.embed(title="Test", color=0x5865F2)
+    Accord.button(label="Test", custom_id="test")
+    Accord.action_row([Accord.button(label="X", custom_id="x")])
+    Accord.command_option(type=3, name="test", description="test")
 end
 
 # Generate precompile statements
@@ -98,7 +98,7 @@ Startup goes from ~10s to ~1s.
 ```julia
 # @async — runs on the same thread, cooperative multitasking
 # Good for I/O-bound work (API calls, file reads)
-on(client, MessageCreate) do c, event
+Accord.on(client, MessageCreate) do c, event
     @async begin
         result = some_api_call()  # yields while waiting
         create_message(c, event.message.channel_id; content=result)
@@ -107,7 +107,7 @@ end
 
 # Threads.@spawn — runs on a different thread
 # Good for CPU-bound work (computation, image processing)
-on(client, MessageCreate) do c, event
+Accord.on(client, MessageCreate) do c, event
     Threads.@spawn begin
         result = expensive_computation()  # runs in parallel
         create_message(c, event.message.channel_id; content=string(result))
@@ -128,13 +128,13 @@ julia --threads=4 --project=. bin/run.jl
     Avoid global mutable state. Global variables have unpredictable types, forcing the compiler to use dynamic dispatch. Instead, inject state through `Client(; state=...)` or use `const` globals with concrete types.
 
 # BAD: blocks the event loop
-on(client, MessageCreate) do c, event
+Accord.on(client, MessageCreate) do c, event
     sleep(10)  # nothing else processes for 10 seconds!
     create_message(c, event.message.channel_id; content="Done")
 end
 
 # GOOD: defer to a task
-on(client, MessageCreate) do c, event
+Accord.on(client, MessageCreate) do c, event
     @async begin
         sleep(10)
         create_message(c, event.message.channel_id; content="Done")
@@ -161,7 +161,7 @@ const work_queue = Channel{Tuple{Client, Snowflake, String}}(100)
 end
 
 # Handler just enqueues
-on(client, MessageCreate) do c, event
+Accord.on(client, MessageCreate) do c, event
     msg = event.message
     ismissing(msg.content) && return
     startswith(msg.content, "!process ") || return
@@ -216,13 +216,13 @@ end
 
 ```julia
 # In REPL with non-blocking mode
-start(client; blocking=false)
+Accord.start(client; blocking=false)
 
 # Time a specific operation
 @time create_message(client, channel_id; content="test")
 # 0.052 seconds (423 allocations: 28.5 KiB)
 
-@allocated embed(title="Test", color=0x5865F2)
+@allocated Accord.embed(title="Test", color=0x5865F2)
 # 1248
 ```
 
@@ -234,7 +234,7 @@ using Profile
 # Profile event handling
 Profile.@profile begin
     for i in 1:1000
-        embed(title="Test $i", color=i, fields=[
+        Accord.embed(title="Test $i", color=i, fields=[
             Dict("name" => "Field", "value" => "Value")
         ])
     end
@@ -249,7 +249,7 @@ Profile.print(mincount=10)
 # Find where allocations happen
 Profile.Allocs.@profile sample_rate=1.0 begin
     for i in 1:100
-        embed(title="Test", fields=[
+        Accord.embed(title="Test", fields=[
             Dict("name" => "N", "value" => string(i))
         ])
     end
@@ -267,8 +267,8 @@ for id in message_ids
 end
 
 # Use bulk delete (1 API call):
-bulk_delete_messages(client.ratelimiter, channel_id;
-    token=client.token, message_ids=message_ids)
+Accord.bulk_delete_messages(client, channel_id;
+    message_ids=message_ids)
 
 # Instead of N individual command creates:
 # Use sync_commands! which calls bulk_overwrite_global_application_commands

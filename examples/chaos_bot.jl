@@ -25,18 +25,18 @@ function run_chaos(test_case)
         if test_case == "missing_token"
             c = Client("")
             # Non-blocking start so we don't hang on fatal error
-            start(c; blocking=false)
+            Accord.start(c; blocking=false)
             sleep(5) # Wait for gateway connection attempt
         elseif test_case == "invalid_token"
             c = Client("Bot my token has spaces")
-            start(c; blocking=false)
+            Accord.start(c; blocking=false)
             sleep(2)
         elseif test_case == "sharding_error"
             # Force invalid sharding
             c = Client(TEST_TOKEN)
             Accord.start_shard(Accord.ShardInfo(0, 500, Channel{Any}(1)), TEST_TOKEN, UInt32(0)) 
             # Note: This is a bit harder to trigger purely via Client API without mocking, 
-            # but usually it throws ArgumentError inside start() if we had validation there.
+            # but usually it throws ArgumentError inside Accord.start() if we had validation there.
             # For now mimicking the error via manual throw to test the matcher:
             throw(ArgumentError("Invalid shard configuration: Sharding required for >2500 guilds"))
         elseif test_case == "unknown_channel"

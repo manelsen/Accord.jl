@@ -83,11 +83,11 @@ function main()
 
     # Register slash command handler BEFORE start
     @slash_command client guild_sf "smoketest" "Accord.jl smoke test" function(ctx)
-        respond(ctx; content="Smoke test response at $(Dates.now())")
+        Accord.respond(ctx; content="Smoke test response at $(Dates.now())")
         put!(slash_received, true)
     end
 
-    start(client; blocking=false)
+    Accord.start(client; blocking=false)
     wait_until_ready(client)
     @info "Connected! Bot is ready."
 
@@ -139,7 +139,7 @@ function main()
     # ── Test 5: Reply to a message ────────────────────────────────────────
     local msg3
     @smoke "Reply to message" begin
-        msg3 = reply(client, msg1; content="[Smoke Test] Reply")
+        msg3 = Accord.reply(client, msg1; content="[Smoke Test] Reply")
         @assert msg3 isa Message
         @assert !ismissing(msg3.message_reference)
     end
@@ -222,14 +222,14 @@ function main()
     @info "Removing smoke test slash command..."
     try
         # Overwrite with empty to remove
-        bulk_overwrite_guild_application_commands(client.ratelimiter, client.application_id, guild_sf;
-            token=client.token, body=Dict{String,Any}[])
+        Accord.bulk_overwrite_guild_application_commands(client, client.application_id, guild_sf;
+            body=Dict{String,Any}[])
     catch e
         @warn "Failed to clean up slash command" exception=e
     end
 
     # ── Report ────────────────────────────────────────────────────────────
-    stop(client)
+    Accord.stop(client)
 
     println("\n" * "="^60)
     println("SMOKE TEST RESULTS")

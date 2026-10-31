@@ -14,7 +14,7 @@
         data = zeros(Int16, OPUS_FRAME_SIZE * 2)
         src = PCMSource(data)
 
-        frame = read_frame(src)
+        frame = Accord.read_frame(src)
         @test length(frame) == OPUS_FRAME_SIZE * 2
         @test all(iszero, frame)
         @test src.position == OPUS_FRAME_SIZE * 2 + 1
@@ -24,10 +24,10 @@
         data = zeros(Int16, OPUS_FRAME_SIZE * 4 * 2)  # 4 frames
         src = PCMSource(data)
 
-        frame1 = read_frame(src)
-        frame2 = read_frame(src)
-        frame3 = read_frame(src)
-        frame4 = read_frame(src)
+        frame1 = Accord.read_frame(src)
+        frame2 = Accord.read_frame(src)
+        frame3 = Accord.read_frame(src)
+        frame4 = Accord.read_frame(src)
 
         @test length(frame1) == OPUS_FRAME_SIZE * 2
         @test length(frame2) == OPUS_FRAME_SIZE * 2
@@ -39,10 +39,10 @@
         data = zeros(Int16, OPUS_FRAME_SIZE * 2)
         src = PCMSource(data)
 
-        frame1 = read_frame(src)
+        frame1 = Accord.read_frame(src)
         @test frame1 !== nothing
 
-        frame2 = read_frame(src)
+        frame2 = Accord.read_frame(src)
         @test frame2 === nothing  # Exhausted
     end
 
@@ -52,7 +52,7 @@
 
         @test src.channels == 1
 
-        frame = read_frame(src)
+        frame = Accord.read_frame(src)
         @test length(frame) == OPUS_FRAME_SIZE * 1
     end
 
@@ -60,7 +60,7 @@
         data = Int16[1:OPUS_FRAME_SIZE*2;]
         src = PCMSource(data)
 
-        frame = read_frame(src)
+        frame = Accord.read_frame(src)
         @test frame == data
     end
 
@@ -68,7 +68,7 @@
         data = zeros(Int16, OPUS_FRAME_SIZE * 2 - 1)  # One sample short
         src = PCMSource(data)
 
-        frame = read_frame(src)
+        frame = Accord.read_frame(src)
         @test frame === nothing  # Not enough data for full frame
     end
 
@@ -76,7 +76,7 @@
         data = zeros(Int16, OPUS_FRAME_SIZE * 2)
         src = PCMSource(data)
 
-        close_source(src)  # Should not throw
+        Accord.close_source(src)  # Should not throw
         @test true
     end
 
@@ -90,7 +90,7 @@
     @testset "SilenceSource read frame" begin
         src = SilenceSource(20)  # 20ms = 1 frame
 
-        frame = read_frame(src)
+        frame = Accord.read_frame(src)
         @test length(frame) == OPUS_FRAME_SIZE * 2
         @test all(iszero, frame)
         @test src.frames_remaining == 0
@@ -99,9 +99,9 @@
     @testset "SilenceSource multiple frames" begin
         src = SilenceSource(60)  # 60ms = 3 frames
 
-        frame1 = read_frame(src)
-        frame2 = read_frame(src)
-        frame3 = read_frame(src)
+        frame1 = Accord.read_frame(src)
+        frame2 = Accord.read_frame(src)
+        frame3 = Accord.read_frame(src)
 
         @test all(iszero, frame1)
         @test all(iszero, frame2)
@@ -112,10 +112,10 @@
     @testset "SilenceSource exhausts" begin
         src = SilenceSource(20)
 
-        frame1 = read_frame(src)
+        frame1 = Accord.read_frame(src)
         @test frame1 !== nothing
 
-        frame2 = read_frame(src)
+        frame2 = Accord.read_frame(src)
         @test frame2 === nothing  # Exhausted
     end
 
@@ -124,21 +124,21 @@
 
         @test src.channels == 1
 
-        frame = read_frame(src)
+        frame = Accord.read_frame(src)
         @test length(frame) == OPUS_FRAME_SIZE * 1
     end
 
     @testset "SilenceSource close_source" begin
         src = SilenceSource(20)
 
-        close_source(src)  # Should not throw
+        Accord.close_source(src)  # Should not throw
         @test true
     end
 
     @testset "SilenceSource zero duration" begin
         src = SilenceSource(0)
 
-        frame = read_frame(src)
+        frame = Accord.read_frame(src)
         @test frame === nothing  # No frames
     end
 
@@ -151,11 +151,11 @@
             src = FileSource(path)
             @test src.channels == 2
 
-            frame = read_frame(src)
+            frame = Accord.read_frame(src)
             @test length(frame) == OPUS_FRAME_SIZE * 2
             @test all(iszero, frame)
 
-            close_source(src)
+            Accord.close_source(src)
         end
     end
 
@@ -167,13 +167,13 @@
 
             src = FileSource(path)
 
-            frame1 = read_frame(src)
+            frame1 = Accord.read_frame(src)
             @test frame1 !== nothing
 
-            frame2 = read_frame(src)
+            frame2 = Accord.read_frame(src)
             @test frame2 === nothing  # Exhausted
 
-            close_source(src)
+            Accord.close_source(src)
         end
     end
 
@@ -184,11 +184,11 @@
             close(io)
 
             src = FileSource(path)
-            frame = read_frame(src)
+            frame = Accord.read_frame(src)
 
             @test frame == pcm_data
 
-            close_source(src)
+            Accord.close_source(src)
         end
     end
 
@@ -201,10 +201,10 @@
             src = FileSource(path; channels=1)
             @test src.channels == 1
 
-            frame = read_frame(src)
+            frame = Accord.read_frame(src)
             @test length(frame) == OPUS_FRAME_SIZE * 1
 
-            close_source(src)
+            Accord.close_source(src)
         end
     end
 
@@ -216,10 +216,10 @@
 
             src = FileSource(path)
 
-            frame = read_frame(src)
+            frame = Accord.read_frame(src)
             @test frame === nothing  # Not enough data
 
-            close_source(src)
+            Accord.close_source(src)
         end
     end
 
@@ -230,7 +230,7 @@
             close(io)
 
             src = FileSource(path)
-            close_source(src)
+            Accord.close_source(src)
 
             @test !isopen(src.io)
         end
@@ -259,7 +259,7 @@
                 src = FFmpegSource(path)
                 @test src.channels == 2
 
-                close_source(src)
+                Accord.close_source(src)
             end
         catch e
             # ffmpeg not available, skip test
@@ -287,7 +287,7 @@
             src = FileSource(path)
             @test src isa AbstractAudioSource
 
-            close_source(src)
+            Accord.close_source(src)
         end
     end
 
@@ -297,31 +297,31 @@
         src = PCMSource(data)
 
         for i in 1:num_frames
-            frame = read_frame(src)
+            frame = Accord.read_frame(src)
             @test length(frame) == OPUS_FRAME_SIZE * 2
             @test all(iszero, frame)
         end
 
-        @test read_frame(src) === nothing
+        @test Accord.read_frame(src) === nothing
     end
 
     @testset "SilenceSource with large duration" begin
         src = SilenceSource(2000)  # 2000ms = 100 frames
 
         for i in 1:100
-            frame = read_frame(src)
+            frame = Accord.read_frame(src)
             @test length(frame) == OPUS_FRAME_SIZE * 2
             @test all(iszero, frame)
         end
 
-        @test read_frame(src) === nothing
+        @test Accord.read_frame(src) === nothing
     end
 
     @testset "PCMSource preserves original data" begin
         original_data = Int16[1:OPUS_FRAME_SIZE*2;]
         src = PCMSource(copy(original_data))
 
-        read_frame(src)
+        Accord.read_frame(src)
 
         @test src.data == original_data
     end
@@ -331,7 +331,7 @@
         data = zeros(Int16, OPUS_FRAME_SIZE)
         src = PCMSource(data; channels=1)
 
-        frame = read_frame(src)
+        frame = Accord.read_frame(src)
         @test length(frame) == OPUS_FRAME_SIZE
         @test all(iszero, frame)
     end

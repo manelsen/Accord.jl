@@ -31,7 +31,7 @@ client = Client(get(ENV, "DISCORD_TOKEN", "YOUR_TOKEN");
 )
 
 # ─── 4. Lifecycle Events ──────────────────────────────────────────────
-on(client, ReadyEvent) do c, event
+Accord.on(client, ReadyEvent) do c, event
     @info "Bot connected as $(event.user.username)"
     # Sync commands globally
     sync_commands!(c, c.command_tree)
@@ -42,33 +42,33 @@ end
     ctx.state.commands_run += 1
     uptime = canonicalize(Dates.CompoundPeriod(now() - ctx.state.start_time))
     
-    embed_data = embed(
+    embed_data = Accord.embed(
         title = "📊 Accord.jl Bot Stats",
         color = 0x5865F2,
         fields = [
-            embed_field("Uptime", "$uptime", true),
-            embed_field("Commands", "$(ctx.state.commands_run)", true),
-            embed_field("Feedback", "$(ctx.state.feedback_count)", true)
+            Accord.embed_field("Uptime", "$uptime", true),
+            Accord.embed_field("Commands", "$(ctx.state.commands_run)", true),
+            Accord.embed_field("Feedback", "$(ctx.state.feedback_count)", true)
         ],
-        footer = embed_footer("Powered by Julia")
+        footer = Accord.embed_footer("Powered by Julia")
     )
     
-    respond(ctx; embeds=[embed_data])
+    Accord.respond(ctx; embeds=[embed_data])
 end
 
 # ─── 6. Context Commands (Right Click) ────────────────────────────────
 @user_command client "Member Info" function(ctx)
-    target_user = target(ctx) # Gets the user that was clicked
-    respond(ctx; content="You selected **$(target_user.username)** (ID: $(target_user.id))", ephemeral=true)
+    target_user = Accord.target(ctx) # Gets the user that was clicked
+    Accord.respond(ctx; content="You selected **$(target_user.username)** (ID: $(target_user.id))", ephemeral=true)
 end
 
 # ─── 7. Components and Modals ─────────────────────────────────────────────────
 @slash_command client "feedback" "Sends feedback to the developers" function(ctx)
     # Shows a button to open the Modal
-    btn = button(ButtonStyles.PRIMARY, "open_feedback"; label="Send Feedback")
-    row = action_row([btn])
+    btn = Accord.button(ButtonStyles.PRIMARY, "open_feedback"; label="Send Feedback")
+    row = Accord.action_row([btn])
     
-    respond(ctx; 
+    Accord.respond(ctx; 
         content="Click the button below to open the feedback form.",
         components=[row],
         ephemeral=true
@@ -79,34 +79,34 @@ end
 @button_handler client "open_feedback" function(ctx)
     # Opens a form (Modal)
     show_modal(ctx, "modal_feedback", "Feedback Form", [
-        action_row([
-            text_input("fb_title", "Subject"; placeholder="E.g.: Bug in the stats command")
+        Accord.action_row([
+            Accord.text_input("fb_title", "Subject"; placeholder="E.g.: Bug in the stats command")
         ]),
-        action_row([
-            text_input("fb_body", "Message"; style=TextInputStyles.PARAGRAPH)
+        Accord.action_row([
+            Accord.text_input("fb_body", "Message"; style=TextInputStyles.PARAGRAPH)
         ])
     ])
 end
 
 # Modal Handler
 @modal_handler client "modal_feedback" function(ctx)
-    vals = modal_values(ctx) # Dictionary with inputs
+    vals = Accord.modal_values(ctx) # Dictionary with inputs
     ctx.state.feedback_count += 1
     
     @info "Feedback received" title=vals["fb_title"] body=vals["fb_body"]
     
-    respond(ctx; content="Thank you for the feedback! Registered as #$(ctx.state.feedback_count)", ephemeral=true)
+    Accord.respond(ctx; content="Thank you for the feedback! Registered as #$(ctx.state.feedback_count)", ephemeral=true)
 end
 
 # ─── 8. Restricted Commands (Checks) ──────────────────────────────────────────
-@check is_owner() # Only the bot owner
+@check Accord.is_owner() # Only the bot owner
 @slash_command client "shutdown" "Remotely shuts down the bot" function(ctx)
-    respond(ctx; content="Shutting down processes... Bye!")
+    Accord.respond(ctx; content="Shutting down processes... Bye!")
     sleep(1.0)
-    stop(ctx.client)
+    Accord.stop(ctx.client)
     exit(0)
 end
 
 # ─── 9. Execution ─────────────────────────────────────────────────────────────
 @info "Starting bot..."
-start(client)
+Accord.start(client)

@@ -27,9 +27,9 @@ create_message(client, channel_id;
 The easiest way to build embeds is using the [`@embed`](@ref) macro, which provides a declarative DSL:
 
 ```julia
-e = @embed begin
+e = Accord.@embed begin
     title "My Embed"
-    description "A rich embed built with the @embed macro."
+    description "A rich embed built with the Accord.@embed macro."
     url "https://github.com/manelsen/Accord.jl"
     color :blurple
     field "Performance" "283k msg/s" inline=true
@@ -44,7 +44,7 @@ create_message(client, channel_id; embeds=[e])
 Alternatively, the [`embed`](@ref)`()` helper returns a `Dict` if you prefer a standard function call:
 
 ```julia
-e = embed(
+e = Accord.embed(
     title="Legacy Style",
     description="Using the functional helper.",
     color=0x5865F2
@@ -73,9 +73,9 @@ The `@embed` macro supports symbols for common Discord colors:
 
 ```julia
 embeds = [
-    embed(title="Embed 1", description="First", color=0xED4245),
-    embed(title="Embed 2", description="Second", color=0x57F287),
-    embed(title="Embed 3", description="Third", color=0x5865F2),
+    Accord.embed(title="Embed 1", description="First", color=0xED4245),
+    Accord.embed(title="Embed 2", description="Second", color=0x57F287),
+    Accord.embed(title="Embed 3", description="Third", color=0x5865F2),
 ]
 
 create_message(client, channel_id; embeds=embeds)
@@ -103,7 +103,7 @@ const REACTION_ROLES = Dict(
 
 const ROLE_MESSAGE_ID = [`Snowflake`](@ref)(444444444444444444)  # the message to watch
 
-on(client, [`MessageReactionAdd`](@ref)) do c, event
+Accord.on(client, [`MessageReactionAdd`](@ref)) do c, event
     event.message_id != ROLE_MESSAGE_ID && return
     ismissing(event.member) && return
 
@@ -115,12 +115,11 @@ on(client, [`MessageReactionAdd`](@ref)) do c, event
     isnothing(role_id) && return
     ismissing(event.guild_id) && return
 
-    add_guild_member_role(c.ratelimiter, event.guild_id, event.member.user.id, role_id;
-        token=c.token)
+    Accord.add_guild_member_role(c, event.guild_id, event.member.user.id, role_id)
     @info "Added role" role=role_id user=event.member.user.id
 end
 
-on(client, [`MessageReactionRemove`](@ref)) do c, event
+Accord.on(client, [`MessageReactionRemove`](@ref)) do c, event
     event.message_id != ROLE_MESSAGE_ID && return
 
     emoji_name = event.emoji.name
@@ -130,8 +129,7 @@ on(client, [`MessageReactionRemove`](@ref)) do c, event
     isnothing(role_id) && return
     ismissing(event.guild_id) && return
 
-    remove_guild_member_role(c.ratelimiter, event.guild_id, event.user_id, role_id;
-        token=c.token)
+    Accord.remove_guild_member_role(c, event.guild_id, event.user_id, role_id)
     @info "Removed role" role=role_id user=event.user_id
 end
 ```
@@ -142,7 +140,7 @@ end
 # Edit a message
 edit_message(client, channel_id, message_id;
     content="Updated content!",
-    embeds=[embed(title="Updated", color=0x57F287)]
+    embeds=[Accord.embed(title="Updated", color=0x57F287)]
 )
 
 # Delete a single message
@@ -150,8 +148,8 @@ delete_message(client, channel_id, message_id)
 
 # Bulk delete messages
 message_ids = [Snowflake(id1), Snowflake(id2), Snowflake(id3)]
-bulk_delete_messages(client.ratelimiter, channel_id;
-    token=client.token, message_ids=message_ids)
+Accord.bulk_delete_messages(client, channel_id;
+    message_ids=message_ids)
 
 !!! warning "bulk_delete_messages Constraints"
     - Must delete between **2 and 100 messages** at a time
@@ -193,7 +191,7 @@ Reference an attached image inside an embed using `attachment://filename`:
 
 ```julia
 img_data = read("banner.png")
-e = embed(
+e = Accord.embed(
     title="Welcome!",
     image=Dict("url" => "attachment://banner.png"),
     color=0x5865F2,
@@ -209,7 +207,7 @@ create_message(client, channel_id;
 ```julia
 using Dates
 
-on(client, MessageCreate) do c, event
+Accord.on(client, MessageCreate) do c, event
     msg = event.message
     ismissing(msg.author) && return
     ismissing(msg.content) && return
@@ -221,7 +219,7 @@ on(client, MessageCreate) do c, event
         guild = get_guild(c, msg.guild_id)
         member_count = ismissing(guild.approximate_member_count) ? "N/A" : string(guild.approximate_member_count)
 
-        e = embed(
+        e = Accord.embed(
             title=guild.name,
             description="Server information",
             color=0x5865F2,
@@ -231,7 +229,7 @@ on(client, MessageCreate) do c, event
             fields=[
                 Dict("name" => "Owner", "value" => "<@$(guild.owner_id)>", "inline" => true),
                 Dict("name" => "ID", "value" => string(guild.id), "inline" => true),
-                Dict("name" => "Created", "value" => string(timestamp(guild.id)), "inline" => true),
+                Dict("name" => "Created", "value" => string(Accord.timestamp(guild.id)), "inline" => true),
                 Dict("name" => "Verification", "value" => string(guild.verification_level), "inline" => true),
             ],
             footer=Dict("text" => "Requested at $(Dates.format(now(), "HH:MM:SS"))"),

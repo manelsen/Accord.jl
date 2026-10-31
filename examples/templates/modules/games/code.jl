@@ -10,26 +10,26 @@ function setup_games(client::Client)
     @slash_command client "mc_status" "Checks the status of a Minecraft server" [
         @option String "host" "Server IP" required=true
     ] do ctx
-        host = get_option(ctx, "host")
-        defer(ctx)
+        host = Accord.get_option(ctx, "host")
+        Accord.defer(ctx)
 
         try
             resp = HTTP.get("https://api.mcsrvstat.us/2/$host")
             data = JSON3.read(resp.body)
             
             if data.online
-                e = embed(
+                e = Accord.embed(
                     title="Minecraft Server: $host",
                     color=0x57F287,
-                    thumbnail=thumbnail(url="https://api.mcsrvstat.us/icon/$host")
+                    thumbnail=Accord.thumbnail(url="https://api.mcsrvstat.us/icon/$host")
                 )
-                push!(e.fields, embed_field(name="Players", value="$(data.players.online) / $(data.players.max)", inline=true))
-                followup(ctx, embeds=[e])
+                push!(e.fields, Accord.embed_field(name="Players", value="$(data.players.online) / $(data.players.max)", inline=true))
+                Accord.followup(ctx, embeds=[e])
             else
-                followup(ctx, content="❌ Server **$host** is offline.")
+                Accord.followup(ctx, content="❌ Server **$host** is offline.")
             end
         catch e
-            followup(ctx, content="❌ Could not fetch status.")
+            Accord.followup(ctx, content="❌ Could not fetch status.")
         end
     end
 
@@ -37,24 +37,24 @@ function setup_games(client::Client)
         @option String "game" "Game name" required=true
         @option String "description" "Details" required=true
     ] do ctx
-        game = get_option(ctx, "game")
-        desc = get_option(ctx, "description")
+        game = Accord.get_option(ctx, "game")
+        desc = Accord.get_option(ctx, "description")
         user = ctx.interaction.member.user.username
 
-        e = embed(
+        e = Accord.embed(
             title="🎮 LFG: $game",
             description=desc,
             color=0x5865F2,
-            author=embed_author(name="Requested by $user")
+            author=Accord.embed_author(name="Requested by $user")
         )
         
-        btn = button(label="Join Group", style=ButtonStyles.SUCCESS, custom_id="lfg_join")
-        respond(ctx, embeds=[e], components=[action_row([btn])])
+        btn = Accord.button(label="Join Group", style=ButtonStyles.SUCCESS, custom_id="lfg_join")
+        Accord.respond(ctx, embeds=[e], components=[Accord.action_row([btn])])
     end
 
     @button_handler client "lfg_join" function(ctx)
         user = ctx.interaction.member.user.username
-        respond(ctx, content="📢 **$user** wants to join!", flags=MsgFlagEphemeral)
+        Accord.respond(ctx, content="📢 **$user** wants to join!", flags=MsgFlagEphemeral)
     end
 
     println("🎮 Games module loaded.")

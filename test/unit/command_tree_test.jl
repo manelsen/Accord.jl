@@ -489,7 +489,7 @@
         client = mock_client()
         interaction = slash_interaction(options=opts)
         ctx = InteractionContext(client, interaction)
-        result = get_options(ctx)
+        result = Accord.get_options(ctx)
         @test result["count"] == 5
         @test result["name"] == "hello"
     end
@@ -498,7 +498,7 @@
         client = mock_client()
         interaction = slash_interaction()
         ctx = InteractionContext(client, interaction)
-        result = get_options(ctx)
+        result = Accord.get_options(ctx)
         @test isempty(result)
     end
 
@@ -510,20 +510,20 @@
             token="tok", version=1,
         )
         ctx = InteractionContext(client, interaction)
-        @test isempty(get_options(ctx))
+        @test isempty(Accord.get_options(ctx))
     end
 
     @testset "get_option found" begin
         opts = [InteractionDataOption(name="x", type=4, value=42)]
         client = mock_client()
         ctx = InteractionContext(client, slash_interaction(options=opts))
-        @test get_option(ctx, "x") == 42
+        @test Accord.get_option(ctx, "x") == 42
     end
 
     @testset "get_option default" begin
         client = mock_client()
         ctx = InteractionContext(client, slash_interaction())
-        @test get_option(ctx, "missing_opt", "fallback") == "fallback"
+        @test Accord.get_option(ctx, "missing_opt", "fallback") == "fallback"
     end
 
     # ── custom_id ────────────────────────────────────────────────────────────────
@@ -532,7 +532,7 @@
         client = mock_client()
         interaction = component_interaction(custom_id_val="btn_42")
         ctx = InteractionContext(client, interaction)
-        @test custom_id(ctx) == "btn_42"
+        @test Accord.custom_id(ctx) == "btn_42"
     end
 
     @testset "custom_id missing data" begin
@@ -543,7 +543,7 @@
             token="tok", version=1,
         )
         ctx = InteractionContext(client, interaction)
-        @test custom_id(ctx) === nothing
+        @test Accord.custom_id(ctx) === nothing
     end
 
     @testset "custom_id missing custom_id field" begin
@@ -555,7 +555,7 @@
             token="tok", version=1,
         )
         ctx = InteractionContext(client, interaction)
-        @test custom_id(ctx) === nothing
+        @test Accord.custom_id(ctx) === nothing
     end
 
     # ── selected_values ──────────────────────────────────────────────────────────
@@ -564,14 +564,14 @@
         client = mock_client()
         interaction = component_interaction(custom_id_val="sel", values=["a", "b"])
         ctx = InteractionContext(client, interaction)
-        @test selected_values(ctx) == ["a", "b"]
+        @test Accord.selected_values(ctx) == ["a", "b"]
     end
 
     @testset "selected_values empty" begin
         client = mock_client()
         interaction = component_interaction(custom_id_val="sel")
         ctx = InteractionContext(client, interaction)
-        @test isempty(selected_values(ctx))
+        @test isempty(Accord.selected_values(ctx))
     end
 
     @testset "selected_values missing data" begin
@@ -582,7 +582,7 @@
             token="tok", version=1,
         )
         ctx = InteractionContext(client, interaction)
-        @test isempty(selected_values(ctx))
+        @test isempty(Accord.selected_values(ctx))
     end
 
     # ── modal_values ─────────────────────────────────────────────────────────────
@@ -596,7 +596,7 @@
         client = mock_client()
         interaction = modal_interaction(custom_id_val="form", components=[row1, row2])
         ctx = InteractionContext(client, interaction)
-        vals = modal_values(ctx)
+        vals = Accord.modal_values(ctx)
         @test vals["field1"] == "hello"
         @test vals["field2"] == "world"
     end
@@ -605,7 +605,7 @@
         client = mock_client()
         interaction = modal_interaction(custom_id_val="form")
         ctx = InteractionContext(client, interaction)
-        @test isempty(modal_values(ctx))
+        @test isempty(Accord.modal_values(ctx))
     end
 
     @testset "modal_values missing data" begin
@@ -616,10 +616,10 @@
             token="tok", version=1,
         )
         ctx = InteractionContext(client, interaction)
-        @test isempty(modal_values(ctx))
+        @test isempty(Accord.modal_values(ctx))
     end
 
-    # ── target (context menu) ───────────────────────────────────────────────────
+    # ── Accord.target (context menu) ───────────────────────────────────────────────────
 
     @testset "target returns nothing when no data" begin
         client = mock_client()
@@ -629,14 +629,14 @@
             token="tok", version=1,
         )
         ctx = InteractionContext(client, interaction)
-        @test target(ctx) === nothing
+        @test Accord.target(ctx) === nothing
     end
 
     @testset "target returns nothing when no target_id" begin
         client = mock_client()
         interaction = slash_interaction()
         ctx = InteractionContext(client, interaction)
-        @test target(ctx) === nothing
+        @test Accord.target(ctx) === nothing
     end
 
     @testset "target returns nothing when no resolved" begin
@@ -646,7 +646,7 @@
             cmd_type=ApplicationCommandTypes.USER,
         )
         ctx = InteractionContext(client, interaction)
-        @test target(ctx) === nothing
+        @test Accord.target(ctx) === nothing
     end
 
     @testset "target USER command" begin
@@ -659,7 +659,7 @@
             resolved=resolved,
         )
         ctx = InteractionContext(client, interaction)
-        t = target(ctx)
+        t = Accord.target(ctx)
         @test t isa User
         @test t.id == Snowflake(123)
     end
@@ -674,7 +674,7 @@
             resolved=resolved,
         )
         ctx = InteractionContext(client, interaction)
-        t = target(ctx)
+        t = Accord.target(ctx)
         @test t isa Message
         @test t.id == Snowflake(456)
     end
@@ -745,7 +745,7 @@
         client = mock_client()
         interaction = slash_interaction(guild_id=Snowflake(111))
         ctx = InteractionContext(client, interaction)
-        check = is_in_guild()
+        check = Accord.is_in_guild()
         @test check(ctx) == true
     end
 
@@ -753,7 +753,7 @@
         client = mock_client()
         interaction = slash_interaction()  # guild_id=missing
         ctx = InteractionContext(client, interaction)
-        check = is_in_guild()
+        check = Accord.is_in_guild()
         @test check(ctx) == false
     end
 
@@ -773,7 +773,7 @@
         interaction = slash_interaction(guild_id=guild_id, member=m)
         ctx = InteractionContext(client, interaction)
 
-        check = is_owner()
+        check = Accord.is_owner()
         @test check(ctx) == true
     end
 
@@ -789,7 +789,7 @@
         interaction = slash_interaction(guild_id=guild_id, member=m)
         ctx = InteractionContext(client, interaction)
 
-        check = is_owner()
+        check = Accord.is_owner()
         @test check(ctx) == false
     end
 
@@ -799,7 +799,7 @@
         m = Member(user=u, roles=Snowflake[])
         interaction = slash_interaction(guild_id=Snowflake(111), member=m)
         ctx = InteractionContext(client, interaction)
-        check = is_owner()
+        check = Accord.is_owner()
         @test check(ctx) == false
     end
 
@@ -807,7 +807,7 @@
         client = mock_client()
         interaction = slash_interaction()
         ctx = InteractionContext(client, interaction)
-        check = is_owner()
+        check = Accord.is_owner()
         @test check(ctx) == false
     end
 
@@ -821,7 +821,7 @@
             m = Member(user=u, roles=Snowflake[])
             interaction = slash_interaction(guild_id=Snowflake(111), member=m)
 
-            check = cooldown(100.0; per=:user)  # long cooldown so second call fails
+            check = Accord.cooldown(100.0; per=:user)  # long cooldown so second call fails
             ctx1 = InteractionContext(client, interaction)
             @test check(ctx1) == true  # first call passes
 
@@ -840,7 +840,7 @@
             m = Member(user=u, roles=Snowflake[])
             interaction = slash_interaction(guild_id=Snowflake(111), member=m)
 
-            check = cooldown(100.0; per=:guild)
+            check = Accord.cooldown(100.0; per=:guild)
             ctx1 = InteractionContext(client, interaction)
             @test check(ctx1) == true
 
@@ -856,7 +856,7 @@
         start_ratelimiter!(client.ratelimiter)
         try
             interaction = slash_interaction()
-            check = cooldown(100.0; per=:channel)
+            check = Accord.cooldown(100.0; per=:channel)
             ctx1 = InteractionContext(client, interaction)
             @test check(ctx1) == true
             ctx2 = InteractionContext(client, interaction)
@@ -871,7 +871,7 @@
         start_ratelimiter!(client.ratelimiter)
         try
             interaction = slash_interaction()
-            check = cooldown(100.0; per=:global)
+            check = Accord.cooldown(100.0; per=:global)
             ctx1 = InteractionContext(client, interaction)
             @test check(ctx1) == true
             ctx2 = InteractionContext(client, interaction)
@@ -882,7 +882,7 @@
     end
 
     @testset "cooldown invalid bucket" begin
-        @test_throws ErrorException cooldown(5; per=:invalid)
+        @test_throws ErrorException Accord.cooldown(5; per=:invalid)
     end
 
     @testset "cooldown expiry allows re-use" begin
@@ -893,7 +893,7 @@
             m = Member(user=u, roles=Snowflake[])
             interaction = slash_interaction(guild_id=Snowflake(111), member=m)
 
-            check = cooldown(0.1; per=:user)  # 100ms cooldown
+            check = Accord.cooldown(0.1; per=:user)  # 100ms cooldown
             ctx1 = InteractionContext(client, interaction)
             @test check(ctx1) == true
 
@@ -913,7 +913,7 @@
         client = mock_client(application_id=Snowflake(100))
         start_ratelimiter!(client.ratelimiter)
         try
-            check = cooldown(100.0; per=:global)  # Long cooldown, global bucket
+            check = Accord.cooldown(100.0; per=:global)  # Long cooldown, global bucket
 
             # Launch many tasks concurrently — exactly one should pass
             n_tasks = 20
@@ -939,7 +939,7 @@
         client = mock_client(application_id=Snowflake(100))
         start_ratelimiter!(client.ratelimiter)
         try
-            check = cooldown(100.0; per=:user)
+            check = Accord.cooldown(100.0; per=:user)
 
             # User A
             u_a = mock_user(id=Snowflake(1))
@@ -1032,7 +1032,7 @@
         interaction = slash_interaction(guild_id=guild_id, member=m)
         ctx = InteractionContext(client, interaction)
 
-        check = has_permissions(PermManageGuild)
+        check = Accord.has_permissions(PermManageGuild)
         @test check(ctx) == true  # ADMINISTRATOR implies all perms
     end
 
@@ -1056,30 +1056,30 @@
         interaction = slash_interaction(guild_id=guild_id, member=m)
         ctx = InteractionContext(client, interaction)
 
-        check = has_permissions(PermManageGuild)
+        check = Accord.has_permissions(PermManageGuild)
         @test check(ctx) == false
     end
 
     @testset "has_permissions fail (DM)" begin
         client = mock_client()
         ctx = InteractionContext(client, slash_interaction())
-        check = has_permissions(PermManageGuild)
+        check = Accord.has_permissions(PermManageGuild)
         @test check(ctx) == false
     end
 
     @testset "has_permissions with symbol" begin
         # Just verify it doesn't error
-        check = has_permissions(:MANAGE_GUILD)
+        check = Accord.has_permissions(:MANAGE_GUILD)
         @test check isa Function
     end
 
     @testset "has_permissions with multiple symbols" begin
-        check = has_permissions(:MANAGE_GUILD, :BAN_MEMBERS)
+        check = Accord.has_permissions(:MANAGE_GUILD, :BAN_MEMBERS)
         @test check isa Function
     end
 
     @testset "has_permissions unknown symbol" begin
-        @test_throws ErrorException has_permissions(:NONEXISTENT_PERM)
+        @test_throws ErrorException Accord.has_permissions(:NONEXISTENT_PERM)
     end
 
     # ── Handler receives correct context ────────────────────────────────────────
@@ -1102,7 +1102,7 @@
     @testset "component handler receives context with custom_id" begin
         tree = CommandTree()
         received_cid = Ref{Any}(nothing)
-        register_component!(tree, "sel_color", ctx -> (received_cid[] = custom_id(ctx)))
+        register_component!(tree, "sel_color", ctx -> (received_cid[] = Accord.custom_id(ctx)))
 
         client = mock_client()
         interaction = component_interaction(custom_id_val="sel_color")
@@ -1113,7 +1113,7 @@
     @testset "modal handler receives context with modal_values" begin
         tree = CommandTree()
         received_vals = Ref{Any}(nothing)
-        register_modal!(tree, "form", ctx -> (received_vals[] = modal_values(ctx)))
+        register_modal!(tree, "form", ctx -> (received_vals[] = Accord.modal_values(ctx)))
 
         inner = Component(type=4, custom_id="name", value="Alice")
         row = Component(type=1, components=[inner])

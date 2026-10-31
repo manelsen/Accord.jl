@@ -115,6 +115,7 @@ include("interactions/command_tree.jl")
 include("client/state.jl")
 include("client/event_handler.jl")
 include("client/client.jl") # Defines Client <: AbstractClient
+include("client/rest_client.jl") # Client-first REST methods
 
 # === Interactions (Macros & UI) ===
 include("interactions/decorators.jl")
@@ -166,9 +167,15 @@ end
 const internals = Internals
 
 # === Exports ===
+#
+# Rule: export types, Discord-specific names and the command DSL macros.
+# Generic English words (start, on, respond, button, section, …) are `public`
+# but not exported, so `using Accord` never clashes with other packages.
+# Call them qualified (`Accord.respond(ctx; …)`) or import them explicitly
+# (`using Accord: respond, defer`).
 
-# Core & Snowflake
-export Snowflake, timestamp, Optional, Nullable, Internals, internals
+# Core
+export Snowflake
 
 # Main Discord Types
 export User, Guild, UnavailableGuild, DiscordChannel, Message, Member, Role, Emoji
@@ -180,7 +187,7 @@ export Overwrite, Ban, ThreadMember
 export Sticker, StageInstance, GuildTemplate
 
 # Client & Lifecycle
-export Client, start, stop, wait_until_ready, on, on_error
+export Client, wait_until_ready
 export wait_for, EventWaiter
 export create_message, edit_message, delete_message, create_reaction
 export create_poll, modify_thread
@@ -199,25 +206,13 @@ export PresenceUpdate, TypingStart
 # State & Cache
 export State, Store, CacheForever, CacheNever, CacheLRU, CacheTTL
 
-# Macros (The Public Interface)
+# Command DSL macros
 export @slash_command, @user_command, @message_command
 export @button_handler, @select_handler, @modal_handler, @autocomplete
-export @on_message, @option, @check
-export @on, @embed, @group, @subcommand
+export @on_message, @option, @check, @group, @subcommand
 
-# Interactions Helpers
-export get_options, get_option, custom_id, selected_values, modal_values, target
-export respond, defer, edit_response, followup, show_modal
-export sync_commands!
-
-# Check guards
-export has_permissions, is_owner, is_in_guild, cooldown
-
-# Component Builders
-export action_row, button, string_select, select_option
-export text_input, embed, command_option
-export embed_field, embed_footer, embed_author, activity
-export container, section, text_display, thumbnail, media_gallery, media_gallery_item, file_component, separator, unfurled_media
+# Interaction responses with Discord-specific names
+export edit_response, show_modal, sync_commands!
 
 # Enums (as modules)
 export ChannelTypes, MessageTypes, InteractionTypes
@@ -232,7 +227,6 @@ export IntentGuildPresences
 export IntentGuildMessages
 export IntentMessageContent
 export IntentAllNonPrivileged, IntentAll
-export has_flag
 
 export Permissions
 export PermAdministrator, PermManageGuild, PermKickMembers, PermBanMembers
@@ -242,14 +236,34 @@ export PermViewChannel, PermManageMessages
 
 export MessageFlags, MsgFlagEphemeral, MsgFlagSuppressEmbeds
 
-# Voice
-export VoiceClient, connect!, disconnect!
+# Voice types
+export VoiceClient
 export AbstractAudioSource, PCMSource, FileSource, FFmpegSource, SilenceSource
-export AudioPlayer, play!, stop!, pause!, resume!, is_playing
-export OpusEncoder, OpusDecoder, opus_encode, opus_decode, set_bitrate!, set_signal!
+export AudioPlayer, OpusEncoder, OpusDecoder
 export OPUS_SAMPLE_RATE, OPUS_CHANNELS, OPUS_FRAME_SIZE, OPUS_FRAME_DURATION_MS, OPUS_MAX_PACKET_SIZE
 export OPUS_APPLICATION_AUDIO, OPUS_APPLICATION_VOIP
-export read_frame, close_source
+
+# === Public, not exported ===
+
+# Lifecycle and events
+public start, stop, on, on_error, reply, @on
+# Core helpers
+public timestamp, has_flag, Optional, Nullable, Maybe, Internals, internals
+# Interaction helpers
+public respond, defer, followup
+public get_options, get_option, custom_id, selected_values, modal_values, target
+# Check guards (use as `@check Accord.has_permissions(...)`)
+public has_permissions, is_owner, is_in_guild, cooldown
+# Component and embed builders
+public action_row, button, string_select, select_option, text_input
+public embed, @embed, embed_field, embed_footer, embed_author, command_option, activity
+public container, section, text_display, thumbnail, media_gallery, media_gallery_item
+public file_component, separator, unfurled_media
+# Voice verbs
+public connect!, disconnect!, play!, stop!, pause!, resume!, is_playing
+public opus_encode, opus_decode, set_bitrate!, set_signal!, read_frame, close_source
+# Every REST endpoint, called with a Client: `Accord.get_guild_member(client, guild_id, user_id)`
+eval(Expr(:public, filter(n -> !Base.isexported(@__MODULE__, n), collect(REST_ENDPOINTS))...))
 
 # Initialize libsodium on module load
 function __init__()

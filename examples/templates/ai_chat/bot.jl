@@ -40,9 +40,9 @@ end
 # --- Commands ---
 
 @slash_command client "chat" "Chat with the AI" options=[
-    command_option(name="prompt", description="Your message", required=true)
+    Accord.command_option(name="prompt", description="Your message", required=true)
 ] function(ctx)
-    prompt = get_option(ctx, "prompt")
+    prompt = Accord.get_option(ctx, "prompt")
     user_id = Int(ctx.user.id)
     
     # 1. Retrieve or create history
@@ -58,7 +58,7 @@ end
         popfirst!(history)
     end
     
-    defer(ctx) # API might take some time
+    Accord.defer(ctx) # API might take some time
     
     # 3. Call the AI (in a separate Task to not block the Gateway)
     @async begin
@@ -68,19 +68,19 @@ end
         push!(history, Dict(:role => "assistant", :content => reply_content))
         
         # 5. Respond on Discord (limited to 2000 chars)
-        respond(ctx; content=first(reply_content, 2000))
+        Accord.respond(ctx; content=first(reply_content, 2000))
     end
 end
 
 @slash_command client "reset" "Clear conversation history" function(ctx)
     user_id = Int(ctx.user.id)
     delete!(CONVERSATIONS, user_id)
-    respond(ctx; content="🧠 Memory cleared. We can start fresh!", ephemeral=true)
+    Accord.respond(ctx; content="🧠 Memory cleared. We can start fresh!", ephemeral=true)
 end
 
-on(client, ReadyEvent) do c, event
+Accord.on(client, ReadyEvent) do c, event
     @info "AI Bot online!"
     sync_commands!(c)
 end
 
-start(client)
+Accord.start(client)

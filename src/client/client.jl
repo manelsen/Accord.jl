@@ -517,6 +517,9 @@ Send a message to a channel.
 - `files`: Optional files to upload.
 - `tts::Bool`: Whether to send as a text-to-speech message.
 - `message_reference`: Optional dictionary to reply to a specific message.
+- `poll`: Optional poll object (see `create_poll` for a shortcut).
+- `flags`: Optional [`MessageFlags`](@ref) or integer (e.g. `MsgFlagSuppressEmbeds`).
+- `allowed_mentions`: Optional allowed-mentions dictionary.
 
 # Example
 ```julia
@@ -527,13 +530,16 @@ create_message(client, channel_id;
 )
 ```
 """
-function create_message(client::Client, channel_id::Snowflake; content::String="", embeds::Vector=[], components::Vector=[], files=nothing, tts::Bool=false, message_reference=nothing)
+function create_message(client::Client, channel_id::Snowflake; content::String="", embeds::Vector=[], components::Vector=[], files=nothing, tts::Bool=false, message_reference=nothing, poll=nothing, flags=nothing, allowed_mentions=nothing)
     body = Dict{String, Any}()
     !isempty(content) && (body["content"] = content)
     !isempty(embeds) && (body["embeds"] = embeds)
     !isempty(components) && (body["components"] = components)
     tts && (body["tts"] = true)
     !isnothing(message_reference) && (body["message_reference"] = message_reference)
+    !isnothing(poll) && (body["poll"] = poll)
+    !isnothing(flags) && (body["flags"] = Int(flags isa MessageFlags ? flags.value : flags))
+    !isnothing(allowed_mentions) && (body["allowed_mentions"] = allowed_mentions)
     create_message(client.ratelimiter, channel_id; token=client.token, body, files)
 end
 

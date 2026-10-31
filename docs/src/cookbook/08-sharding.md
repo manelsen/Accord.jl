@@ -33,18 +33,18 @@ client = Client(token;
     num_shards = 4,
 )
 
-on(client, [`ReadyEvent`](@ref)) do c, event
+Accord.on(client, [`ReadyEvent`](@ref)) do c, event
     shard_info = ismissing(event.shard) ? "N/A" : "$(event.shard[1])/$(event.shard[2])"
     @info "Shard ready!" shard=shard_info guilds=length(event.guilds)
 end
 
-on(client, [`MessageCreate`](@ref)) do c, event
+Accord.on(client, [`MessageCreate`](@ref)) do c, event
     msg = event.message
     ismissing(msg.content) && return
     msg.content == "!ping" && create_message(c, msg.channel_id; content="Pong!")
 end
 
-start(client)
+Accord.start(client)
 ```
 
 Accord.jl starts shards with a 5-second delay between them (Discord's required rate limit).
@@ -159,7 +159,7 @@ client = Client(ENV["DISCORD_TOKEN"];
 )
 
 # Register handlers...
-start(client)
+Accord.start(client)
 ```
 
 ## 7. Monitoring Shard Health
@@ -179,7 +179,7 @@ function shard_status(client)
 end
 
 # Call periodically
-on(client, ReadyEvent) do c, event
+Accord.on(client, ReadyEvent) do c, event
     @async begin
         while c.running
             sleep(60)
@@ -192,7 +192,7 @@ end
 ## 8. Guild Count Across Shards
 
 ```julia
-on(client, MessageCreate) do c, event
+Accord.on(client, MessageCreate) do c, event
     msg = event.message
     ismissing(msg.content) && return
 

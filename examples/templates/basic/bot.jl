@@ -18,7 +18,7 @@ client = Client(TOKEN; intents = IntentGuilds)
 
 # --- Events ---
 
-on(client, ReadyEvent) do c, event
+Accord.on(client, ReadyEvent) do c, event
     @info "Bot connected! Logged in as $(event.user.username)"
     
     # Register slash commands defined below
@@ -31,15 +31,15 @@ end
 
 @slash_command client "ping" "Check bot latency" function(ctx)
     # Respond to interaction
-    respond(ctx; content="Pong! 🏓")
+    Accord.respond(ctx; content="Pong! 🏓")
 end
 
 @slash_command client "hello" "Say hello to the user" function(ctx)
     user = ctx.user
-    respond(ctx; content="Hello, **$(user.username)**! Welcome to Accord.jl.")
+    Accord.respond(ctx; content="Hello, **$(user.username)**! Welcome to Accord.jl.")
 end
 
 # --- Execution ---
 
 @info "Starting the bot..."
-start(client)
+Accord.start(client)

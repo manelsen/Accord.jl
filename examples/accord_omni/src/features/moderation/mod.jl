@@ -24,7 +24,7 @@ function install(client::Client)
         reason = get(ctx.options, "reason", "No reason specified")
         
         if isnothing(target)
-            respond(ctx, "Invalid user.", ephemeral=true)
+            Accord.respond(ctx, "Invalid user.", ephemeral=true)
             return
         end
         
@@ -32,7 +32,7 @@ function install(client::Client)
         try
             ban_member(ctx.client, ctx.guild_id, target.id; reason=reason)
         catch e
-            respond(ctx, "Failed to ban: $(e)", ephemeral=true)
+            Accord.respond(ctx, "Failed to ban: $(e)", ephemeral=true)
             return
         end
         
@@ -40,7 +40,7 @@ function install(client::Client)
         case_id = Service.log_action(db, Int(ctx.guild_id), Int(target.id), Int(ctx.user.id), "BAN", reason)
         
         # 3. Respond
-        respond(ctx, "🔨 **Banned** $(target.username) (Case #$case_id)
+        Accord.respond(ctx, "🔨 **Banned** $(target.username) (Case #$case_id)
 📄 Reason: $reason")
     end
     
@@ -49,19 +49,19 @@ function install(client::Client)
         reason = get(ctx.options, "reason", "No reason specified")
 
         if isnothing(target)
-            respond(ctx, "Invalid user.", ephemeral=true)
+            Accord.respond(ctx, "Invalid user.", ephemeral=true)
             return
         end
         
         try
             kick_member(ctx.client, ctx.guild_id, target.id; reason=reason)
         catch e
-            respond(ctx, "Failed to kick: $(e)", ephemeral=true)
+            Accord.respond(ctx, "Failed to kick: $(e)", ephemeral=true)
             return
         end
         
         case_id = Service.log_action(db, Int(ctx.guild_id), Int(target.id), Int(ctx.user.id), "KICK", reason)
-        respond(ctx, "👢 **Kicked** $(target.username) (Case #$case_id)
+        Accord.respond(ctx, "👢 **Kicked** $(target.username) (Case #$case_id)
 📄 Reason: $reason")
     end
 
@@ -70,14 +70,14 @@ function install(client::Client)
         reason = get(ctx.options, "reason", "No reason specified")
         
         if isnothing(target)
-            respond(ctx, "Invalid user.", ephemeral=true)
+            Accord.respond(ctx, "Invalid user.", ephemeral=true)
             return
         end
         
         # DB only, no Discord API action other than warning
         case_id = Service.log_action(db, Int(ctx.guild_id), Int(target.id), Int(ctx.user.id), "WARN", reason)
         
-        respond(ctx, "⚠️ **Warned** $(target.username) (Case #$case_id)
+        Accord.respond(ctx, "⚠️ **Warned** $(target.username) (Case #$case_id)
 📄 Reason: $reason")
         
         # Try to send DM to user (silently fails if DM is closed)
@@ -95,7 +95,7 @@ function install(client::Client)
         fields = []
         for row in history
             dt = unix2datetime(row.created_at)
-            push!(fields, embed_field(
+            push!(fields, Accord.embed_field(
                 "Case #$(row.case_id) - $(row.type)", 
                 "**Reason:** $(row.reason)
 **Mod:** <@$(row.moderator_id)>
@@ -105,19 +105,19 @@ function install(client::Client)
         end
         
         if isempty(fields)
-            respond(ctx, "No records found for $(target.username).")
+            Accord.respond(ctx, "No records found for $(target.username).")
         else
-            embed_data = embed(
+            embed_data = Accord.embed(
                 title = "Moderation History: $(target.username)",
                 color = 0xFF0000,
                 fields = fields
             )
-            respond(ctx; embeds=[embed_data])
+            Accord.respond(ctx; embeds=[embed_data])
         end
     end
 
     # --- Automod Listener ---
-    on(client, MessageCreate) do c, event
+    Accord.on(client, MessageCreate) do c, event
         if event.message.author.bot return end
         
         if Service.check_automod(event.message.content)

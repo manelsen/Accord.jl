@@ -48,6 +48,7 @@ Creating a bot is simple and expressive:
 
 ```julia
 using Accord
+using Accord: on, start, respond, followup, has_permissions
 
 # 1. Initialize the client with optional state injection
 client = Client(ENV["DISCORD_TOKEN"];
@@ -94,6 +95,19 @@ on(client, ReadyEvent) do c, event
 end
 
 start(client)
+```
+
+---
+
+## 🏷️ Names and imports
+
+`using Accord` brings in the types, the event types, the `@slash_command` family of macros and the Discord-specific functions (`create_message`, `wait_for`, `sync_commands!`, …). Short generic verbs and builders — `start`, `on`, `respond`, `defer`, `button`, `embed`, `section` — are part of the public API but not exported, so they never clash with other packages. Import the ones you use, as in the Quick Start, or call them qualified: `Accord.respond(ctx; content="hi")`.
+
+Every REST endpoint takes the client as its first argument and is called qualified:
+
+```julia
+rules = Accord.list_auto_moderation_rules(client, guild_id)
+Accord.add_guild_member_role(client, guild_id, user_id, role_id; reason="verified")
 ```
 
 ---

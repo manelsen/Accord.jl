@@ -163,12 +163,12 @@ end
 
 ```julia
 options_chat = [
-    command_option(type=ApplicationCommandOptionTypes.STRING, name="message", description="Your message", required=true),
+    Accord.command_option(type=ApplicationCommandOptionTypes.STRING, name="message", description="Your message", required=true),
 ]
 
 @slash_command client "chat" "Chat with AI" options_chat function(ctx)
-    user_msg = get_option(ctx, "message", "")
-    defer(ctx)
+    user_msg = Accord.get_option(ctx, "message", "")
+    Accord.defer(ctx)
 
     messages = [
         Dict("role" => "system", "content" => "You are a helpful assistant in a Discord server. Keep responses under 2000 characters."),
@@ -438,7 +438,7 @@ end
 
 # /chat <message>
 options_chat = [
-    command_option(type=ApplicationCommandOptionTypes.STRING, name="message", description="Your message", required=true),
+    Accord.command_option(type=ApplicationCommandOptionTypes.STRING, name="message", description="Your message", required=true),
 ]
 
 @slash_command client "chat" "Chat with the AI" options_chat function(ctx)
@@ -447,12 +447,12 @@ options_chat = [
 
     # Rate limit check
     if !check_rate_limit(user_id)
-        respond(ctx; content="You're sending messages too fast. Please wait a moment.", ephemeral=true)
+        Accord.respond(ctx; content="You're sending messages too fast. Please wait a moment.", ephemeral=true)
         return
     end
 
-    user_msg = get_option(ctx, "message", "")::String
-    defer(ctx)
+    user_msg = Accord.get_option(ctx, "message", "")::String
+    Accord.defer(ctx)
 
     # Build messages with history
     add_to_history!(channel_id, "user", user_msg)
@@ -470,10 +470,10 @@ options_chat = [
         end
 
         add_to_history!(channel_id, "assistant", response)
-        respond(ctx; content=response)
+        Accord.respond(ctx; content=response)
     catch e
         @error "LLM call failed" exception=e
-        respond(ctx; content="Sorry, I couldn't process that request. Please try again.")
+        Accord.respond(ctx; content="Sorry, I couldn't process that request. Please try again.")
     end
 end
 
@@ -481,7 +481,7 @@ end
 @slash_command client "clear-history" "Clear conversation history" function(ctx)
     channel_id = ctx.interaction.channel_id
     conversations[channel_id] = Dict{String,String}[]
-    respond(ctx; content="Conversation history cleared.", ephemeral=true)
+    Accord.respond(ctx; content="Conversation history cleared.", ephemeral=true)
 end
 
 # /model-info
@@ -489,7 +489,7 @@ end
     channel_id = ctx.interaction.channel_id
     history_len = length(get_history(channel_id))
 
-    e = embed(
+    e = Accord.embed(
         title="AI Assistant Info",
         color=0x5865F2,
         fields=[
@@ -498,20 +498,20 @@ end
             Dict("name" => "Rate Limit", "value" => "5 requests / 50 seconds", "inline" => true),
         ]
     )
-    respond(ctx; embeds=[e], ephemeral=true)
+    Accord.respond(ctx; embeds=[e], ephemeral=true)
 end
 
 # --- Wiring ---
-on(client, [`InteractionCreate`](@ref)) do c, event
+Accord.on(client, [`InteractionCreate`](@ref)) do c, event
     dispatch_interaction!(tree, c, event.interaction)
 end
 
-on(client, [`ReadyEvent`](@ref)) do c, event
+Accord.on(client, [`ReadyEvent`](@ref)) do c, event
     sync_commands!(c, tree)
     @info "AI Agent bot ready!" user=event.user.username
 end
 
-start(client)
+Accord.start(client)
 ```
 
 ## 8. Advanced: Voice-Commanded AI Agent

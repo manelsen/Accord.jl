@@ -33,7 +33,7 @@
         enc = OpusEncoder()
         pcm = zeros(Int16, OPUS_FRAME_SIZE * OPUS_CHANNELS)
 
-        opus = opus_encode(enc, pcm)
+        opus = Accord.opus_encode(enc, pcm)
         @test !isempty(opus)
         @test length(opus) <= OPUS_MAX_PACKET_SIZE
     end
@@ -43,9 +43,9 @@
         dec = OpusDecoder()
 
         pcm_original = rand(Int16, OPUS_FRAME_SIZE * OPUS_CHANNELS)
-        opus = opus_encode(enc, pcm_original)
+        opus = Accord.opus_encode(enc, pcm_original)
 
-        pcm_decoded = opus_decode(dec, opus, OPUS_FRAME_SIZE)
+        pcm_decoded = Accord.opus_decode(dec, opus, OPUS_FRAME_SIZE)
         @test length(pcm_decoded) == OPUS_FRAME_SIZE * OPUS_CHANNELS
     end
 
@@ -53,7 +53,7 @@
         enc = OpusEncoder()
         pcm = zeros(Int16, OPUS_FRAME_SIZE * OPUS_CHANNELS)
 
-        opus = opus_encode(enc, pcm)
+        opus = Accord.opus_encode(enc, pcm)
         @test length(opus) < 100  # Silence compresses well
     end
 
@@ -61,7 +61,7 @@
         enc = OpusEncoder()
         pcm = rand(Int16, OPUS_FRAME_SIZE * OPUS_CHANNELS)
 
-        opus = opus_encode(enc, pcm)
+        opus = Accord.opus_encode(enc, pcm)
         @test !isempty(opus)
         @test length(opus) <= OPUS_MAX_PACKET_SIZE
     end
@@ -70,7 +70,7 @@
         enc = OpusEncoder(16000, 1, OPUS_APPLICATION_VOIP)
         pcm = zeros(Int16, 320 * 1)  # 20ms @ 16kHz mono
 
-        opus = opus_encode(enc, pcm)
+        opus = Accord.opus_encode(enc, pcm)
         @test !isempty(opus)
     end
 
@@ -79,9 +79,9 @@
         dec = OpusDecoder(16000, 1)
 
         pcm_original = zeros(Int16, 320 * 1)
-        opus = opus_encode(enc, pcm_original)
+        opus = Accord.opus_encode(enc, pcm_original)
 
-        pcm_decoded = opus_decode(dec, opus, 320)
+        pcm_decoded = Accord.opus_decode(dec, opus, 320)
         @test length(pcm_decoded) == 320
     end
 
@@ -89,13 +89,13 @@
         enc = OpusEncoder()
         pcm = zeros(Int16, OPUS_FRAME_SIZE * OPUS_CHANNELS)
 
-        opus_default = opus_encode(enc, pcm)
+        opus_default = Accord.opus_encode(enc, pcm)
 
-        set_bitrate!(enc, 64000)  # 64 kbps
-        opus_64k = opus_encode(enc, pcm)
+        Accord.set_bitrate!(enc, 64000)  # 64 kbps
+        opus_64k = Accord.opus_encode(enc, pcm)
 
-        set_bitrate!(enc, 128000)  # 128 kbps
-        opus_128k = opus_encode(enc, pcm)
+        Accord.set_bitrate!(enc, 128000)  # 128 kbps
+        opus_128k = Accord.opus_encode(enc, pcm)
 
         @test length(opus_default) > 0
         @test length(opus_64k) > 0
@@ -106,7 +106,7 @@
         enc = OpusEncoder(48000, 2, OPUS_APPLICATION_VOIP)
         pcm = zeros(Int16, OPUS_FRAME_SIZE * OPUS_CHANNELS)
 
-        opus_voice = opus_encode(enc, pcm)
+        opus_voice = Accord.opus_encode(enc, pcm)
 
         @test !isempty(opus_voice)
     end
@@ -121,8 +121,8 @@
 
         for i in 1:frames
             pcm_input = rand(Int16, OPUS_FRAME_SIZE * OPUS_CHANNELS)
-            opus = opus_encode(enc, pcm_input)
-            pcm_output = opus_decode(dec, opus, OPUS_FRAME_SIZE)
+            opus = Accord.opus_encode(enc, pcm_input)
+            pcm_output = Accord.opus_decode(dec, opus, OPUS_FRAME_SIZE)
 
             if length(pcm_output) != OPUS_FRAME_SIZE * OPUS_CHANNELS
                 all_good = false
@@ -139,7 +139,7 @@
 
         # Decode with custom frame size
         # Note: Opus may return fewer samples than requested for invalid input
-        pcm = opus_decode(dec, opus, 960)
+        pcm = Accord.opus_decode(dec, opus, 960)
         @test length(pcm) >= 0  # Should decode to some PCM (even if silence)
     end
 
@@ -149,8 +149,8 @@
 
         pcm = zeros(Int16, OPUS_FRAME_SIZE * 2)
 
-        audio_opus = opus_encode(audio_enc, pcm)
-        voip_opus = opus_encode(voip_enc, pcm)
+        audio_opus = Accord.opus_encode(audio_enc, pcm)
+        voip_opus = Accord.opus_encode(voip_enc, pcm)
 
         @test !isempty(audio_opus)
         @test !isempty(voip_opus)
@@ -161,10 +161,10 @@
         dec = OpusDecoder(48000, 1)  # Mismatched channels
 
         pcm_input = zeros(Int16, OPUS_FRAME_SIZE * 2)
-        opus = opus_encode(enc, pcm_input)
+        opus = Accord.opus_encode(enc, pcm_input)
 
         # Should decode to mono (960 samples, not 1920)
-        pcm_output = opus_decode(dec, opus, OPUS_FRAME_SIZE)
+        pcm_output = Accord.opus_decode(dec, opus, OPUS_FRAME_SIZE)
         @test length(pcm_output) == OPUS_FRAME_SIZE * 1
     end
 
@@ -178,7 +178,7 @@
             pcm[2*i] = Int16(-i)     # Right
         end
 
-        opus = opus_encode(enc, pcm)
+        opus = Accord.opus_encode(enc, pcm)
         @test !isempty(opus)
     end
 
@@ -187,8 +187,8 @@
         dec = OpusDecoder(48000, 2)
 
         pcm_input = rand(Int16, OPUS_FRAME_SIZE * 2)
-        opus = opus_encode(enc, pcm_input)
-        pcm_output = opus_decode(dec, opus, OPUS_FRAME_SIZE)
+        opus = Accord.opus_encode(enc, pcm_input)
+        pcm_output = Accord.opus_decode(dec, opus, OPUS_FRAME_SIZE)
 
         @test length(pcm_output) == OPUS_FRAME_SIZE * 2
     end

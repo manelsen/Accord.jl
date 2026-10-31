@@ -14,9 +14,8 @@ function setup_moderation(client::Client)
         for word in BANNED_WORDS
             if occursin(word, content_lower)
                 try
-                    delete_message(c.ratelimiter, msg.channel_id, msg.id; token=c.token)
-                    create_message(c.ratelimiter, msg.channel_id; 
-                        token=c.token, 
+                    Accord.delete_message(c, msg.channel_id, msg.id)
+                    Accord.create_message(c, msg.channel_id;
                         content="<@$(msg.author.id)>, please watch your language."
                     )
                 catch e
@@ -31,15 +30,15 @@ function setup_moderation(client::Client)
         @option User "user" "The user to kick" required=true
         @option String "reason" "Reason for kicking" required=false
     ] do ctx
-        target_user = get_option(ctx, "user")
-        reason = get_option(ctx, "reason", "No reason provided")
+        target_user = Accord.get_option(ctx, "user")
+        reason = Accord.get_option(ctx, "reason", "No reason provided")
         
         try
-            Accord.remove_guild_member(ctx.client.ratelimiter, ctx.interaction.guild_id, target_user; 
-                token=ctx.client.token, reason=reason)
-            respond(ctx, content="Successfully kicked <@$target_user>.")
+            Accord.remove_guild_member(ctx.client, ctx.interaction.guild_id, target_user; 
+                reason=reason)
+            Accord.respond(ctx, content="Successfully kicked <@$target_user>.")
         catch e
-            respond(ctx, content="Failed to kick user. Check my permissions.", flags=MsgFlagEphemeral)
+            Accord.respond(ctx, content="Failed to kick user. Check my permissions.", flags=MsgFlagEphemeral)
         end
     end
 

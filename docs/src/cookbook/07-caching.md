@@ -146,7 +146,7 @@ Total: ~53 MB — very manageable.
 Use non-blocking mode for REPL inspection:
 
 ```julia
-start(client; blocking=false)
+Accord.start(client; blocking=false)
 wait_until_ready(client)
 
 # Cache stats

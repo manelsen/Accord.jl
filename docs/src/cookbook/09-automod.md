@@ -82,8 +82,8 @@ body = Dict(
     "exempt_channels" => [],  # channels that bypass this rule
 )
 
-rule = create_auto_moderation_rule(client.ratelimiter, guild_id;
-    token=client.token, body=body)
+rule = Accord.create_auto_moderation_rule(client, guild_id;
+    body=body)
 @info "Created rule" name=rule.name id=rule.id
 ```
 
@@ -119,8 +119,8 @@ body = Dict(
     "enabled" => true,
 )
 
-create_auto_moderation_rule(client.ratelimiter, guild_id;
-    token=client.token, body=body)
+Accord.create_auto_moderation_rule(client, guild_id;
+    body=body)
 ```
 
 ## 6. Mention Spam Protection
@@ -148,8 +148,8 @@ body = Dict(
     "enabled" => true,
 )
 
-create_auto_moderation_rule(client.ratelimiter, guild_id;
-    token=client.token, body=body)
+Accord.create_auto_moderation_rule(client, guild_id;
+    body=body)
 ```
 
 ## 7. Listening for AutoMod Actions
@@ -157,7 +157,7 @@ create_auto_moderation_rule(client.ratelimiter, guild_id;
 When an [`AutoModRule`](@ref) triggers, you get an [`AutoModerationActionExecution`](@ref) event:
 
 ```julia
-on(client, AutoModerationActionExecution) do c, event
+Accord.on(client, AutoModerationActionExecution) do c, event
     @info "AutoMod triggered" rule_id=event.rule_id user_id=event.user_id
 
     # event fields:
@@ -174,14 +174,14 @@ end
 ### Custom Alert Embed
 
 ```julia
-on(client, AutoModerationActionExecution) do c, event
+Accord.on(client, AutoModerationActionExecution) do c, event
     ALERT_CHANNEL = Snowflake(999999999999999999)
 
     matched = ismissing(event.matched_keyword) ? "N/A" : event.matched_keyword
     content = ismissing(event.content) ? "N/A" : event.content
     channel = ismissing(event.channel_id) ? "N/A" : "<#$(event.channel_id)>"
 
-    e = embed(
+    e = Accord.embed(
         title="AutoMod Action",
         color=0xED4245,
         fields=[
@@ -201,7 +201,7 @@ end
 ### List All Rules
 
 ```julia
-rules = list_auto_moderation_rules(client.ratelimiter, guild_id; token=client.token)
+rules = Accord.list_auto_moderation_rules(client, guild_id)
 for rule in rules
     @info "Rule" name=rule.name id=rule.id enabled=rule.enabled trigger_type=rule.trigger_type
 end
@@ -210,8 +210,7 @@ end
 ### Modify a Rule
 
 ```julia
-modify_auto_moderation_rule(client.ratelimiter, guild_id, rule_id;
-    token=client.token,
+Accord.modify_auto_moderation_rule(client, guild_id, rule_id;
     body=Dict(
         "name" => "Updated Filter",
         "trigger_metadata" => Dict(
@@ -224,15 +223,13 @@ modify_auto_moderation_rule(client.ratelimiter, guild_id, rule_id;
 ### Delete a Rule
 
 ```julia
-delete_auto_moderation_rule(client.ratelimiter, guild_id, rule_id;
-    token=client.token)
+Accord.delete_auto_moderation_rule(client, guild_id, rule_id)
 ```
 
 ### Add Exempt Roles/Channels
 
 ```julia
-modify_auto_moderation_rule(client.ratelimiter, guild_id, rule_id;
-    token=client.token,
+Accord.modify_auto_moderation_rule(client, guild_id, rule_id;
     body=Dict(
         "exempt_roles" => [string(mod_role_id), string(admin_role_id)],
         "exempt_channels" => [string(bot_testing_channel_id)],
@@ -244,18 +241,18 @@ modify_auto_moderation_rule(client.ratelimiter, guild_id, rule_id;
 
 ```julia
 options_automod = [
-    command_option(
+    Accord.command_option(
         type=ApplicationCommandOptionTypes.SUB_COMMAND,
         name="list",
         description="List all AutoMod rules"
     ),
-    command_option(
+    Accord.command_option(
         type=ApplicationCommandOptionTypes.SUB_COMMAND,
         name="toggle",
         description="Enable/disable a rule",
         options=[
-            command_option(type=ApplicationCommandOptionTypes.STRING, name="rule_id", description="Rule ID", required=true),
-            command_option(type=ApplicationCommandOptionTypes.BOOLEAN, name="enabled", description="Enable or disable", required=true),
+            Accord.command_option(type=ApplicationCommandOptionTypes.STRING, name="rule_id", description="Rule ID", required=true),
+            Accord.command_option(type=ApplicationCommandOptionTypes.BOOLEAN, name="enabled", description="Enable or disable", required=true),
         ]
     ),
 ]
@@ -269,11 +266,11 @@ options_automod = [
     guild_id = ctx.interaction.guild_id
 
     if sub.name == "list"
-        defer(ctx; ephemeral=true)
-        rules = list_auto_moderation_rules(ctx.client.ratelimiter, guild_id; token=ctx.client.token)
+        Accord.defer(ctx; ephemeral=true)
+        rules = Accord.list_auto_moderation_rules(ctx.client, guild_id)
 
         if isempty(rules)
-            respond(ctx; content="No AutoMod rules configured.")
+            Accord.respond(ctx; content="No AutoMod rules configured.")
             return
         end
 
@@ -284,8 +281,8 @@ options_automod = [
             )
             for rule in rules
         ]
-        e = embed(title="AutoMod Rules", color=0x5865F2, fields=fields)
-        respond(ctx; embeds=[e])
+        e = Accord.embed(title="AutoMod Rules", color=0x5865F2, fields=fields)
+        Accord.respond(ctx; embeds=[e])
 
     elseif sub.name == "toggle"
         sub_opts = Dict{String, Any}()
@@ -298,10 +295,10 @@ options_automod = [
         rule_id = Snowflake(sub_opts["rule_id"])
         enabled = sub_opts["enabled"]
 
-        modify_auto_moderation_rule(ctx.client.ratelimiter, guild_id, rule_id;
-            token=ctx.client.token, body=Dict("enabled" => enabled))
+        Accord.modify_auto_moderation_rule(ctx.client, guild_id, rule_id;
+            body=Dict("enabled" => enabled))
 
-        respond(ctx; content="Rule `$rule_id` $(enabled ? "enabled" : "disabled").", ephemeral=true)
+        Accord.respond(ctx; content="Rule `$rule_id` $(enabled ? "enabled" : "disabled").", ephemeral=true)
     end
 end
 ```

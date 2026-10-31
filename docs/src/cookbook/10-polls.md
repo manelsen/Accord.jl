@@ -46,9 +46,7 @@ body = Dict{String, Any}(
     )
 )
 
-# Must call the REST endpoint directly for poll body
-discord_post(client.ratelimiter, "/channels/$(channel_id)/messages";
-    token=client.token, body=body)
+create_message(client, channel_id; poll=body["poll"])
 ```
 
 ### Poll with Emoji
@@ -71,11 +69,11 @@ Dict(
 ## 3. Listening for Votes
 
 ```julia
-on(client, [`MessagePollVoteAdd`](@ref)) do c, event
+Accord.on(client, [`MessagePollVoteAdd`](@ref)) do c, event
     @info "Vote added" user=event.user_id message=event.message_id answer=event.answer_id
 end
 
-on(client, [`MessagePollVoteRemove`](@ref)) do c, event
+Accord.on(client, [`MessagePollVoteRemove`](@ref)) do c, event
     @info "Vote removed" user=event.user_id message=event.message_id answer=event.answer_id
 end
 ```
@@ -86,12 +84,12 @@ end
 # Simple in-memory vote tracker
 const vote_counts = Dict{[`Snowflake`](@ref), Dict{Int, Int}}()  # message_id → answer_id → count
 
-on(client, [`MessagePollVoteAdd`](@ref)) do c, event
+Accord.on(client, [`MessagePollVoteAdd`](@ref)) do c, event
     msg_votes = get!(vote_counts, event.message_id, Dict{Int, Int}())
     msg_votes[event.answer_id] = get(msg_votes, event.answer_id, 0) + 1
 end
 
-on(client, MessagePollVoteRemove) do c, event
+Accord.on(client, MessagePollVoteRemove) do c, event
     msg_votes = get!(vote_counts, event.message_id, Dict{Int, Int}())
     msg_votes[event.answer_id] = max(0, get(msg_votes, event.answer_id, 0) - 1)
 end
@@ -101,8 +99,8 @@ end
 
 ```julia
 # Get voters for a specific answer
-voters = get_answer_voters(client.ratelimiter, channel_id, message_id, 1;
-    token=client.token, limit=100)
+voters = Accord.get_answer_voters(client, channel_id, message_id, 1;
+    limit=100)
 
 # voters is a Dict with "users" key
 for user_data in voters["users"]
@@ -114,8 +112,7 @@ end
 
 ```julia
 # End the poll and finalize results
-result_msg = end_poll(client.ratelimiter, channel_id, message_id;
-    token=client.token)
+result_msg = Accord.end_poll(client, channel_id, message_id)
 @info "Poll ended" message_id=result_msg.id
 ```
 
@@ -131,23 +128,23 @@ client = Client(token;
 
 # /poll "Question?" "Option A" "Option B" ["Option C"] ["Option D"]
 options_poll = [
-    command_option(type=ApplicationCommandOptionTypes.STRING, name="question", description="Poll question", required=true),
-    command_option(type=ApplicationCommandOptionTypes.STRING, name="option1", description="First option", required=true),
-    command_option(type=ApplicationCommandOptionTypes.STRING, name="option2", description="Second option", required=true),
-    command_option(type=ApplicationCommandOptionTypes.STRING, name="option3", description="Third option"),
-    command_option(type=ApplicationCommandOptionTypes.STRING, name="option4", description="Fourth option"),
-    command_option(type=ApplicationCommandOptionTypes.INTEGER, name="hours", description="Duration in hours (default: 24)", min_value=1, max_value=336),
-    command_option(type=ApplicationCommandOptionTypes.BOOLEAN, name="multiselect", description="Allow multiple votes?"),
+    Accord.command_option(type=ApplicationCommandOptionTypes.STRING, name="question", description="Poll question", required=true),
+    Accord.command_option(type=ApplicationCommandOptionTypes.STRING, name="option1", description="First option", required=true),
+    Accord.command_option(type=ApplicationCommandOptionTypes.STRING, name="option2", description="Second option", required=true),
+    Accord.command_option(type=ApplicationCommandOptionTypes.STRING, name="option3", description="Third option"),
+    Accord.command_option(type=ApplicationCommandOptionTypes.STRING, name="option4", description="Fourth option"),
+    Accord.command_option(type=ApplicationCommandOptionTypes.INTEGER, name="hours", description="Duration in hours (default: 24)", min_value=1, max_value=336),
+    Accord.command_option(type=ApplicationCommandOptionTypes.BOOLEAN, name="multiselect", description="Allow multiple votes?"),
 ]
 
 @slash_command client "poll" "Create a poll" options_poll function(ctx)
-    question = get_option(ctx, "question", "")
-    opt1 = get_option(ctx, "option1", "")
-    opt2 = get_option(ctx, "option2", "")
-    opt3 = get_option(ctx, "option3", nothing)
-    opt4 = get_option(ctx, "option4", nothing)
-    hours = get_option(ctx, "hours", 24)
-    multi = get_option(ctx, "multiselect", false)
+    question = Accord.get_option(ctx, "question", "")
+    opt1 = Accord.get_option(ctx, "option1", "")
+    opt2 = Accord.get_option(ctx, "option2", "")
+    opt3 = Accord.get_option(ctx, "option3", nothing)
+    opt4 = Accord.get_option(ctx, "option4", nothing)
+    hours = Accord.get_option(ctx, "hours", 24)
+    multi = Accord.get_option(ctx, "multiselect", false)
 
     answers = [
         Dict("answer_id" => 1, "poll_media" => Dict("text" => opt1)),
@@ -168,36 +165,35 @@ options_poll = [
         )
     )
 
-    defer(ctx)
-    discord_post(ctx.client.ratelimiter, "/channels/$(channel_id)/messages";
-        token=ctx.client.token, body=body)
-    respond(ctx; content="Poll created!", ephemeral=true)
+    Accord.defer(ctx)
+    create_message(ctx.client, channel_id; poll=body["poll"])
+    Accord.respond(ctx; content="Poll created!", ephemeral=true)
 end
 
 # /endpoll <message_id>
 options_end = [
-    command_option(type=ApplicationCommandOptionTypes.STRING, name="message_id", description="Message ID of the poll", required=true),
+    Accord.command_option(type=ApplicationCommandOptionTypes.STRING, name="message_id", description="Message ID of the poll", required=true),
 ]
 
 @slash_command client "endpoll" "End a poll early" options_end function(ctx)
-    msg_id = Snowflake(get_option(ctx, "message_id", ""))
+    msg_id = Snowflake(Accord.get_option(ctx, "message_id", ""))
     channel_id = ctx.interaction.channel_id
 
-    end_poll(ctx.client.ratelimiter, channel_id, msg_id; token=ctx.client.token)
-    respond(ctx; content="Poll ended!", ephemeral=true)
+    Accord.end_poll(ctx.client, channel_id, msg_id)
+    Accord.respond(ctx; content="Poll ended!", ephemeral=true)
 end
 
 # Vote tracking
-on(client, MessagePollVoteAdd) do c, event
+Accord.on(client, MessagePollVoteAdd) do c, event
     @info "Vote" user=event.user_id answer=event.answer_id message=event.message_id
 end
 
-on(client, [`ReadyEvent`](@ref)) do c, event
+Accord.on(client, [`ReadyEvent`](@ref)) do c, event
     sync_commands!(c, c.command_tree)
     @info "Poll bot ready!"
 end
 
-start(client)
+Accord.start(client)
 ```
 
 ---

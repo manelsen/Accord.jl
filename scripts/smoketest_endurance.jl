@@ -208,7 +208,7 @@ function main()
     deadline = now() + Dates.Millisecond(round(Int, HOURS * 3600 * 1000))
 
     # ── Track READY (counts reconnections) ────────────────────────────────
-    on(client, ReadyEvent) do c, event
+    Accord.on(client, ReadyEvent) do c, event
         metrics.ready_count += 1
         if metrics.ready_count > 1
             metrics.reconnect_count += 1
@@ -229,20 +229,20 @@ function main()
         PresenceUpdate, TypingStart,
         GuildEmojisUpdate, GuildStickersUpdate,
     ]
-        on(client, EventType) do c, event
+        Accord.on(client, EventType) do c, event
             count_event!(string(nameof(typeof(event))))
         end
     end
 
     # ── Error handler ─────────────────────────────────────────────────────
-    on_error(client) do c, event, err
+    Accord.on_error(client) do c, event, err
         msg = "Handler error on $(typeof(event)): $(sprint(showerror, err))"
         logboth("ERROR", msg)
         record_error!(msg)
     end
 
     # ── Start ─────────────────────────────────────────────────────────────
-    start(client; blocking=false)
+    Accord.start(client; blocking=false)
     wait_until_ready(client)
     logboth("INFO", "Bot is ready. Endurance test running until $(Dates.format(deadline, "yyyy-mm-dd HH:MM"))")
 
@@ -309,7 +309,7 @@ function main()
         catch; end
     end
 
-    stop(client)
+    Accord.stop(client)
     close(logfile_io)
 
     final_report()

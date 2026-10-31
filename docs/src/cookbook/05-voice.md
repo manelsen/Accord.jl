@@ -49,10 +49,10 @@ using Accord
 vc = [`VoiceClient`](@ref)(client, guild_id, voice_channel_id)
 
 # Full handshake: gateway → voice WS → UDP → ready
-connect!(vc)
+Accord.connect!(vc)
 
 # Later, disconnect
-disconnect!(vc)
+Accord.disconnect!(vc)
 ```
 
 The [`connect!`](@ref) flow:
@@ -68,7 +68,7 @@ The [`connect!`](@ref) flow:
 
 ```julia
 source = [`FFmpegSource`](@ref)("song.mp3")
-play!(vc, source)
+Accord.play!(vc, source)
 ```
 
 [`FFmpegSource`](@ref) handles any format ffmpeg supports: MP3, FLAC, OGG, WAV, M4A, URLs, etc.
@@ -76,11 +76,11 @@ play!(vc, source)
 ```julia
 # Play from a URL
 source = [`FFmpegSource`](@ref)("https://example.com/stream.mp3")
-play!(vc, source)
+Accord.play!(vc, source)
 
 # Adjust volume at the ffmpeg level
 source = [`FFmpegSource`](@ref)("song.mp3"; volume=0.5)
-play!(vc, source)
+Accord.play!(vc, source)
 ```
 
 ### From Raw PCM
@@ -89,7 +89,7 @@ play!(vc, source)
 # Raw PCM Int16, 48kHz stereo
 pcm_data = zeros(Int16, 48000 * 2 * 5)  # 5 seconds of silence
 source = [`PCMSource`](@ref)(pcm_data)
-play!(vc, source)
+Accord.play!(vc, source)
 ```
 
 ### From a Raw PCM File
@@ -97,7 +97,7 @@ play!(vc, source)
 ```julia
 # File must be: 48kHz, 16-bit signed little-endian, stereo
 source = [`FileSource`](@ref)("audio.raw")
-play!(vc, source)
+Accord.play!(vc, source)
 ```
 
 ### Silence (Keep-Alive)
@@ -105,7 +105,7 @@ play!(vc, source)
 ```julia
 # 5 seconds of silence to keep the voice connection alive
 source = [`SilenceSource`](@ref)(5000)
-play!(vc, source)
+Accord.play!(vc, source)
 ```
 
 ## 4. Playback Control
@@ -114,18 +114,18 @@ play!(vc, source)
 player = vc.player
 
 # Pause/resume
-pause!(player)
-resume!(player)
+Accord.pause!(player)
+Accord.resume!(player)
 
 # Check status
-is_playing(player)  # true/false
+Accord.is_playing(player)  # true/false
 
 # Volume (0.0 to 2.0, applied to PCM before encoding)
 player.volume = 0.5   # 50%
 player.volume = 1.5   # 150%
 
 # Stop playback
-stop!(vc)
+Accord.stop!(vc)
 ```
 
 ## 5. Opus Encoding Details
@@ -142,11 +142,11 @@ Accord.jl handles this automatically when you use [`play!`](@ref). For manual en
 encoder = [`OpusEncoder`](@ref)()  # defaults: 48kHz, stereo, AUDIO application
 
 pcm_frame = rand(Int16, 960 * 2)  # one 20ms frame
-opus_data = opus_encode(encoder, pcm_frame)
+opus_data = Accord.opus_encode(encoder, pcm_frame)
 
 # Decoding
 decoder = [`OpusDecoder`](@ref)()
-pcm_out = opus_decode(decoder, opus_data)
+pcm_out = Accord.opus_decode(decoder, opus_data)
 ```
 
 ## 6. Voice Transcription
@@ -235,7 +235,7 @@ function process_voice_packet(ssrc::UInt32, opus_data::Vector{UInt8})
     dec = get!(decoders, ssrc) do; OpusDecoder() end
     buf = get!(audio_buffers, ssrc) do; Int16[] end
 
-    pcm = opus_decode(dec, opus_data)
+    pcm = Accord.opus_decode(dec, opus_data)
 
     # Simple energy-based silence detection
     energy = sum(abs.(Float64.(pcm))) / length(pcm)
@@ -276,7 +276,7 @@ end
 tree = CommandTree()
 
 register_command!(tree, "join", "Join your voice channel", function(ctx)
-    defer(ctx)
+    Accord.defer(ctx)
 
     guild_id = ctx.interaction.guild_id
     user_id = ctx.interaction.member.user.id
@@ -284,40 +284,40 @@ register_command!(tree, "join", "Join your voice channel", function(ctx)
     # Find user's voice channel from state
     guild_vs = get(ctx.client.state.voice_states, guild_id, nothing)
     if isnothing(guild_vs)
-        respond(ctx; content="You're not in a voice channel!")
+        Accord.respond(ctx; content="You're not in a voice channel!")
         return
     end
     vs = get(guild_vs, user_id, nothing)
     if isnothing(vs) || isnothing(vs.channel_id)
-        respond(ctx; content="You're not in a voice channel!")
+        Accord.respond(ctx; content="You're not in a voice channel!")
         return
     end
 
     vc = VoiceClient(ctx.client, guild_id, vs.channel_id)
-    connect!(vc)
-    respond(ctx; content="Joined <#$(vs.channel_id)>!")
+    Accord.connect!(vc)
+    Accord.respond(ctx; content="Joined <#$(vs.channel_id)>!")
 end)
 
 register_command!(tree, "leave", "Leave voice channel", function(ctx)
     # Assumes you store the VoiceClient somewhere accessible
-    disconnect!(vc)
-    respond(ctx; content="Disconnected from voice.")
+    Accord.disconnect!(vc)
+    Accord.respond(ctx; content="Disconnected from voice.")
 end)
 
 register_command!(tree, "play", "Play audio", function(ctx)
-    url = get_option(ctx, "url", "")
-    defer(ctx)
+    url = Accord.get_option(ctx, "url", "")
+    Accord.defer(ctx)
 
     source = FFmpegSource(url)
-    play!(vc, source)
-    respond(ctx; content="Now playing!")
+    Accord.play!(vc, source)
+    Accord.respond(ctx; content="Now playing!")
 end; options=[
-    command_option(type=ApplicationCommandOptionTypes.STRING, name="url", description="Audio URL or path", required=true),
+    Accord.command_option(type=ApplicationCommandOptionTypes.STRING, name="url", description="Audio URL or path", required=true),
 ])
 
 register_command!(tree, "stop", "Stop playback", function(ctx)
-    stop!(vc)
-    respond(ctx; content="Playback stopped.")
+    Accord.stop!(vc)
+    Accord.respond(ctx; content="Playback stopped.")
 end)
 ```
 
