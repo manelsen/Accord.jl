@@ -59,13 +59,6 @@ including the breaking changes.
 
 ## 5. Known bugs and gaps in the code
 
-- **`Maybe` loses null vs absent on decode.** JSON3 reads a JSON `null` into a
-  `Union{T, Missing, Nothing}` field as `missing`, not `nothing` (found in #6's
-  tests: `primary_guild: null`, `accent_color: null`, `status: null`). So the
-  distinction `Maybe` exists to keep does not survive parsing. Fix in the
-  StructTypes/JSON3 layer (e.g. a custom construct for `Maybe` fields) and add
-  round-trip tests; docstrings that promise `nothing` for null are then right.
-  `Optional{Any}` fields (e.g. `Component.value`) do get `nothing`.
 - **`CommandTree` has no lock.** Its handler dicts are mutated by
   `register_*!` and read by dispatch, which now runs on multiple threads (#4).
 - **Example templates call functions that don't exist**: `fetch_guild` and

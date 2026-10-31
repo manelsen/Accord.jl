@@ -22,7 +22,7 @@ it contains metadata specific to a particular guild (like nicknames and roles).
 # Example
 ```julia
 member = msg.member
-if !ismissing(member.nick)
+if member.nick isa String  # missing: not sent; nothing: no nickname
     println("Member nickname: \$(member.nick)")
 end
 ```

@@ -42,10 +42,12 @@ Use this macro when defining new Discord API data structures to automatically ha
 
 Generate a Discord API struct with:
 - Mutable struct with keyword constructor
-- All Optional{T} fields default to `missing`
+- All Optional{T} and Maybe{T} fields default to `missing`
 - All Nullable{T} fields default to `nothing`
 - All other fields get sensible defaults for zero-arg construction
-- JSON3/StructTypes Mutable() integration
+- JSON3/StructTypes Mutable() integration: an absent key reads as `missing` and
+  a JSON `null` as `nothing`; on write, `missing` is omitted and `nothing` in a
+  Maybe/Nullable field is written as `null`
 
 # Example
 ```jldoctest
@@ -70,6 +72,8 @@ macro discord_struct(name, block)
     end
     field_exprs = []
     timestamp_fields = Symbol[]
+    maybe_fields = Symbol[]     # null must decode to `nothing`
+    nullable_fields = Symbol[]  # `nothing` must be written as null
 
     for expr in block.args
         if expr isa LineNumberNode
@@ -100,29 +104,24 @@ macro discord_struct(name, block)
             fname isa Symbol && _is_timestamp_field(fname) && push!(timestamp_fields, fname)
             ftype_expr = esc(ftype)
             fname_expr = esc(fname)
-            
+            wrapper = _wrapper_name(ftype)
+            wrapper === :Maybe && push!(maybe_fields, fname)
+            wrapper in (:Maybe, :Nullable) && push!(nullable_fields, fname)
+
             if !isnothing(default_val)
                 push!(field_exprs, Expr(:(=), :($(fname_expr)::$(ftype_expr)), esc(default_val)))
             else
-                # Check if the type is Optional{...} or Nullable{...}
-                found_wrapper = false
-                if ftype isa Expr && ftype.head == :curly
-                    wrapper = ftype.args[1]
-                    if wrapper == :Optional || (wrapper isa Expr && wrapper.head == :. && wrapper.args[2] isa QuoteNode && wrapper.args[2].value == :Optional)
-                        push!(field_exprs, Expr(:(=), :($(fname_expr)::$(ftype_expr)), :missing))
-                        found_wrapper = true
-                    elseif wrapper == :Maybe || (wrapper isa Expr && wrapper.head == :. && wrapper.args[2] isa QuoteNode && wrapper.args[2].value == :Maybe)
-                        push!(field_exprs, Expr(:(=), :($(fname_expr)::$(ftype_expr)), :missing))
-                        found_wrapper = true
-                    elseif wrapper == :Nullable || (wrapper isa Expr && wrapper.head == :. && wrapper.args[2] isa QuoteNode && wrapper.args[2].value == :Nullable)
-                        push!(field_exprs, Expr(:(=), :($(fname_expr)::$(ftype_expr)), :nothing))
-                        found_wrapper = true
-                    elseif wrapper == :Vector || (wrapper isa Expr && wrapper.head == :. && wrapper.args[2] isa QuoteNode && wrapper.args[2].value == :Vector)
-                        push!(field_exprs, Expr(:(=), :($(fname_expr)::$(ftype_expr)), :($(ftype_expr)())))
-                        found_wrapper = true
-                    end
+                found_wrapper = true
+                if wrapper in (:Optional, :Maybe)
+                    push!(field_exprs, Expr(:(=), :($(fname_expr)::$(ftype_expr)), :missing))
+                elseif wrapper === :Nullable
+                    push!(field_exprs, Expr(:(=), :($(fname_expr)::$(ftype_expr)), :nothing))
+                elseif wrapper === :Vector
+                    push!(field_exprs, Expr(:(=), :($(fname_expr)::$(ftype_expr)), :($(ftype_expr)())))
+                else
+                    found_wrapper = false
                 end
-                
+
                 if !found_wrapper
                     # Provide defaults for concrete types so Mutable() can construct empty instances
                     default = _default_for_type(ftype)
@@ -168,8 +167,46 @@ macro discord_struct(name, block)
 
         $StructTypes.StructType(::Type{$esc_name}) = $StructTypes.Mutable()
         $StructTypes.omitempties(::Type{$esc_name}) = true
+        $StructTypes.isempty(::Type{$esc_name}, x::$esc_name, i::Int) =
+            _omit_field(getfield(x, i), fieldname($esc_name, i) in $(Tuple(nullable_fields)))
+
+        $(_null_decode_block(esc_name, maybe_fields))
 
         $getprop_block
+    end
+end
+
+# `Optional`, `Maybe`, `Nullable` or `Vector` for a `Wrapper{T}` field type
+# (bare or module-qualified), otherwise `nothing`.
+function _wrapper_name(ftype)
+    (ftype isa Expr && ftype.head == :curly) || return nothing
+    w = ftype.args[1]
+    if w isa Expr && w.head == :. && w.args[2] isa QuoteNode
+        w = w.args[2].value
+    end
+    return w in (:Optional, :Maybe, :Nullable, :Vector) ? w : nothing
+end
+
+# Whether to leave a field out when writing JSON: `missing` means absent, so it
+# is always omitted; `nothing` means null, written only where the type allows it.
+_omit_field(::Missing, keep_null::Bool) = true
+_omit_field(::Nothing, keep_null::Bool) = !keep_null
+_omit_field(v, keep_null::Bool) = StructTypes.isempty(v)
+
+# JSON3 reads a null into `Union{T, Missing, Nothing}` as `missing`, the first
+# null-like member of the union. StructTypes only applies fields whose key is
+# present, so a Maybe field that is still `missing` afterwards was a null.
+function _null_decode_block(esc_name, maybe_fields)
+    isempty(maybe_fields) && return :()
+    quote
+        function $StructTypes.applyfield!(f, x::$esc_name, nm::Symbol)
+            applied = invoke($StructTypes.applyfield!, Tuple{Any, Any, Symbol}, f, x, nm)
+            fld = $StructTypes.julianame($StructTypes.names($esc_name), nm)
+            if applied && fld in $(Tuple(maybe_fields)) && getfield(x, fld) === missing
+                setfield!(x, fld, nothing)
+            end
+            return applied
+        end
     end
 end
 

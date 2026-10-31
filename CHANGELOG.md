@@ -30,6 +30,7 @@ All notable changes to this project will be documented in this file.
 - `create_message(client, ...)` accepts `poll`, `flags` and `allowed_mentions`.
 - **CLI split out**: the `accord` command-line tool (`onboard`, `doctor`) moved to the `AccordCLI` package in `AccordCLI/`. `Accord` no longer depends on `Comonicon`, `Pkg` or `UUIDs`, and `Accord.AccordCLI` is gone.
 - **Voice transport encryption**: only `aead_aes256_gcm_rtpsize` (preferred, when the CPU has hardware AES) and `aead_xchacha20_poly1305_rtpsize` are supported. The `xsalsa20_poly1305*` modes, discontinued by Discord on 2024-11-18, were removed together with their functions and `CRYPTO_SECRETBOX_*` constants. `Accord.Internals` exposes `encrypt_rtpsize`, `decrypt_rtpsize` and `aes256gcm_available` instead.
+- **`Maybe` fields keep null apart from absent.** A JSON `null` in a `Maybe{T}` field now reads as `nothing`; an absent key stays `missing`. JSON3 used to read both as `missing`. On write, `missing` fields are omitted and `nothing` in a `Maybe`/`Nullable` field is written as `null`; before, it was the other way round. Code that tests only `ismissing(x)` on these fields now also sees `nothing`, so check with `x isa T`. As a result, a nickname, avatar or timeout cleared in `GUILD_MEMBER_UPDATE` now clears it in the cache too.
 - Removed the unused `CodecZlib` dependency and the `GatewaySession.zlib_buffer` field (Accord never requested gateway compression).
 
 ### Fixed
