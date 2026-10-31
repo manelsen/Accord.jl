@@ -109,7 +109,8 @@ jobs:
           ACCORD_REQUIRE_LIBDAVE: "1"
           ACCORD_TEST_WORKERS: "0"
           JULIA_NUM_THREADS: "4,1"
-        run: julia --project -e 'using Pkg; Pkg.test(test_args=["dave"])'
+        shell: bash
+        run: .github/scripts/annotate_failure.sh julia --project -e 'using Pkg; Pkg.test(test_args=["dave"])'
 
   cli:
     name: AccordCLI
