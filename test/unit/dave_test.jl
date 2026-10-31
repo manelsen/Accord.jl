@@ -249,7 +249,11 @@ end
         @testset "garbage MLS input fails cleanly" begin
             s = LibDave.Session()
             LibDave.init!(s, 1, 1234, "42")
-            @test LibDave.process_commit(s, UInt8[0x01, 0x02, 0x03]).failed
+            # Without a group libdave ignores commits (an in-flight commit can
+            # race a reset); either way nothing is applied.
+            r = LibDave.process_commit(s, UInt8[0x01, 0x02, 0x03])
+            @test r.failed || r.ignored
+            @test isempty(r.roster)
             @test isempty(LibDave.process_proposals(s, UInt8[0x00, 0xff], ["42"]))
             @test isnothing(LibDave.process_welcome(s, UInt8[0x01, 0x02], ["42"]))
             @test isnothing(LibDave.key_ratchet(s, "42"))   # no group yet
