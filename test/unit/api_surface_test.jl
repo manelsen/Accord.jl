@@ -5,8 +5,8 @@
         for name in (:start, :stop, :on, :respond, :defer, :followup, :target,
                      :button, :embed, :section, :container, :separator, :timestamp,
                      :connect!, :play!, :Optional, :Nullable, Symbol("Accord.@on"), Symbol("Accord.@embed"))
-            @test !Base.isexported(Accord, name)
-            @test Base.ispublic(Accord, name)
+            @test (name, Base.isexported(Accord, name)) == (name, false)
+            @test (name, Base.ispublic(Accord, name)) == (name, true)
         end
     end
 

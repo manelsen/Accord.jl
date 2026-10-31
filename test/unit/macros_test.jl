@@ -600,7 +600,7 @@
             color(:green)
             field("Field1", "Value1", inline=true)
             footer("Footer", icon="https://icon.png")
-            Accord.timestamp()
+            timestamp()
         end
 
         @test e["title"] == "Test Title"
