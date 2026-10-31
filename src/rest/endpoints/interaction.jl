@@ -195,8 +195,7 @@ Requires `VIEW_CHANNEL` in the guild.
 """
 function get_guild_application_commands(rl::RateLimiter, application_id::Snowflake, guild_id::Snowflake; token::String, with_localizations::Bool=false)
     query = with_localizations ? ["with_localizations" => "true"] : nothing
-    resp = discord_get(rl, "/applications/$(application_id)/guilds/$(guild_id)/commands"; token, query,
-        major_params=["guild_id" => string(guild_id)])
+    resp = discord_get(rl, "/applications/$(application_id)/guilds/$(guild_id)/commands"; token, query)
     parse_response_array(ApplicationCommand, resp)
 end
 
@@ -228,8 +227,7 @@ Requires `VIEW_CHANNEL` in the guild.
 [Discord docs](https://discord.com/developers/docs/interactions/application-commands#create-guild-application-command)
 """
 function create_guild_application_command(rl::RateLimiter, application_id::Snowflake, guild_id::Snowflake; token::String, body::Dict)
-    resp = discord_post(rl, "/applications/$(application_id)/guilds/$(guild_id)/commands"; token, body,
-        major_params=["guild_id" => string(guild_id)])
+    resp = discord_post(rl, "/applications/$(application_id)/guilds/$(guild_id)/commands"; token, body)
     parse_response(ApplicationCommand, resp)
 end
 
@@ -255,8 +253,7 @@ Use this when a bot needs to retrieve details of a guild-specific command.
 [Discord docs](https://discord.com/developers/docs/interactions/application-commands#get-guild-application-command)
 """
 function get_guild_application_command(rl::RateLimiter, application_id::Snowflake, guild_id::Snowflake, command_id::Snowflake; token::String)
-    resp = discord_get(rl, "/applications/$(application_id)/guilds/$(guild_id)/commands/$(command_id)"; token,
-        major_params=["guild_id" => string(guild_id)])
+    resp = discord_get(rl, "/applications/$(application_id)/guilds/$(guild_id)/commands/$(command_id)"; token)
     parse_response(ApplicationCommand, resp)
 end
 
@@ -284,8 +281,7 @@ Use this when a bot needs to update a guild command's properties.
 [Discord docs](https://discord.com/developers/docs/interactions/application-commands#edit-guild-application-command)
 """
 function edit_guild_application_command(rl::RateLimiter, application_id::Snowflake, guild_id::Snowflake, command_id::Snowflake; token::String, body::Dict)
-    resp = discord_patch(rl, "/applications/$(application_id)/guilds/$(guild_id)/commands/$(command_id)"; token, body,
-        major_params=["guild_id" => string(guild_id)])
+    resp = discord_patch(rl, "/applications/$(application_id)/guilds/$(guild_id)/commands/$(command_id)"; token, body)
     parse_response(ApplicationCommand, resp)
 end
 
@@ -311,8 +307,7 @@ Use this when a bot needs to remove a guild command. Changes are immediate.
 [Discord docs](https://discord.com/developers/docs/interactions/application-commands#delete-guild-application-command)
 """
 function delete_guild_application_command(rl::RateLimiter, application_id::Snowflake, guild_id::Snowflake, command_id::Snowflake; token::String)
-    discord_delete(rl, "/applications/$(application_id)/guilds/$(guild_id)/commands/$(command_id)"; token,
-        major_params=["guild_id" => string(guild_id)])
+    discord_delete(rl, "/applications/$(application_id)/guilds/$(guild_id)/commands/$(command_id)"; token)
 end
 
 """
@@ -339,8 +334,7 @@ more efficient than updating commands individually and takes effect immediately.
 [Discord docs](https://discord.com/developers/docs/interactions/application-commands#bulk-overwrite-guild-application-commands)
 """
 function bulk_overwrite_guild_application_commands(rl::RateLimiter, application_id::Snowflake, guild_id::Snowflake; token::String, body::Vector)
-    resp = discord_put(rl, "/applications/$(application_id)/guilds/$(guild_id)/commands"; token, body=body,
-        major_params=["guild_id" => string(guild_id)])
+    resp = discord_put(rl, "/applications/$(application_id)/guilds/$(guild_id)/commands"; token, body=body)
     parse_response_array(ApplicationCommand, resp)
 end
 
@@ -618,8 +612,7 @@ Requires `ADMINISTRATOR` or application ownership.
 [Discord docs](https://discord.com/developers/docs/interactions/application-commands#get-application-command-permissions)
 """
 function get_guild_application_command_permissions(rl::RateLimiter, application_id::Snowflake, guild_id::Snowflake; token::String)
-    resp = discord_get(rl, "/applications/$(application_id)/guilds/$(guild_id)/commands/permissions"; token,
-        major_params=["guild_id" => string(guild_id)])
+    resp = discord_get(rl, "/applications/$(application_id)/guilds/$(guild_id)/commands/permissions"; token)
     JSON3.read(resp.body, Vector{Dict{String, Any}})
 end
 
@@ -650,8 +643,7 @@ Requires `ADMINISTRATOR` or application ownership.
 [Discord docs](https://discord.com/developers/docs/interactions/application-commands#get-application-command-permissions)
 """
 function get_application_command_permissions(rl::RateLimiter, application_id::Snowflake, guild_id::Snowflake, command_id::Snowflake; token::String)
-    resp = discord_get(rl, "/applications/$(application_id)/guilds/$(guild_id)/commands/$(command_id)/permissions"; token,
-        major_params=["guild_id" => string(guild_id)])
+    resp = discord_get(rl, "/applications/$(application_id)/guilds/$(guild_id)/commands/$(command_id)/permissions"; token)
     JSON3.read(resp.body, Dict{String, Any})
 end
 
@@ -683,7 +675,6 @@ Requires `ADMINISTRATOR`.
 [Discord docs](https://discord.com/developers/docs/interactions/application-commands#edit-application-command-permissions)
 """
 function edit_application_command_permissions(rl::RateLimiter, application_id::Snowflake, guild_id::Snowflake, command_id::Snowflake; token::String, body::Dict)
-    resp = discord_put(rl, "/applications/$(application_id)/guilds/$(guild_id)/commands/$(command_id)/permissions"; token, body,
-        major_params=["guild_id" => string(guild_id)])
+    resp = discord_put(rl, "/applications/$(application_id)/guilds/$(guild_id)/commands/$(command_id)/permissions"; token, body)
     JSON3.read(resp.body, Dict{String, Any})
 end

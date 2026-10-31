@@ -460,8 +460,7 @@ Register an autocomplete handler for a slash command.
     choices = [Dict("name" => r, "value" => r) for r in search_results(query)]
     body = Dict("type" => InteractionCallbackTypes.APPLICATION_COMMAND_AUTOCOMPLETE_RESULT,
                 "data" => Dict("choices" => choices))
-    create_interaction_response(ctx.client.ratelimiter, ctx.interaction.id, ctx.interaction.token;
-        token=ctx.client.token, body)
+    create_interaction_response(ctx.client, ctx.interaction.id, ctx.interaction.token; body)
 end
 ```
 """

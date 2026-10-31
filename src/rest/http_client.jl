@@ -108,8 +108,8 @@ resp = discord_get(client.ratelimiter, "/channels/\$(channel_id)/messages";
 messages = parse_response_array(Message, resp)
 ```
 """
-function discord_get(rl::RateLimiter, path::String; token::String, query=nothing, major_params=Pair{String,String}[])
-    route = Route("GET", path, major_params...)
+function discord_get(rl::RateLimiter, path::String; token::String, query=nothing)
+    route = Route("GET", path)
     discord_request(rl, route; token, query)
 end
 
@@ -126,8 +126,8 @@ resp = discord_post(client.ratelimiter, "/channels/\$(channel_id)/messages";
     token=client.token, body=Dict("content" => "Hello!"))
 ```
 """
-function discord_post(rl::RateLimiter, path::String; token::String, body=nothing, files=nothing, reason=nothing, major_params=Pair{String,String}[])
-    route = Route("POST", path, major_params...)
+function discord_post(rl::RateLimiter, path::String; token::String, body=nothing, files=nothing, reason=nothing)
+    route = Route("POST", path)
     discord_request(rl, route; token, body, files, reason)
 end
 
@@ -144,8 +144,8 @@ resp = discord_put(client.ratelimiter, "/channels/\$(channel_id)/pins/\$(msg_id)
     token=client.token)
 ```
 """
-function discord_put(rl::RateLimiter, path::String; token::String, body=nothing, reason=nothing, major_params=Pair{String,String}[])
-    route = Route("PUT", path, major_params...)
+function discord_put(rl::RateLimiter, path::String; token::String, body=nothing, reason=nothing)
+    route = Route("PUT", path)
     discord_request(rl, route; token, body, reason)
 end
 
@@ -162,8 +162,8 @@ resp = discord_patch(client.ratelimiter, "/channels/\$(channel_id)";
     token=client.token, body=Dict("name" => "new-name"))
 ```
 """
-function discord_patch(rl::RateLimiter, path::String; token::String, body=nothing, files=nothing, reason=nothing, major_params=Pair{String,String}[])
-    route = Route("PATCH", path, major_params...)
+function discord_patch(rl::RateLimiter, path::String; token::String, body=nothing, files=nothing, reason=nothing)
+    route = Route("PATCH", path)
     discord_request(rl, route; token, body, files, reason)
 end
 
@@ -180,8 +180,8 @@ resp = discord_delete(client.ratelimiter, "/channels/\$(channel_id)/messages/\$(
     token=client.token, reason="Cleanup")
 ```
 """
-function discord_delete(rl::RateLimiter, path::String; token::String, body=nothing, reason=nothing, major_params=Pair{String,String}[])
-    route = Route("DELETE", path, major_params...)
+function discord_delete(rl::RateLimiter, path::String; token::String, body=nothing, reason=nothing)
+    route = Route("DELETE", path)
     discord_request(rl, route; token, body, reason)
 end
 

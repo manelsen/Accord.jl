@@ -17,18 +17,15 @@ Sent by Discord when the shard has successfully connected and identified.
 Contains information about the bot user and the guilds it is in.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#ready)
 """
-struct ReadyEvent <: AbstractEvent
+@discord_struct ReadyEvent <: AbstractEvent begin
     v::Int
-    user::User
+    user::User = User()
     guilds::Vector{UnavailableGuild}
     session_id::String
     resume_gateway_url::String
     shard::Optional{Vector{Int}}
-    application::Any
+    application::Any = nothing
 end
-
-StructTypes.StructType(::Type{ReadyEvent}) = StructTypes.Mutable()
-StructTypes.omitempties(::Type{ReadyEvent}) = true
 
 """
     ResumedEvent
@@ -45,12 +42,8 @@ Sent when a new channel is created, relevant to the current user.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#channel-create)
 """
 struct ChannelCreate <: AbstractEvent
-
     channel::DiscordChannel
-
 end
-
-
 
 """
     ChannelUpdate
@@ -58,12 +51,8 @@ Sent when a channel is updated.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#channel-update)
 """
 struct ChannelUpdate <: AbstractEvent
-
     channel::DiscordChannel
-
 end
-
-
 
 """
     ChannelDelete
@@ -71,29 +60,19 @@ Sent when a channel relevant to the current user is deleted.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#channel-delete)
 """
 struct ChannelDelete <: AbstractEvent
-
     channel::DiscordChannel
-
 end
-
-
 
 """
     ChannelPinsUpdate
 Sent when a message is pinned or unpinned in a text channel.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#channel-pins-update)
 """
-struct ChannelPinsUpdate <: AbstractEvent
-
+@discord_struct ChannelPinsUpdate <: AbstractEvent begin
     guild_id::Optional{Snowflake}
-
     channel_id::Snowflake
-
     last_pin_timestamp::Optional{String}
-
 end
-
-
 
 # --- Thread Events ---
 
@@ -103,12 +82,8 @@ Sent when a thread is created, relevant to the current user, or when the current
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#thread-create)
 """
 struct ThreadCreate <: AbstractEvent
-
     channel::DiscordChannel
-
 end
-
-
 
 """
     ThreadUpdate
@@ -116,50 +91,32 @@ Sent when a thread is updated.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#thread-update)
 """
 struct ThreadUpdate <: AbstractEvent
-
     channel::DiscordChannel
-
 end
-
-
 
 """
     ThreadDelete
 Sent when a thread relevant to the current user is deleted.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#thread-delete)
 """
-struct ThreadDelete <: AbstractEvent
-
+@discord_struct ThreadDelete <: AbstractEvent begin
     id::Snowflake
-
     guild_id::Snowflake
-
     parent_id::Snowflake
-
     type::Int
-
 end
-
-
 
 """
     ThreadListSync
 Sent when the current user gains access to a channel, containing all active threads in that channel.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#thread-list-sync)
 """
-struct ThreadListSync <: AbstractEvent
-
+@discord_struct ThreadListSync <: AbstractEvent begin
     guild_id::Snowflake
-
     channel_ids::Optional{Vector{Snowflake}}
-
     threads::Vector{DiscordChannel}
-
     members::Vector{ThreadMember}
-
 end
-
-
 
 """
     ThreadMemberUpdate
@@ -167,35 +124,22 @@ Sent when the thread member object for the current user is updated.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#thread-member-update)
 """
 struct ThreadMemberUpdate <: AbstractEvent
-
     member::ThreadMember
-
     guild_id::Snowflake
-
 end
-
-
 
 """
     ThreadMembersUpdate
 Sent when anyone is added to or removed from a thread.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#thread-members-update)
 """
-struct ThreadMembersUpdate <: AbstractEvent
-
+@discord_struct ThreadMembersUpdate <: AbstractEvent begin
     id::Snowflake
-
     guild_id::Snowflake
-
     member_count::Int
-
     added_members::Optional{Vector{ThreadMember}}
-
     removed_member_ids::Optional{Vector{Snowflake}}
-
 end
-
-
 
 # --- Guild Events ---
 
@@ -205,12 +149,8 @@ Sent when a guild becomes available, or when the bot joins a new guild.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#guild-create)
 """
 struct GuildCreate <: AbstractEvent
-
     guild::Guild
-
 end
-
-
 
 """
     GuildUpdate
@@ -218,12 +158,8 @@ Sent when a guild's properties are updated.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#guild-update)
 """
 struct GuildUpdate <: AbstractEvent
-
     guild::Guild
-
 end
-
-
 
 """
     GuildDelete
@@ -231,12 +167,8 @@ Sent when a guild becomes unavailable, or when the bot leaves a guild.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#guild-delete)
 """
 struct GuildDelete <: AbstractEvent
-
     guild::UnavailableGuild
-
 end
-
-
 
 """
     GuildAuditLogEntryCreate
@@ -244,87 +176,58 @@ Sent when a new audit log entry is created in a guild.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#guild-audit-log-entry-create)
 """
 struct GuildAuditLogEntryCreate <: AbstractEvent
-
     entry::AuditLogEntry
-
     guild_id::Snowflake
-
 end
-
-
 
 """
     GuildBanAdd
 Sent when a user is banned from a guild.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#guild-ban-add)
 """
-struct GuildBanAdd <: AbstractEvent
-
+@discord_struct GuildBanAdd <: AbstractEvent begin
     guild_id::Snowflake
-
-    user::User
-
+    user::User = User()
 end
-
-
 
 """
     GuildBanRemove
 Sent when a user is unbanned from a guild.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#guild-ban-remove)
 """
-struct GuildBanRemove <: AbstractEvent
-
+@discord_struct GuildBanRemove <: AbstractEvent begin
     guild_id::Snowflake
-
-    user::User
-
+    user::User = User()
 end
-
-
 
 """
     GuildEmojisUpdate
 Sent when a guild's emojis are updated.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#guild-emojis-update)
 """
-struct GuildEmojisUpdate <: AbstractEvent
-
+@discord_struct GuildEmojisUpdate <: AbstractEvent begin
     guild_id::Snowflake
-
     emojis::Vector{Emoji}
-
 end
-
-
 
 """
     GuildStickersUpdate
 Sent when a guild's stickers are updated.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#guild-stickers-update)
 """
-struct GuildStickersUpdate <: AbstractEvent
-
+@discord_struct GuildStickersUpdate <: AbstractEvent begin
     guild_id::Snowflake
-
     stickers::Vector{Sticker}
-
 end
-
-
 
 """
     GuildIntegrationsUpdate
 Sent when a guild's integrations are updated.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#guild-integrations-update)
 """
-struct GuildIntegrationsUpdate <: AbstractEvent
-
+@discord_struct GuildIntegrationsUpdate <: AbstractEvent begin
     guild_id::Snowflake
-
 end
-
-
 
 # --- Guild Member Events ---
 """
@@ -342,9 +245,9 @@ end
 Sent when a user is removed from a guild (leave/kick/ban).
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#guild-member-remove)
 """
-struct GuildMemberRemove <: AbstractEvent
+@discord_struct GuildMemberRemove <: AbstractEvent begin
     guild_id::Snowflake
-    user::User
+    user::User = User()
 end
 
 """
@@ -352,10 +255,10 @@ end
 Sent when a guild member's roles, nickname, avatar, or timeout status is updated.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#guild-member-update)
 """
-struct GuildMemberUpdate <: AbstractEvent
+@discord_struct GuildMemberUpdate <: AbstractEvent begin
     guild_id::Snowflake
     roles::Vector{Snowflake}
-    user::User
+    user::User = User()
     nick::Maybe{String}
     avatar::Maybe{String}
     joined_at::Maybe{String}
@@ -372,7 +275,7 @@ end
 Sent in response to a Request Guild Members command.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#guild-members-chunk)
 """
-struct GuildMembersChunk <: AbstractEvent
+@discord_struct GuildMembersChunk <: AbstractEvent begin
     guild_id::Snowflake
     members::Vector{Member}
     chunk_index::Int
@@ -388,9 +291,9 @@ end
 Sent when a guild role is created.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#guild-role-create)
 """
-struct GuildRoleCreate <: AbstractEvent
+@discord_struct GuildRoleCreate <: AbstractEvent begin
     guild_id::Snowflake
-    role::Role
+    role::Role = Role()
 end
 
 """
@@ -398,9 +301,9 @@ end
 Sent when a guild role is updated.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#guild-role-update)
 """
-struct GuildRoleUpdate <: AbstractEvent
+@discord_struct GuildRoleUpdate <: AbstractEvent begin
     guild_id::Snowflake
-    role::Role
+    role::Role = Role()
 end
 
 """
@@ -408,7 +311,7 @@ end
 Sent when a guild role is deleted.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#guild-role-delete)
 """
-struct GuildRoleDelete <: AbstractEvent
+@discord_struct GuildRoleDelete <: AbstractEvent begin
     guild_id::Snowflake
     role_id::Snowflake
 end
@@ -446,7 +349,7 @@ end
 Sent when a user subscribes to a guild scheduled event.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#guild-scheduled-event-user-add)
 """
-struct GuildScheduledEventUserAdd <: AbstractEvent
+@discord_struct GuildScheduledEventUserAdd <: AbstractEvent begin
     guild_scheduled_event_id::Snowflake
     user_id::Snowflake
     guild_id::Snowflake
@@ -457,7 +360,7 @@ end
 Sent when a user unsubscribes from a guild scheduled event.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#guild-scheduled-event-user-remove)
 """
-struct GuildScheduledEventUserRemove <: AbstractEvent
+@discord_struct GuildScheduledEventUserRemove <: AbstractEvent begin
     guild_scheduled_event_id::Snowflake
     user_id::Snowflake
     guild_id::Snowflake
@@ -487,7 +390,7 @@ end
 Sent when a soundboard sound is deleted from a guild.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#guild-soundboard-sound-delete)
 """
-struct GuildSoundboardSoundDelete <: AbstractEvent
+@discord_struct GuildSoundboardSoundDelete <: AbstractEvent begin
     sound_id::Snowflake
     guild_id::Snowflake
 end
@@ -497,7 +400,7 @@ end
 Sent when soundboard sounds are updated in a guild.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#guild-soundboard-sounds-update)
 """
-struct GuildSoundboardSoundsUpdate <: AbstractEvent
+@discord_struct GuildSoundboardSoundsUpdate <: AbstractEvent begin
     guild_id::Snowflake
     soundboard_sounds::Vector{SoundboardSound}
 end
@@ -507,7 +410,7 @@ end
 Sent when the bot joins a voice channel, containing all soundboard sounds for that guild.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#soundboard-sounds)
 """
-struct SoundboardSounds <: AbstractEvent
+@discord_struct SoundboardSounds <: AbstractEvent begin
     guild_id::Snowflake
     soundboard_sounds::Vector{SoundboardSound}
 end
@@ -538,7 +441,7 @@ end
 Sent when an integration is deleted from a guild.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#integration-delete)
 """
-struct IntegrationDelete <: AbstractEvent
+@discord_struct IntegrationDelete <: AbstractEvent begin
     id::Snowflake
     guild_id::Snowflake
     application_id::Optional{Snowflake}
@@ -560,7 +463,7 @@ end
 Sent when a new invite to a channel is created.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#invite-create)
 """
-struct InviteCreate <: AbstractEvent
+@discord_struct InviteCreate <: AbstractEvent begin
     channel_id::Snowflake
     code::String
     created_at::String
@@ -580,7 +483,7 @@ end
 Sent when an invite is deleted.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#invite-delete)
 """
-struct InviteDelete <: AbstractEvent
+@discord_struct InviteDelete <: AbstractEvent begin
     channel_id::Snowflake
     guild_id::Optional{Snowflake}
     code::String
@@ -610,7 +513,7 @@ end
 Sent when a message is deleted.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#message-delete)
 """
-struct MessageDelete <: AbstractEvent
+@discord_struct MessageDelete <: AbstractEvent begin
     id::Snowflake
     channel_id::Snowflake
     guild_id::Optional{Snowflake}
@@ -621,7 +524,7 @@ end
 Sent when multiple messages are deleted at once (bulk delete).
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#message-delete-bulk)
 """
-struct MessageDeleteBulk <: AbstractEvent
+@discord_struct MessageDeleteBulk <: AbstractEvent begin
     ids::Vector{Snowflake}
     channel_id::Snowflake
     guild_id::Optional{Snowflake}
@@ -633,13 +536,13 @@ end
 Sent when a user adds a reaction to a message.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#message-reaction-add)
 """
-struct MessageReactionAdd <: AbstractEvent
+@discord_struct MessageReactionAdd <: AbstractEvent begin
     user_id::Snowflake
     channel_id::Snowflake
     message_id::Snowflake
     guild_id::Optional{Snowflake}
     member::Optional{Member}
-    emoji::Emoji
+    emoji::Emoji = Emoji()
     message_author_id::Optional{Snowflake}
     burst::Bool
     burst_colors::Optional{Vector{String}}
@@ -651,12 +554,12 @@ end
 Sent when a user removes a reaction from a message.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#message-reaction-remove)
 """
-struct MessageReactionRemove <: AbstractEvent
+@discord_struct MessageReactionRemove <: AbstractEvent begin
     user_id::Snowflake
     channel_id::Snowflake
     message_id::Snowflake
     guild_id::Optional{Snowflake}
-    emoji::Emoji
+    emoji::Emoji = Emoji()
     burst::Bool
     type::Int
 end
@@ -666,7 +569,7 @@ end
 Sent when a user explicitly removes all reactions from a message.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#message-reaction-remove-all)
 """
-struct MessageReactionRemoveAll <: AbstractEvent
+@discord_struct MessageReactionRemoveAll <: AbstractEvent begin
     channel_id::Snowflake
     message_id::Snowflake
     guild_id::Optional{Snowflake}
@@ -677,11 +580,11 @@ end
 Sent when a bot removes all instances of a given emoji reaction from a message.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#message-reaction-remove-emoji)
 """
-struct MessageReactionRemoveEmoji <: AbstractEvent
+@discord_struct MessageReactionRemoveEmoji <: AbstractEvent begin
     channel_id::Snowflake
     guild_id::Optional{Snowflake}
     message_id::Snowflake
-    emoji::Emoji
+    emoji::Emoji = Emoji()
 end
 
 # --- Message Poll Vote Events ---
@@ -690,7 +593,7 @@ end
 Sent when a user votes in a poll.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#message-poll-vote-add)
 """
-struct MessagePollVoteAdd <: AbstractEvent
+@discord_struct MessagePollVoteAdd <: AbstractEvent begin
     user_id::Snowflake
     channel_id::Snowflake
     message_id::Snowflake
@@ -703,7 +606,7 @@ end
 Sent when a user removes their vote from a poll.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#message-poll-vote-remove)
 """
-struct MessagePollVoteRemove <: AbstractEvent
+@discord_struct MessagePollVoteRemove <: AbstractEvent begin
     user_id::Snowflake
     channel_id::Snowflake
     message_id::Snowflake
@@ -755,7 +658,7 @@ end
 Sent when a user starts typing in a channel.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#typing-start)
 """
-struct TypingStart <: AbstractEvent
+@discord_struct TypingStart <: AbstractEvent begin
     channel_id::Snowflake
     guild_id::Optional{Snowflake}
     user_id::Snowflake
@@ -788,7 +691,7 @@ end
 Sent when a guild's voice server is updated. Used for connecting to voice.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#voice-server-update)
 """
-struct VoiceServerUpdate <: AbstractEvent
+@discord_struct VoiceServerUpdate <: AbstractEvent begin
     token::String
     guild_id::Snowflake
     endpoint::Nullable{String}
@@ -799,7 +702,7 @@ end
 Sent when a voice channel effect (e.g. emoji, animation) is sent.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#voice-channel-effect-send)
 """
-struct VoiceChannelEffectSend <: AbstractEvent
+@discord_struct VoiceChannelEffectSend <: AbstractEvent begin
     channel_id::Snowflake
     guild_id::Snowflake
     user_id::Snowflake
@@ -816,7 +719,7 @@ end
 Sent when a guild channel's webhooks are created, updated, or deleted.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#webhooks-update)
 """
-struct WebhooksUpdate <: AbstractEvent
+@discord_struct WebhooksUpdate <: AbstractEvent begin
     guild_id::Snowflake
     channel_id::Snowflake
 end
@@ -910,9 +813,9 @@ end
 Sent when an AutoMod rule is triggered and an action is executed.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#auto-moderation-action-execution)
 """
-struct AutoModerationActionExecution <: AbstractEvent
+@discord_struct AutoModerationActionExecution <: AbstractEvent begin
     guild_id::Snowflake
-    action::AutoModAction
+    action::AutoModAction = AutoModAction()
     rule_id::Snowflake
     rule_trigger_type::Int
     user_id::Snowflake
@@ -935,7 +838,7 @@ end
 Sent when a voice channel's status is updated.
 [Discord docs](https://discord.com/developers/docs/topics/gateway-events#voice-channel-status-update)
 """
-struct VoiceChannelStatusUpdate <: AbstractEvent
+@discord_struct VoiceChannelStatusUpdate <: AbstractEvent begin
     guild_id::Snowflake
     id::Snowflake
     status::Maybe{String}
@@ -945,7 +848,7 @@ end
     VoiceChannelStartTimeUpdate
 Sent when a voice channel's start time is updated.
 """
-struct VoiceChannelStartTimeUpdate <: AbstractEvent
+@discord_struct VoiceChannelStartTimeUpdate <: AbstractEvent begin
     guild_id::Snowflake
     id::Snowflake
     voice_start_time::Maybe{Int}

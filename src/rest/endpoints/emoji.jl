@@ -22,7 +22,7 @@ emoji management commands or reaction role systems.
 [Discord docs](https://discord.com/developers/docs/resources/emoji#list-guild-emojis)
 """
 function list_guild_emojis(rl::RateLimiter, guild_id::Snowflake; token::String)
-    resp = discord_get(rl, "/guilds/$(guild_id)/emojis"; token, major_params=["guild_id" => string(guild_id)])
+    resp = discord_get(rl, "/guilds/$(guild_id)/emojis"; token)
     parse_response_array(Emoji, resp)
 end
 
@@ -49,7 +49,7 @@ such as its name, roles, or creator.
 [Discord docs](https://discord.com/developers/docs/resources/emoji#get-guild-emoji)
 """
 function get_guild_emoji(rl::RateLimiter, guild_id::Snowflake, emoji_id::Snowflake; token::String)
-    resp = discord_get(rl, "/guilds/$(guild_id)/emojis/$(emoji_id)"; token, major_params=["guild_id" => string(guild_id)])
+    resp = discord_get(rl, "/guilds/$(guild_id)/emojis/$(emoji_id)"; token)
     parse_response(Emoji, resp)
 end
 
@@ -86,7 +86,7 @@ Requires `MANAGE_GUILD_EXPRESSIONS`.
 [Discord docs](https://discord.com/developers/docs/resources/emoji#create-guild-emoji)
 """
 function create_guild_emoji(rl::RateLimiter, guild_id::Snowflake; token::String, body::Dict, reason=nothing)
-    resp = discord_post(rl, "/guilds/$(guild_id)/emojis"; token, body, reason=reason, major_params=["guild_id" => string(guild_id)])
+    resp = discord_post(rl, "/guilds/$(guild_id)/emojis"; token, body, reason=reason)
     parse_response(Emoji, resp)
 end
 
@@ -119,7 +119,7 @@ Requires `MANAGE_GUILD_EXPRESSIONS`.
 [Discord docs](https://discord.com/developers/docs/resources/emoji#modify-guild-emoji)
 """
 function modify_guild_emoji(rl::RateLimiter, guild_id::Snowflake, emoji_id::Snowflake; token::String, body::Dict, reason=nothing)
-    resp = discord_patch(rl, "/guilds/$(guild_id)/emojis/$(emoji_id)"; token, body, reason, major_params=["guild_id" => string(guild_id)])
+    resp = discord_patch(rl, "/guilds/$(guild_id)/emojis/$(emoji_id)"; token, body, reason)
     parse_response(Emoji, resp)
 end
 
@@ -150,7 +150,7 @@ Requires `MANAGE_GUILD_EXPRESSIONS`.
 [Discord docs](https://discord.com/developers/docs/resources/emoji#delete-guild-emoji)
 """
 function delete_guild_emoji(rl::RateLimiter, guild_id::Snowflake, emoji_id::Snowflake; token::String, reason=nothing)
-    discord_delete(rl, "/guilds/$(guild_id)/emojis/$(emoji_id)"; token, reason, major_params=["guild_id" => string(guild_id)])
+    discord_delete(rl, "/guilds/$(guild_id)/emojis/$(emoji_id)"; token, reason)
 end
 
 """

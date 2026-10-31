@@ -63,6 +63,11 @@ true
 ```
 """
 macro discord_struct(name, block)
+    # Optional supertype: `@discord_struct Name <: Super begin ... end`
+    supertype = nothing
+    if name isa Expr && name.head == :<:
+        name, supertype = name.args
+    end
     field_exprs = []
     timestamp_fields = Symbol[]
 
@@ -138,6 +143,7 @@ macro discord_struct(name, block)
     end
 
     esc_name = esc(name)
+    struct_head = isnothing(supertype) ? esc_name : :($esc_name <: $(esc(supertype)))
 
     getprop_block = if isempty(timestamp_fields)
         :()
@@ -156,7 +162,7 @@ macro discord_struct(name, block)
     end
 
     quote
-        Base.@kwdef mutable struct $esc_name
+        Base.@kwdef mutable struct $struct_head
             $(field_exprs...)
         end
 

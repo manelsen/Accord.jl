@@ -336,6 +336,24 @@
         @test url(r1) == "https://discord.com/api/v10/channels/111111111111/messages/222222222222"
     end
 
+    @testset "major parameters are read from the path" begin
+        g = Route("GET", "/guilds/222222222222/members/333333333333")
+        @test endswith(g.bucket_key, ":guild_id:222222222222")
+        c = Route("POST", "/channels/111111111111/messages")
+        @test endswith(c.bucket_key, ":channel_id:111111111111")
+        # same template, different channel -> different bucket key
+        @test c.bucket_key != Route("POST", "/channels/999999999999/messages").bucket_key
+        # explicit params and a pre-substituted path agree
+        @test Route("GET", "/channels/{channel_id}/pins", "channel_id" => "111111111111").bucket_key ==
+              replace(Route("GET", "/channels/111111111111/pins").bucket_key, "/channels/111111111111/" => "/channels/{channel_id}/")
+        # webhook routes without explicit params still get id + token fingerprint
+        w = Route("POST", "/webhooks/444444444444/tok-en_1/messages/@original")
+        @test occursin("webhook_id:444444444444", w.bucket_key)
+        @test occursin("webhook_token:", w.bucket_key)
+        @test !occursin("tok-en_1", w.bucket_key)
+        @test isempty(Accord._major_params("/users/@me"))
+    end
+
     @testset "webhook tokens never appear in bucket keys" begin
         secret = "s3cr3t-T0KEN_abc"
         r = Route("POST", "/webhooks/123456789012/$secret",

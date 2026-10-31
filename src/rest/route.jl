@@ -1,7 +1,7 @@
 # REST Route abstraction for rate limiting
 #
 # Internal module: Defines the Route struct used to calculate rate limit bucket keys.
-# Major parameters (channel_id, guild_id, webhook_id) are factored into bucket grouping.
+# Major parameters (channel_id, guild_id, webhook_id/token) are read from the path.
 
 """
     Route
@@ -24,30 +24,38 @@ struct Route
 end
 
 """
-    Route(method, path; major_params...)
+    Route(method, path_template, params...)
 
 Use this constructor when building REST API routes to ensure proper rate limit bucket assignment.
 
-Create a [`Route`](@ref) with automatic bucket key generation.
-Major parameters (channel_id, guild_id, webhook_id) are part of the bucket.
+Create a [`Route`](@ref) with automatic bucket key generation. `params` are
+substituted into `{name}` placeholders. The major parameters Discord uses to
+split rate-limit buckets (channel, guild, webhook id and token) are read from
+the resulting path, so callers never have to repeat them.
 """
 function Route(method::String, path_template::String, params::Pair{String,String}...)
-    path = path_template
-    major = String[]
-
-    for (key, val) in params
-        path = replace(path, "{$key}" => val)
-        if key in ("channel_id", "guild_id", "webhook_id")
-            push!(major, "$key:$val")
-        elseif key == "webhook_token"
-            # Tokens are secrets: the bucket key ends up in log lines, so only a
-            # fingerprint of the token is kept to tell buckets apart.
-            push!(major, "webhook_token:" * _token_fingerprint(val))
-        end
-    end
-
-    bucket_key = "$method:$(_bucket_template(path_template)):" * join(major, ":")
+    path = foldl((p, (k, v)) -> replace(p, "{$k}" => v), params; init=path_template)
+    bucket_key = "$method:$(_bucket_template(path_template)):" * join(_major_params(path), ":")
     Route(method, path, bucket_key)
+end
+
+# Major parameters of a concrete path, in the form used inside bucket keys:
+# "channel_id:<id>" / "guild_id:<id>" (first occurrence) and, for webhook
+# routes, "webhook_id:<id>" plus a fingerprint of the token, never the token.
+function _major_params(path::AbstractString)
+    major = String[]
+    m = match(r"/(channels|guilds)/(\d+)", path)
+    if m !== nothing
+        kind, id = m.captures
+        push!(major, (kind == "channels" ? "channel_id:" : "guild_id:") * id)
+    end
+    w = match(r"/webhooks/(\d+)(?:/([^/?]+))?", path)
+    if w !== nothing
+        id, token = w.captures
+        push!(major, "webhook_id:" * id)
+        token === nothing || push!(major, "webhook_token:" * _token_fingerprint(token))
+    end
+    return major
 end
 
 # Short, non-reversible fingerprint used in place of secrets inside bucket keys.

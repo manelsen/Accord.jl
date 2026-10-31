@@ -248,34 +248,23 @@ function respond(ctx::InteractionContext;
     ephemeral::Bool = false,
     tts::Bool = false,
     files = nothing,
+    flags = nothing,
+    allowed_mentions = nothing,
+    poll = nothing,
 )
-    data = Dict{String, Any}()
-    !isempty(content) && (data["content"] = content)
-    !isempty(embeds) && (data["embeds"] = embeds)
-    !isempty(components) && (data["components"] = components)
-    tts && (data["tts"] = true)
-    ephemeral && (data["flags"] = 64)  # EPHEMERAL flag
+    data = _message_body(; content, embeds, components, ephemeral, tts, flags, allowed_mentions, poll)
 
     if ctx.deferred[]
         # Edit the deferred response
-        app_id = ctx.client.application_id
-        if isnothing(app_id)
-            error("Cannot respond to deferred interaction: application_id not set (READY event may not have been processed)")
-        end
-        edit_original_interaction_response(
-            ctx.client.ratelimiter, app_id, ctx.interaction.token;
-            token=ctx.client.token, body=data, files
-        )
+        edit_original_interaction_response(ctx.client, _application_id(ctx, "respond to deferred interaction"),
+                                           ctx.interaction.token; body=data, files)
     else
         response_type = ctx.interaction.type == InteractionTypes.MESSAGE_COMPONENT ?
             InteractionCallbackTypes.UPDATE_MESSAGE :
             InteractionCallbackTypes.CHANNEL_MESSAGE_WITH_SOURCE
 
         body = Dict("type" => response_type, "data" => data)
-        resp = create_interaction_response(
-            ctx.client.ratelimiter, ctx.interaction.id, ctx.interaction.token;
-            token=ctx.client.token, body, files
-        )
+        resp = create_interaction_response(ctx.client, ctx.interaction.id, ctx.interaction.token; body, files)
 
         if resp.status >= 300
             @warn "Failed to respond to interaction" status=resp.status body=String(resp.body)
@@ -311,14 +300,8 @@ function defer(ctx::InteractionContext; ephemeral::Bool=false)
         InteractionCallbackTypes.DEFERRED_UPDATE_MESSAGE :
         InteractionCallbackTypes.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
 
-    data = Dict{String, Any}()
-    ephemeral && (data["flags"] = 64)
-
-    body = Dict("type" => response_type, "data" => data)
-    resp = create_interaction_response(
-        ctx.client.ratelimiter, ctx.interaction.id, ctx.interaction.token;
-        token=ctx.client.token, body
-    )
+    body = Dict("type" => response_type, "data" => _message_body(; ephemeral))
+    resp = create_interaction_response(ctx.client, ctx.interaction.id, ctx.interaction.token; body)
     if resp.status < 300
         ctx.deferred[] = true
     else
@@ -349,19 +332,11 @@ function edit_response(ctx::InteractionContext;
     embeds = nothing,
     components = nothing,
     files = nothing,
+    allowed_mentions = nothing,
 )
-    app_id = ctx.client.application_id
-    isnothing(app_id) && error("Cannot edit response: application_id not set")
-
-    body = Dict{String, Any}()
-    !isnothing(content) && (body["content"] = content)
-    !isnothing(embeds) && (body["embeds"] = embeds)
-    !isnothing(components) && (body["components"] = components)
-
-    edit_original_interaction_response(
-        ctx.client.ratelimiter, app_id, ctx.interaction.token;
-        token=ctx.client.token, body, files
-    )
+    body = _message_body(; omit_empty=false, content, embeds, components, allowed_mentions)
+    edit_original_interaction_response(ctx.client, _application_id(ctx, "edit response"),
+                                       ctx.interaction.token; body, files)
 end
 
 """
@@ -385,21 +360,21 @@ function followup(ctx::InteractionContext;
     embeds::Vector = [],
     components::Vector = [],
     ephemeral::Bool = false,
+    tts::Bool = false,
     files = nothing,
+    flags = nothing,
+    allowed_mentions = nothing,
+    poll = nothing,
 )
+    body = _message_body(; content, embeds, components, ephemeral, tts, flags, allowed_mentions, poll)
+    create_followup_message(ctx.client, _application_id(ctx, "send followup"), ctx.interaction.token; body, files)
+end
+
+# The application id is learned from READY; interaction webhooks need it.
+function _application_id(ctx::InteractionContext, action::AbstractString)
     app_id = ctx.client.application_id
-    isnothing(app_id) && error("Cannot send followup: application_id not set")
-
-    body = Dict{String, Any}()
-    !isempty(content) && (body["content"] = content)
-    !isempty(embeds) && (body["embeds"] = embeds)
-    !isempty(components) && (body["components"] = components)
-    ephemeral && (body["flags"] = 64)
-
-    create_followup_message(
-        ctx.client.ratelimiter, app_id, ctx.interaction.token;
-        token=ctx.client.token, body, files
-    )
+    isnothing(app_id) && error("Cannot $action: application_id not set (READY event may not have been processed)")
+    return app_id
 end
 
 """
@@ -445,10 +420,7 @@ function show_modal(ctx::InteractionContext;
             "components" => components,
         )
     )
-    result = create_interaction_response(
-        ctx.client.ratelimiter, ctx.interaction.id, ctx.interaction.token;
-        token=ctx.client.token, body
-    )
+    result = create_interaction_response(ctx.client, ctx.interaction.id, ctx.interaction.token; body)
     ctx.responded[] = true
     return result
 end
