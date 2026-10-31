@@ -98,12 +98,14 @@
             end
 
             # Saturate every default thread with non-yielding work for 1 second
-            burners = [Threads.@spawn :default begin
-                           t0 = time()
-                           while time() - t0 < 1.0
-                               GC.safepoint()
-                           end
-                       end for _ in 1:Threads.nthreads(:default)]
+            burners = map(1:Threads.nthreads(:default)) do _
+                Threads.@spawn :default begin
+                    t0 = time()
+                    while time() - t0 < 1.0
+                        GC.safepoint()
+                    end
+                end
+            end
             before = lock(() -> length(ws.sent), ws.lock)
             foreach(wait, burners)
             after = lock(() -> length(ws.sent), ws.lock)
@@ -124,15 +126,17 @@
             store[Snowflake(i)] = i
             i % 3 == 0 && delete!(store, Snowflake(i - 1))
         end
-        readers = [Threads.@spawn begin
-                       hits = 0
-                       for i in 1:20_000
-                           v = get(store, Snowflake(i))
-                           v === nothing || (hits += 1)
-                           i % 1000 == 0 && length(keys(store))
-                       end
-                       hits
-                   end for _ in 1:4]
+        readers = map(1:4) do _
+            Threads.@spawn begin
+                hits = 0
+                for i in 1:20_000
+                    v = get(store, Snowflake(i))
+                    v === nothing || (hits += 1)
+                    i % 1000 == 0 && length(keys(store))
+                end
+                hits
+            end
+        end
         wait(writer)
         @test all(r -> fetch(r) isa Int, readers)
         @test length(store) > 0
@@ -142,9 +146,11 @@
         eh = Accord.EventHandler()
         hits = Threads.Atomic{Int}(0)
         Accord.register_handler!(eh, RegEvent, (c, e) -> Threads.atomic_add!(hits, 1))
-        dispatchers = [Threads.@spawn for _ in 1:500
-                           Accord.dispatch_event!(eh, nothing, RegEvent())
-                       end for _ in 1:4]
+        dispatchers = map(1:4) do _
+            Threads.@spawn for _ in 1:500
+                Accord.dispatch_event!(eh, nothing, RegEvent())
+            end
+        end
         registrar = Threads.@spawn for _ in 1:200
             Accord.register_handler!(eh, RegEvent, (c, e) -> nothing)
         end
