@@ -22,10 +22,19 @@ Relevant code: `src/voice/dave.jl` (state machine), `src/voice/libdave.jl`
 
 ## 2. Ship libdave as a JLL
 
-There is no `libdave_jll`. A draft, **untested** recipe is in
-`dev/yggdrasil/L/libdave/build_tarballs.jl` (libdave v1.2.2 + mlspp built
-from source against `OpenSSL_jll`, bypassing vcpkg). Submit it to
-JuliaPackaging/Yggdrasil and iterate there. Once registered:
+There is no `libdave_jll` yet. Yggdrasil allows one package per recipe, so it
+takes two PRs, in order (a PR can't depend on an unregistered JLL):
+
+1. `dev/yggdrasil/M/mlspp/` (submitted as JuliaPackaging/Yggdrasil#15399): Cisco's mlspp at the commit libdave pins, as
+   shared libraries configured like libdave's vcpkg port. Built locally with
+   Yggdrasil's CI environment for x86_64/riscv64 Linux, x86_64 Windows,
+   x86_64/aarch64 macOS and x86_64 FreeBSD.
+2. `dev/yggdrasil/L/libdave/`: libdave v1.2.2 against `mlspp_jll`. Submit
+   once `mlspp_jll` is registered. Built natively against the mlspp_jll
+   libraries, it passes Accord's DAVE tests.
+
+Both started from JuliaPackaging/Yggdrasil#14291 (by xaylis, closed unmerged).
+Once `libdave_jll` is registered:
 
 - add `libdave_jll` as a dependency and load it by default in `LibDave`;
 - keep `ACCORD_LIBDAVE` / `LibDave.load!(path)` as an override;
